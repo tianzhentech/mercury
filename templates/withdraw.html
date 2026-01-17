@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <title>提卡卡密</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="withdraw-page">
+    <div class="withdraw-container">
+        <div class="withdraw-card">
+            <div class="withdraw-header">
+                <div>
+                    <h1>提卡卡密</h1>
+                    <div id="withdrawMeta" class="withdraw-meta">加载中...</div>
+                </div>
+                <button class="btn-secondary" id="copyWithdrawAllBtn" onclick="copyAllWithdraw()" disabled>复制全部</button>
+            </div>
+            <div id="withdrawNote" class="withdraw-note" style="display: none;"></div>
+            <div id="withdrawList" class="withdraw-list">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const token = "{{ token }}";
+        let withdrawKeys = [];
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    return Promise.resolve();
+                } catch (e) {
+                    document.body.removeChild(textarea);
+                    return Promise.reject(e);
+                }
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function statusClass(item) {
+            if (item.destroyed) return 'destroyed';
+            if (item.used) return 'used';
+            return 'available';
+        }
+
+        function statusText(item) {
+            if (item.destroyed) return '已销毁';
+            if (item.used) return '已兑换';
+            return '可兑换';
+        }
+
+        function renderWithdrawList(keys) {
+            const list = document.getElementById('withdrawList');
+            if (!keys.length) {
+                list.innerHTML = '<div class="empty-state">暂无卡密</div>';
+                return;
+            }
+            list.innerHTML = keys.map(item => `
+                <div class="withdraw-key">
+                    <div class="withdraw-key-main">
+                        <span class="withdraw-key-code">${item.id}</span>
+                        <span class="card-type-badge ${item.card_type === 'debit' ? 'debit' : 'credit'}">
+                            ${item.card_type === 'debit' ? '借' : '信'}
+                        </span>
+                    </div>
+                    <span class="withdraw-status ${statusClass(item)}">${statusText(item)}</span>
+                </div>
+            `).join('');
+        }
+
+        function copyAllWithdraw() {
+            const available = withdrawKeys.filter(item => !item.used && !item.destroyed);
+            if (!available.length) {
+                showToast('没有可兑换的卡密', 'info');
+                return;
+            }
+            const text = available.map(item => item.id).join('\n');
+            copyToClipboard(text).then(() => showToast(`已复制 ${available.length} 个卡密`, 'success'))
+                .catch(() => showToast('复制失败', 'error'));
+        }
+
+        async function loadWithdrawBatch() {
+            try {
+                const response = await fetch(`/api/withdraw/${token}`);
+                const data = await response.json();
+                if (!data.success) {
+                    document.getElementById('withdrawList').innerHTML = '<div class="empty-state">链接无效或已过期</div>';
+                    document.getElementById('withdrawMeta').textContent = '无法加载';
+                    return;
+                }
+                const batch = data.batch || {};
+                withdrawKeys = batch.ids || [];
+                const note = (batch.note || '').trim();
+                const cardTypeLabel = batch.card_type === 'debit' ? '借记卡' : '信用卡';
+                document.getElementById('withdrawMeta').textContent = `${cardTypeLabel} · 共 ${withdrawKeys.length} 张`;
+                if (note) {
+                    const noteEl = document.getElementById('withdrawNote');
+                    noteEl.textContent = `备注：${note}`;
+                    noteEl.style.display = 'block';
+                }
+                document.getElementById('copyWithdrawAllBtn').disabled = withdrawKeys.length === 0;
+                renderWithdrawList(withdrawKeys);
+            } catch (error) {
+                document.getElementById('withdrawList').innerHTML = '<div class="empty-state">加载失败</div>';
+                document.getElementById('withdrawMeta').textContent = '加载失败';
+            }
+        }
+
+        loadWithdrawBatch();
+    </script>
+</body>
+</html>

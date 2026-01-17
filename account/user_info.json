@@ -1,0 +1,67 @@
+{
+    "accounts": [
+        {
+            "user": {
+                "id": "ed70a7c2-f1f3-11f0-a44c-47076ec64966",
+                "email": "njithznz720@outlook.com",
+                "first_name": "06",
+                "last_name": "06",
+                "phone_number": "+12272082385",
+                "status": "active",
+                "created_at": "2026-01-15T09:24:01.134909Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "4027 Celtic Lane",
+                    "address2": "",
+                    "city": "Fort Collins",
+                    "region": "CO",
+                    "postal_code": "80524",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "d84ffd18-f093-11f0-bb85-ebaa558b320d",
+                "name": "Granite Gear LLC",
+                "legal_business_name": "Granite Gear LLC",
+                "callsign": "granite-gear-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "ed73a40e-f1f3-11f0-a44c-9bbdd424d315"
+            },
+            "credit_account": {
+                "account_id": "c0e0f23a-f1ed-11f0-8b2d-7fd737a79afd",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-15T08:39:49.360488Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "2f201512-f191-11f0-855c-93d59018aa19",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "187297680018144",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "2f540b9c-f191-11f0-965e-c7101361fa22",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "418271155692121",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        }
+    ]
+}

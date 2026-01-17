@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Niko">
+    <title>登录 - Niko 虚拟卡</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="/static/icon.png" alt="Logo" class="login-logo">
+                <h1>Niko</h1>
+                <p>虚拟卡管理系统 <span class="version">v{{ version }}</span></p>
+            </div>
+            
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <div class="form-field">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-field">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">登录</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+            
+            <div id="errorMsg" class="error-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        // 检查是否已登录
+        async function checkAuth() {
+            const rt = localStorage.getItem('refresh_token');
+            if (!rt) return;
+            
+            try {
+                const response = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: rt })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('access_token', data.access_token);
+                    window.location.href = '/';
+                }
+            } catch (e) {
+                console.log('Token refresh failed');
+            }
+        }
+        
+        checkAuth();
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!username || !password) {
+                errorMsg.textContent = '请输入用户名和密码';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.querySelector('.btn-text').style.display = 'none';
+            btn.querySelector('.btn-loading').style.display = 'inline-flex';
+            errorMsg.textContent = '';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 保存tokens
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('is_admin', data.is_admin);
+                    
+                    // 跳转到管理面板
+                    window.location.href = '/';
+                } else {
+                    errorMsg.textContent = data.error || '登录失败';
+                }
+            } catch (error) {
+                errorMsg.textContent = '网络错误，请重试';
+            } finally {
+                btn.disabled = false;
+                btn.querySelector('.btn-text').style.display = 'inline';
+                btn.querySelector('.btn-loading').style.display = 'none';
+            }
+        }
+        
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>
+

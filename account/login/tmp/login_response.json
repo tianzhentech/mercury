@@ -1,0 +1,43 @@
+{
+  "status_code": 200,
+  "headers": {
+    "Date": "Sat, 10 Jan 2026 06:51:19 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Transfer-Encoding": "chunked",
+    "Connection": "keep-alive",
+    "Content-Encoding": "br",
+    "CF-Ray": "9bba3ec0eeff91e9-LAX",
+    "CF-Cache-Status": "DYNAMIC",
+    "Access-Control-Allow-Origin": "https://app.mercury.com",
+    "Cache-Control": "private, no-cache, no-store, must-revalidate",
+    "Set-Cookie": "_SESSION=7Ysnf20YHS4U9G9eKDUQKSjv7NFZcDUqn9bTnG/K0IC7I5lPKkLMyDti3b8P5T870eLsJTYxhhPq2aGznBPPSXUgdSqjtYeV1r+Ku3YnifDAG+kHflfSeVNt4leSckwy7lDeWV5zzHPhnKfq3Pk+AYp/0fkgZcyDwyKNDzbkdvN7mFRlmKo=; Path=/; Expires=Sat, 10-Jan-2026 08:51:11 GMT; Domain=backend.mercury.com; HttpOnly; Secure; SameSite=Strict, pi=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT, pi=f9/CeMu8h3RW6dKRKfSj5RcCFn3MNXm63K4CxJoXA8m/fnjm49ULxBPdbx9+/aRlOBe/EsNdKetZH8/ng/uD3qzdTAVFejFVTPivrg63OI66oevT; Path=/; Expires=Fri, 01-Jan-9999 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict, __cf_bm=DB20I8T8nT39qpTgwNvsHJLmVXsDBhcLSaD.j9R15.w-1768027879-1.0.1.1-L.bG6XHZZ71iG5zqXP96IzSAvzh8Eztr29mL_QrqGfdQ7SBuBwGPlCvcK0YM5dicaqGnL7fgrqxprKyPN7gg5YVmNzNUtDOjhznIMPxmvag; path=/; expires=Sat, 10-Jan-26 07:21:19 GMT; domain=.mercury.com; HttpOnly; Secure; SameSite=None",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+    "Vary": "Accept-Encoding, Accept, Accept-Language, Origin",
+    "access-control-allow-credentials": "true",
+    "access-control-expose-headers": "X-XSRF-TOKEN, DNT, Keep-Alive, User-Agent, X-Requested-With, If-Modified-Since, Cache-Control, Content-Type, Content-Range, Range, Authorization, Accept, Origin, Bundle-Version, Git-Commit, EC2-Instance-Name, X-CSRF-PROTECT, X-Frontend-Path, X-Device-Fingerprint, Mercury-Device-Id, Content-Disposition, X-Timezone-Offset, X-Timezone-IANA, EC2-Instance-ID, mercury-honeycomb-link, X-Mercury-Request-Id",
+    "ec2-instance-id": "i-0d76cf6639d585b13",
+    "ec2-instance-name": "prod-mwb-asg",
+    "git-commit": "375cd359f77757769501f341fa0c2be49e3b2d71",
+    "mercury-honeycomb-link": "https://ui.honeycomb.io/mercury/environments/production/datasets/backend/trace?trace_id=42d33c09b3f0e3206022f86a0824146d&trace_start_ts=1768024279&trace_end_ts=1768031479",
+    "traceparent": "00-42d33c09b3f0e3206022f86a0824146d-cdedc752649d5d0b-01",
+    "tracestate": "",
+    "x-content-type-options": "nosniff",
+    "x-mercury-request-id": "019ba6ac-74d1-7da9-bdab-141f061e9624",
+    "x-robots-tag": "noindex, nofollow, noarchive",
+    "x-xss-protection": "1; mode=block",
+    "Server": "cloudflare",
+    "alt-svc": "h3=\":443\"; ma=86400"
+  },
+  "cookies": {
+    "_SESSION": "7Ysnf20YHS4U9G9eKDUQKSjv7NFZcDUqn9bTnG/K0IC7I5lPKkLMyDti3b8P5T870eLsJTYxhhPq2aGznBPPSXUgdSqjtYeV1r+Ku3YnifDAG+kHflfSeVNt4leSckwy7lDeWV5zzHPhnKfq3Pk+AYp/0fkgZcyDwyKNDzbkdvN7mFRlmKo=",
+    "__cf_bm": "DB20I8T8nT39qpTgwNvsHJLmVXsDBhcLSaD.j9R15.w-1768027879-1.0.1.1-L.bG6XHZZ71iG5zqXP96IzSAvzh8Eztr29mL_QrqGfdQ7SBuBwGPlCvcK0YM5dicaqGnL7fgrqxprKyPN7gg5YVmNzNUtDOjhznIMPxmvag",
+    "pi": "f9/CeMu8h3RW6dKRKfSj5RcCFn3MNXm63K4CxJoXA8m/fnjm49ULxBPdbx9+/aRlOBe/EsNdKetZH8/ng/uD3qzdTAVFejFVTPivrg63OI66oevT"
+  },
+  "body": "{\"kind\":\"deviceVerificationRequired\",\"data\":{\"loginCode\":\"QBbZsBimsxevmm5Af+kLhLEa9KBCj/SDDEONsRBYVjAWPSUb\"}}",
+  "raw_set_cookies": [
+    "_SESSION=7Ysnf20YHS4U9G9eKDUQKSjv7NFZcDUqn9bTnG/K0IC7I5lPKkLMyDti3b8P5T870eLsJTYxhhPq2aGznBPPSXUgdSqjtYeV1r+Ku3YnifDAG+kHflfSeVNt4leSckwy7lDeWV5zzHPhnKfq3Pk+AYp/0fkgZcyDwyKNDzbkdvN7mFRlmKo=; Path=/; Expires=Sat, 10-Jan-2026 08:51:11 GMT; Domain=backend.mercury.com; HttpOnly; Secure; SameSite=Strict",
+    "pi=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
+    "pi=f9/CeMu8h3RW6dKRKfSj5RcCFn3MNXm63K4CxJoXA8m/fnjm49ULxBPdbx9+/aRlOBe/EsNdKetZH8/ng/uD3qzdTAVFejFVTPivrg63OI66oevT; Path=/; Expires=Fri, 01-Jan-9999 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
+    "__cf_bm=DB20I8T8nT39qpTgwNvsHJLmVXsDBhcLSaD.j9R15.w-1768027879-1.0.1.1-L.bG6XHZZ71iG5zqXP96IzSAvzh8Eztr29mL_QrqGfdQ7SBuBwGPlCvcK0YM5dicaqGnL7fgrqxprKyPN7gg5YVmNzNUtDOjhznIMPxmvag; path=/; expires=Sat, 10-Jan-26 07:21:19 GMT; domain=.mercury.com; HttpOnly; Secure; SameSite=None"
+  ]
+}

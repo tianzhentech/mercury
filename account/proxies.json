@@ -1,0 +1,11 @@
+{
+    "proxies": [
+        {
+            "id": "b5b3bc8d",
+            "name": "美国",
+            "url": "socks5h://cRRnaDwxHXRe:XV2KeiXfiZ@149.119.153.104:443",
+            "created_at": "2026-01-14T13:59:58.169828"
+        }
+    ],
+    "default_proxy_id": ""
+}

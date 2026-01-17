@@ -1,0 +1,3119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Niko">
+    <title>Niko 虚拟卡管理</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- 左侧导航栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/static/icon.png" alt="Logo" class="sidebar-logo">
+                <div class="sidebar-title">
+                    <h1>Niko</h1>
+                    <p class="subtitle">虚拟卡管理</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="switchTab('cards')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                        <path d="M2 10h20"></path>
+                    </svg>
+                    创建卡片
+                </button>
+                <button class="nav-item" onclick="switchTab('keys')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                    </svg>
+                    生成卡密
+                </button>
+                <button class="nav-item" onclick="switchTab('records')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    兑换记录
+                </button>
+                <button class="nav-item" onclick="switchTab('users')" id="usersTab" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    用户管理
+                </button>
+                <button class="nav-item" onclick="switchTab('proxies')" id="proxiesTab" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        <path d="M2 12h20"></path>
+                    </svg>
+                    代理管理
+                </button>
+                <button class="nav-item" onclick="switchTab('accounts')" id="accountsTab" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    后台账户
+                </button>
+                <button class="nav-item" onclick="switchTab('settings')" id="settingsTab" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    设置
+                </button>
+                <button class="nav-item mobile-logout" onclick="logout()">
+                    退出
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="currentUser"></span>
+                    <span class="version">v{{ version }}</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    退出
+                </button>
+            </div>
+        </aside>
+
+        <!-- 右侧内容区 -->
+        <main class="main-content">
+
+        <!-- 创建卡片面板 -->
+        <div id="cardsPanel" class="tab-content active">
+            <div class="panel-fixed">
+                <section class="control-panel">
+                    <h2>创建卡片</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cardCount">开卡数量</label>
+                            <input type="number" id="cardCount" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cardLimit">卡片余额 ($)</label>
+                            <input type="number" id="cardLimit" min="0" max="1000" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="cardType">卡片类型</label>
+                            <select id="cardType">
+                                <option value="credit">信用卡</option>
+                                <option value="debit">借记卡</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expireTime">过期时间 (分钟)</label>
+                            <input type="number" id="expireTime" min="1" max="1440" value="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="interval">创建间隔 (秒)</label>
+                            <input type="number" id="interval" min="3" value="3">
+                        </div>
+                        <div class="form-group">
+                            <button id="createBtn" onclick="createCards()">创建卡片</button>
+                        </div>
+                    </div>
+                    
+                    <div id="createProgress" class="inline-progress" style="display: none;">
+                        <div class="progress-header">
+                            <span class="progress-title">正在创建...</span>
+                            <button class="btn-stop" onclick="stopCreate()">停止</button>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="createProgressFill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="createProgressText">0 / 0</span>
+                            <span id="createProgressMessage"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="list-header">
+                    <h2>卡片列表 <span id="cardCount2" class="badge">0</span>
+                        <span class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all" onclick="filterCards('all')">ALL</button>
+                            <button class="filter-btn credit" data-filter="credit" onclick="filterCards('credit')">信</button>
+                            <button class="filter-btn debit" data-filter="debit" onclick="filterCards('debit')">借</button>
+                        </span>
+                    </h2>
+                    <div class="header-actions">
+                        <div class="search-box" id="searchBox">
+                            <div class="btn-search">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </div>
+                            <input type="text" id="searchInput" placeholder="搜索卡号..." oninput="searchCards()" onfocus="handleSearchFocus()" onblur="handleSearchBlur()">
+                            <button class="btn-clear" onclick="clearSearch()" title="清除">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
+                        <button class="btn-secondary" onclick="copyAllCards()">复制所有</button>
+                        <button class="btn-danger" id="deleteAllBtn" onclick="deleteAllCards()">删除所有</button>
+                    </div>
+                </div>
+                
+                <div id="deleteProgress" class="inline-progress danger" style="display: none;">
+                    <div class="progress-header">
+                        <span class="progress-title">正在删除...</span>
+                        <button class="btn-stop" onclick="stopDelete()">停止</button>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="deleteProgressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="deleteProgressText">0 / 0</span>
+                        <span id="deleteProgressMessage"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-scroll">
+                <div id="cardsContainer">
+                    <div class="empty-state">暂无卡片</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成卡密面板 -->
+        <div id="keysPanel" class="tab-content">
+            <div class="panel-fixed">
+                <section class="control-panel">
+                    <div class="add-mode-toggle" style="margin-bottom: 15px;">
+                        <button id="modeGenerateBtn" class="mode-btn active" onclick="switchKeyMode('generate')">生成卡密</button>
+                        <button id="modeDestroyBtn" class="mode-btn" onclick="switchKeyMode('destroy')">销毁卡密</button>
+                    </div>
+
+                    <div id="generateMode">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="keyCount">生成数量</label>
+                                <input type="number" id="keyCount" min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="keyCardLimit">卡片余额 ($)</label>
+                                <input type="number" id="keyCardLimit" min="0" max="1000" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="keyCardType">卡片类型</label>
+                                <select id="keyCardType">
+                                    <option value="credit">信用卡</option>
+                                    <option value="debit">借记卡</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="keyExpireTime">有效期 (分钟)</label>
+                                <input type="number" id="keyExpireTime" min="1" max="1440" value="60">
+                            </div>
+                            <div class="form-group btn-group">
+                                <button id="generateKeyBtn" onclick="generateKeys()">生成卡密</button>
+                                <a href="/redeem" target="_blank" class="btn-link" title="打开兑换页面">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="destroyMode" style="display: none;">
+                    </div>
+                </section>
+
+                <div id="keyListHeader" class="list-header">
+                    <h2>卡密列表 <span id="keyCount2" class="badge">0</span>
+                        <span class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all" onclick="filterKeys('all')">ALL</button>
+                            <button class="filter-btn credit" data-filter="credit" onclick="filterKeys('credit')">信</button>
+                            <button class="filter-btn debit" data-filter="debit" onclick="filterKeys('debit')">借</button>
+                        </span>
+                    </h2>
+                    <div class="header-actions">
+                        <button class="btn-secondary" onclick="copyAllKeys()">复制所有</button>
+                        <button class="btn-danger" onclick="deleteAllKeys()">删除所有</button>
+                    </div>
+                </div>
+                <div id="destroyModeHeader" class="list-header" style="display: none;">
+                    <h2>待销毁 <span id="destroyKeyCount" class="badge">0</span>
+                        <span class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all" onclick="filterDestroyKeys('all')">ALL</button>
+                            <button class="filter-btn credit" data-filter="credit" onclick="filterDestroyKeys('credit')">信</button>
+                            <button class="filter-btn debit" data-filter="debit" onclick="filterDestroyKeys('debit')">借</button>
+                        </span>
+                    </h2>
+                    <div class="header-actions">
+                        <button id="destroyKeysBtn" class="btn-danger" onclick="destroyKeys()">销毁卡密</button>
+                    </div>
+                </div>
+            </div>
+            <div id="keyListScroll" class="panel-scroll">
+                <div id="keysContainer">
+                    <div class="empty-state">暂无卡密</div>
+                </div>
+            </div>
+            <div id="keysPaginationContainer" class="pagination-fixed"></div>
+            <div id="destroyModeScroll" style="display: none; flex: 1; overflow: hidden; padding: 3px;">
+                <textarea id="destroyKeysInput" placeholder="输入要销毁的卡密，一行一个&#10;如已兑换会先删除对应卡片" oninput="updateDestroyStats()" style="width: 100%; height: 100%; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-sizing: border-box; outline-offset: -1px;"></textarea>
+            </div>
+        </div>
+
+        <!-- 兑换记录面板 -->
+        <div id="recordsPanel" class="tab-content">
+            <div class="panel-fixed">
+                <div class="list-header">
+                    <h2>兑换记录 <span class="badge" id="recordCount">0</span></h2>
+                    <div class="header-actions">
+                        <button class="btn-secondary" onclick="copyAllRecords()">复制所有</button>
+                        <button class="btn-danger" onclick="deleteAllRecords()">删除所有</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-scroll">
+                <div id="recordsContainer">
+                    <div class="empty-state">暂无兑换记录</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户管理面板 -->
+        <div id="usersPanel" class="tab-content">
+            <div class="panel-fixed">
+                <section class="control-panel">
+                    <h2>添加用户</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUsername">用户名</label>
+                            <input type="text" id="newUsername" placeholder="输入用户名">
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">密码</label>
+                            <input type="password" id="newPassword" placeholder="输入密码">
+                        </div>
+                        <div class="form-group">
+                            <label for="newIsAdmin">角色</label>
+                            <select id="newIsAdmin">
+                                <option value="false">普通用户</option>
+                                <option value="true">管理员</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button onclick="addUser()">添加用户</button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="list-header">
+                    <h2>用户列表 <span id="userCount" class="badge">0</span></h2>
+                </div>
+            </div>
+            <div class="panel-scroll">
+                <div id="usersContainer">
+                    <div class="empty-state">暂无用户</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 代理管理面板 -->
+        <div id="proxiesPanel" class="tab-content">
+            <div class="panel-fixed">
+                <section class="control-panel">
+                    <h2>添加代理</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newProxyName">代理名称</label>
+                            <input type="text" id="newProxyName" placeholder="备注名称（可选）">
+                        </div>
+                        <div class="form-group" style="flex: 2;">
+                            <label for="newProxyUrl">代理地址</label>
+                            <input type="text" id="newProxyUrl" placeholder="http://ip:port 或 socks5://ip:port">
+                        </div>
+                        <div class="form-group">
+                            <button id="addProxyBtn" onclick="addNewProxy()">添加代理</button>
+                        </div>
+                    </div>
+                    <p class="help-text" style="margin-top: 10px; color: #888; font-size: 12px;">
+                        支持格式：http://ip:port、socks5://ip:port、ip:port:user:pass
+                    </p>
+                </section>
+
+                <div class="list-header">
+                    <h2>代理列表 <span id="proxyCount" class="badge">0</span></h2>
+                    <div class="local-latency">
+                        <span>本地延迟</span>
+                        <span class="proxy-latency" id="localLatency">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-scroll">
+                <div id="proxiesContainer">
+                    <div class="empty-state">暂无保存的代理</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 后台账户管理面板 -->
+        <div id="accountsPanel" class="tab-content">
+            <div class="panel-fixed">
+
+                <div class="list-header">
+                    <h2>Mercury 账户列表 <span id="accountCount" class="badge">0</span></h2>
+                    <div class="org-filter-row">
+                        <button class="btn-secondary" onclick="openAddAccountModal('credentials')">邮箱登录添加</button>
+                        <button class="btn-secondary" onclick="openAddAccountModal('session')">Session Cookie 添加</button>
+                        <select id="orgFilter" onchange="filterByOrg()">
+                            <option value="">全部组织</option>
+                        </select>
+                        <select id="timeFilter" onchange="onTimeFilterChange()">
+                            <option value="0">全部时间</option>
+                            <option value="20">20分钟前</option>
+                            <option value="30">30分钟前</option>
+                            <option value="40">40分钟前</option>
+                            <option value="50">50分钟前</option>
+                        </select>
+                        <div class="org-card-actions" id="orgCardActions" style="display: none;">
+                            <button class="btn-warning" id="clearCreditBtn" onclick="clearOrgCards('credit')">
+                                清空信用卡 <span class="card-count" id="orgCreditCount">-</span>
+                            </button>
+                            <button class="btn-warning debit" id="clearDebitBtn" onclick="clearOrgCards('debit')">
+                                清空借记卡 <span class="card-count" id="orgDebitCount">-</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="clearCardsProgress" class="inline-progress danger" style="display: none;">
+                    <div class="progress-header">
+                        <span class="progress-title" id="clearCardsTitle">正在清空...</span>
+                        <button class="btn-stop" onclick="stopClearCards()">停止</button>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="clearCardsProgressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="clearCardsProgressText">0 / 0</span>
+                        <span id="clearCardsProgressMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-scroll">
+                <div id="accountsContainer">
+                    <div class="empty-state">暂无账户</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置面板 -->
+        <div id="settingsPanel" class="tab-content">
+            <div class="panel-fixed">
+                <div class="list-header" style="margin-bottom: 16px;">
+                    <h2>系统设置</h2>
+                </div>
+                <section class="control-panel" style="margin-bottom: 20px;">
+                    <h3>兑换页面公告</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">设置兑换页面打开时显示的公告内容，留空则不显示公告（支持 Markdown）</p>
+                    <style>
+                        .emoji-grid span { cursor: pointer; font-size: 20px; padding: 4px; border-radius: 6px; text-align: center; transition: background 0.2s; }
+                        .emoji-grid span:hover { background: rgba(99,102,241,0.2); }
+                        .announcement-editor { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+                        .announcement-preview { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; height: 120px; overflow-y: auto; color: var(--text-primary); font-size: 14px; line-height: 1.6; box-sizing: border-box; }
+                        .announcement-preview p { margin: 0 0 8px; }
+                        .announcement-preview p:last-child { margin-bottom: 0; }
+                        .announcement-preview h1 { margin: 0 0 8px; font-size: 20px; font-weight: bold; }
+                        .announcement-preview h2 { margin: 0 0 8px; font-size: 17px; font-weight: bold; }
+                        .announcement-preview h3 { margin: 0 0 8px; font-size: 15px; font-weight: bold; }
+                        .announcement-preview ul, .announcement-preview ol { margin: 0 0 8px; padding-left: 20px; }
+                        .announcement-preview a { color: #6366f1; }
+                        .announcement-preview code { background: rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+                        .announcement-preview blockquote { border-left: 3px solid #6366f1; margin: 0 0 8px; padding-left: 12px; color: var(--text-secondary); }
+                        @media (max-width: 768px) { .announcement-editor { grid-template-columns: 1fr; } }
+                    </style>
+                    <div class="announcement-editor">
+                        <div style="position: relative;">
+                            <textarea id="announcementContent" placeholder="输入公告内容（支持 Markdown）..." oninput="updateAnnouncementPreview()" style="width: 100%; height: 120px; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; padding-bottom: 36px; box-sizing: border-box;"></textarea>
+                            <button type="button" onclick="toggleEmojiPicker()" style="position: absolute; bottom: 8px; right: 8px; background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 4px; opacity: 0.6; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'" title="插入表情">😊</button>
+                            <div id="emojiPicker" style="display: none; position: absolute; bottom: 40px; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 280px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <div class="emoji-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
+                                    <span onclick="insertEmoji('😀')">😀</span>
+                                    <span onclick="insertEmoji('😊')">😊</span>
+                                    <span onclick="insertEmoji('😄')">😄</span>
+                                    <span onclick="insertEmoji('😁')">😁</span>
+                                    <span onclick="insertEmoji('😆')">😆</span>
+                                    <span onclick="insertEmoji('😅')">😅</span>
+                                    <span onclick="insertEmoji('🤣')">🤣</span>
+                                    <span onclick="insertEmoji('😂')">😂</span>
+                                    <span onclick="insertEmoji('🙂')">🙂</span>
+                                    <span onclick="insertEmoji('😉')">😉</span>
+                                    <span onclick="insertEmoji('😍')">😍</span>
+                                    <span onclick="insertEmoji('🥰')">🥰</span>
+                                    <span onclick="insertEmoji('😘')">😘</span>
+                                    <span onclick="insertEmoji('😎')">😎</span>
+                                    <span onclick="insertEmoji('🤩')">🤩</span>
+                                    <span onclick="insertEmoji('🥳')">🥳</span>
+                                    <span onclick="insertEmoji('😇')">😇</span>
+                                    <span onclick="insertEmoji('🤔')">🤔</span>
+                                    <span onclick="insertEmoji('🤗')">🤗</span>
+                                    <span onclick="insertEmoji('😐')">😐</span>
+                                    <span onclick="insertEmoji('😑')">😑</span>
+                                    <span onclick="insertEmoji('😶')">😶</span>
+                                    <span onclick="insertEmoji('🙄')">🙄</span>
+                                    <span onclick="insertEmoji('😏')">😏</span>
+                                    <span onclick="insertEmoji('😴')">😴</span>
+                                    <span onclick="insertEmoji('😷')">😷</span>
+                                    <span onclick="insertEmoji('🤒')">🤒</span>
+                                    <span onclick="insertEmoji('😢')">😢</span>
+                                    <span onclick="insertEmoji('😭')">😭</span>
+                                    <span onclick="insertEmoji('😤')">😤</span>
+                                    <span onclick="insertEmoji('😠')">😠</span>
+                                    <span onclick="insertEmoji('🤬')">🤬</span>
+                                    <span onclick="insertEmoji('👍')">👍</span>
+                                    <span onclick="insertEmoji('👎')">👎</span>
+                                    <span onclick="insertEmoji('👏')">👏</span>
+                                    <span onclick="insertEmoji('🙌')">🙌</span>
+                                    <span onclick="insertEmoji('🤝')">🤝</span>
+                                    <span onclick="insertEmoji('✌️')">✌️</span>
+                                    <span onclick="insertEmoji('🤞')">🤞</span>
+                                    <span onclick="insertEmoji('💪')">💪</span>
+                                    <span onclick="insertEmoji('❤️')">❤️</span>
+                                    <span onclick="insertEmoji('💔')">💔</span>
+                                    <span onclick="insertEmoji('💯')">💯</span>
+                                    <span onclick="insertEmoji('✨')">✨</span>
+                                    <span onclick="insertEmoji('🔥')">🔥</span>
+                                    <span onclick="insertEmoji('⭐')">⭐</span>
+                                    <span onclick="insertEmoji('🎉')">🎉</span>
+                                    <span onclick="insertEmoji('🎊')">🎊</span>
+                                    <span onclick="insertEmoji('🎁')">🎁</span>
+                                    <span onclick="insertEmoji('📢')">📢</span>
+                                    <span onclick="insertEmoji('📣')">📣</span>
+                                    <span onclick="insertEmoji('💡')">💡</span>
+                                    <span onclick="insertEmoji('⚠️')">⚠️</span>
+                                    <span onclick="insertEmoji('❌')">❌</span>
+                                    <span onclick="insertEmoji('✅')">✅</span>
+                                    <span onclick="insertEmoji('⏰')">⏰</span>
+                                    <span onclick="insertEmoji('💰')">💰</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="announcementPreview" class="announcement-preview"><span style="color: var(--text-secondary);">预览区域</span></div>
+                    </div>
+                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
+                        <button onclick="saveAnnouncement()">保存公告</button>
+                        <a href="/redeem" target="_blank" class="btn-link" title="预览兑换页面">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+        </main>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <div id="passwordModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改密码</h3>
+                <button class="btn-close" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUsername">
+                <div class="form-field">
+                    <label>用户名</label>
+                    <input type="text" id="displayUsername" disabled>
+                </div>
+                <div class="form-field">
+                    <label>新密码</label>
+                    <input type="password" id="editPassword" placeholder="输入新密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePasswordModal()">取消</button>
+                <button onclick="savePassword()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h3 id="confirmTitle">确认</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要执行此操作吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="confirmCancelBtn">取消</button>
+                <button class="btn-danger" id="confirmOkBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 代理设置弹窗 -->
+    <div id="proxyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>设置代理</h3>
+                <button class="btn-close" onclick="closeProxyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="proxyUserId">
+                <div class="form-field">
+                    <label>选择已保存的代理</label>
+                    <select id="proxySelect">
+                        <option value="">-- 选择代理 --</option>
+                        <option value="__clear__">清除代理</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeProxyModal()">取消</button>
+                <button onclick="saveProxy()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提卡弹窗 -->
+    <div id="withdrawModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>提卡</h3>
+                <button class="btn-close" onclick="closeWithdrawModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>卡片类型</label>
+                    <select id="withdrawCardType">
+                        <option value="credit">信用卡</option>
+                        <option value="debit">借记卡</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>提卡数量</label>
+                    <input type="number" id="withdrawCount" min="1" value="1">
+                </div>
+                <div class="form-field">
+                    <label>备注</label>
+                    <input type="text" id="withdrawNote" placeholder="可选">
+                </div>
+                <div id="withdrawLinkWrap" class="withdraw-link" style="display: none;">
+                    <label>提卡链接</label>
+                    <div class="withdraw-link-row">
+                        <input type="text" id="withdrawLink" readonly>
+                        <button class="btn-secondary" onclick="copyWithdrawLink()">复制</button>
+                    </div>
+                    <p class="help-text">打开链接可查看卡密并兑换</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeWithdrawModal()">关闭</button>
+                <button id="withdrawSubmitBtn" onclick="createWithdrawLink()">生成链接</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邮箱登录添加账户弹窗 -->
+    <div id="addCredentialsModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>邮箱登录添加账户</h3>
+                <button class="btn-close" onclick="closeAddAccountModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>邮箱地址</label>
+                    <input type="text" id="loginEmail" placeholder="Mercury 账户邮箱">
+                </div>
+                <div class="form-field">
+                    <label>邮箱密码</label>
+                    <input type="password" id="loginEmailPassword" placeholder="用于接收验证邮件">
+                </div>
+                <div class="form-field">
+                    <label>Mercury 密码</label>
+                    <input type="password" id="loginMercuryPassword" placeholder="Mercury 登录密码">
+                </div>
+                <div class="form-field">
+                    <label>2FA 密钥</label>
+                    <input type="text" id="loginTotpSecret" placeholder="TOTP 密钥 (如 I6IML...)">
+                </div>
+                <div class="form-field">
+                    <label>使用代理</label>
+                    <select id="loginProxySelect">
+                        <option value="">不使用代理</option>
+                    </select>
+                </div>
+                <p style="color: #888; font-size: 12px; margin-top: 10px;">
+                    提示：首次登录会进行设备验证，之后使用相同设备ID可直接登录
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAddAccountModal()">取消</button>
+                <button id="addAccountByLoginBtn" onclick="addMercuryAccountByLogin()">登录添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Cookie 添加账户弹窗 -->
+    <div id="addSessionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Session Cookie 添加账户</h3>
+                <button class="btn-close" onclick="closeAddAccountModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>_SESSION Cookie</label>
+                    <input type="text" id="newSession" placeholder="粘贴 _SESSION cookie 值">
+                </div>
+                <div class="form-field">
+                    <label>使用代理</label>
+                    <select id="accountProxySelect">
+                        <option value="">不使用代理</option>
+                    </select>
+                </div>
+                <p style="color: #888; font-size: 12px; margin-top: 10px;">
+                    提示：登录 Mercury 后，打开浏览器开发者工具 (F12) → Application → Cookies → app.mercury.com → 复制 _SESSION 的值
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAddAccountModal()">取消</button>
+                <button id="addAccountBtn" onclick="addMercuryAccount()">添加账户</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let createEventSource = null;
+        let deleteEventSource = null;
+        let allCards = [];
+        let allKeys = [];
+        let cardFilter = 'all';
+        let keyFilter = 'all';
+        let currentKeysPage = 1;
+        let totalKeysPages = 1;
+        let totalKeysCount = 0;
+        let keysPageSize = 100;
+        let searchTimeout = null;
+        let accessToken = localStorage.getItem('access_token');
+        let refreshToken = localStorage.getItem('refresh_token');
+        let currentUsername = localStorage.getItem('username');
+        let isAdmin = localStorage.getItem('is_admin') === 'true';
+
+        // 检查认证
+        async function checkAuth() {
+            if (!refreshToken) {
+                window.location.href = '/login';
+                return false;
+            }
+            
+            // 尝试刷新token
+            try {
+                const response = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshToken })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    accessToken = data.access_token;
+                    localStorage.setItem('access_token', accessToken);
+                    isAdmin = data.is_admin;
+                    localStorage.setItem('is_admin', isAdmin);
+                    return true;
+                } else {
+                    window.location.href = '/login';
+                    return false;
+                }
+            } catch (e) {
+                window.location.href = '/login';
+                return false;
+            }
+        }
+
+        // 获取带认证的headers
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+        }
+
+        // 自动刷新token
+        async function autoRefresh() {
+            if (!refreshToken) return;
+            
+            try {
+                const response = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshToken })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    accessToken = data.access_token;
+                    localStorage.setItem('access_token', accessToken);
+                }
+            } catch (e) {
+                console.error('Token refresh failed');
+            }
+        }
+
+        // 登出
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('is_admin');
+            window.location.href = '/login';
+        }
+
+        // 标签页切换
+        let currentTab = 'cards';
+        const tabOrder = ['cards', 'keys', 'records', 'users', 'proxies', 'accounts', 'settings'];
+        
+        // 代理延迟 SSE
+        let proxyLatencyEventSource = null;
+        
+        function switchTab(tab, direction = null) {
+            if (tab === currentTab) return;
+            
+            const isMobile = window.innerWidth <= 768;
+            const oldIndex = tabOrder.indexOf(currentTab);
+            const newIndex = tabOrder.indexOf(tab);
+            const oldTab = currentTab;
+            
+            // 自动判断方向
+            if (direction === null) {
+                direction = newIndex > oldIndex ? 'left' : 'right';
+            }
+            
+            const currentPanel = document.querySelector('.tab-content.active');
+            const newPanel = document.getElementById(tab + 'Panel');
+            
+            // 更新导航
+            document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            const navIndex = tabOrder.indexOf(tab);
+            if (navItems[navIndex]) navItems[navIndex].classList.add('active');
+            
+            if (isMobile && currentPanel && newPanel) {
+                // 移动端滑动动画
+                currentPanel.classList.remove('active', 'slide-in-left', 'slide-in-right');
+                currentPanel.classList.add(direction === 'left' ? 'slide-out-left' : 'slide-out-right');
+                
+                newPanel.classList.remove('slide-out-left', 'slide-out-right');
+                newPanel.classList.add('active', direction === 'left' ? 'slide-in-right' : 'slide-in-left');
+                
+                setTimeout(() => {
+                    currentPanel.classList.remove('slide-out-left', 'slide-out-right');
+                    newPanel.classList.remove('slide-in-left', 'slide-in-right');
+                }, 300);
+            } else {
+                // 桌面端直接切换
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                if (newPanel) newPanel.classList.add('active');
+            }
+            
+            currentTab = tab;
+            
+            // 离开 accounts 页面时关闭 SSE
+            if (oldTab === 'accounts' && statusEventSource) {
+                statusEventSource.close();
+                statusEventSource = null;
+            }
+            
+            // 刷新数据
+            if (tab === 'records') refreshRecords();
+            else if (tab === 'users') refreshUsers();
+            else if (tab === 'proxies') refreshProxies();
+            else if (tab === 'accounts') {
+                refreshMercuryAccounts();
+                refreshProxies();
+                subscribeAccountStatus();
+            }
+        }
+
+        // 搜索相关
+        function handleSearchFocus() {
+            document.getElementById('searchBox').classList.add('expanded');
+        }
+
+        function handleSearchBlur() {
+            setTimeout(() => {
+                const searchInput = document.getElementById('searchInput');
+                if (!searchInput.value.trim() && document.activeElement !== searchInput) {
+                    document.getElementById('searchBox').classList.remove('expanded');
+                }
+            }, 200);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            renderCards(allCards);
+            document.getElementById('searchInput').focus();
+        }
+
+        function searchCards() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = document.getElementById('searchInput').value.trim().toLowerCase();
+                if (!query) { renderCards(allCards); return; }
+                const filtered = allCards.filter(card => {
+                    const pan = (card.pan || '').toLowerCase();
+                    return pan.includes(query) || pan.replace(/\s/g, '').includes(query.replace(/\s/g, ''));
+                });
+                renderCards(filtered, true);
+            }, 150);
+        }
+
+        function stopCreate() {
+            if (createEventSource) {
+                createEventSource.close();
+                createEventSource = null;
+                document.getElementById('createProgress').style.display = 'none';
+                document.getElementById('createBtn').disabled = false;
+                showToast('已停止创建', 'info');
+                refreshCards();
+            }
+        }
+
+        function stopDelete() {
+            if (deleteEventSource) {
+                deleteEventSource.close();
+                deleteEventSource = null;
+                document.getElementById('deleteProgress').style.display = 'none';
+                document.getElementById('deleteAllBtn').disabled = false;
+                showToast('已停止删除', 'info');
+                refreshCards();
+            }
+        }
+
+        async function refreshCards() {
+            try {
+                const response = await fetch('/api/cards', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshCards(); }
+                const data = await response.json();
+                allCards = data.cards || [];
+                const query = document.getElementById('searchInput').value.trim();
+                query ? searchCards() : renderCards(allCards);
+            } catch (error) {
+                console.error('获取卡片列表失败:', error);
+            }
+        }
+
+        function filterCards(type) {
+            cardFilter = type;
+            document.querySelectorAll('#cardsPanel .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === type);
+            });
+            const query = document.getElementById('searchInput').value.trim();
+            query ? searchCards() : renderCards(allCards);
+        }
+
+        function renderCards(cards, isSearchResult = false) {
+            const container = document.getElementById('cardsContainer');
+            const badge = document.getElementById('cardCount2');
+            
+            // 应用过滤器
+            let filteredCards = cards;
+            if (cardFilter !== 'all') {
+                filteredCards = cards.filter(c => c.card_type === cardFilter);
+            }
+            
+            // 按创建时间排序（最新的在前）
+            filteredCards = [...filteredCards].sort((a, b) => {
+                const timeA = new Date(a.created_time || 0);
+                const timeB = new Date(b.created_time || 0);
+                return timeB - timeA;
+            });
+            
+            const totalCount = allCards.length;
+            if (isSearchResult || cardFilter !== 'all') {
+                badge.textContent = `${filteredCards.length}/${totalCount}`;
+            } else {
+                badge.textContent = filteredCards.length;
+            }
+
+            if (filteredCards.length === 0) {
+                container.innerHTML = `<div class="empty-state">${isSearchResult || cardFilter !== 'all' ? '没有找到匹配的卡片' : '暂无卡片'}</div>`;
+                return;
+            }
+
+            container.innerHTML = filteredCards.map(card => {
+                const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
+                const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
+                return `
+                <div class="card-item-compact" data-id="${card.card_id}" data-full="${fullInfo}">
+                    <span class="card-pan" data-copy="${card.pan}" title="点击复制卡号">${formatPan(card.pan)}</span>
+                    <span class="card-limit-badge">$${card.card_limit ?? 0}</span>
+                    <span class="card-type-badge ${card.card_type === 'debit' ? 'debit' : 'credit'}">${card.card_type === 'debit' ? '借' : '信'}</span>
+                    <span class="card-created-time">${formatCreatedTime(card.created_time)}</span>
+                    <button class="btn-copy btn-sm" data-action="copy-full">复制</button>
+                    <span class="card-exp" data-copy="${expShort}" title="点击复制有效期">${card.exp_month}/${card.exp_year}</span>
+                    <span class="card-cvv" data-copy="${card.cvv}" title="点击复制CVV">${card.cvv}</span>
+                    <span class="card-countdown countdown" data-seconds="${card.remaining_seconds}">${formatTime(card.remaining_seconds)}</span>
+                    <button class="btn-delete btn-sm" data-action="delete-card">删除</button>
+                </div>
+            `}).join('');
+            
+            // 绑定点击复制事件
+            container.querySelectorAll('[data-copy]').forEach(el => {
+                el.addEventListener('click', function() {
+                    copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+                });
+            });
+            container.querySelectorAll('[data-action="copy-full"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.card-item-compact');
+                    copyToClipboard(item.dataset.full).then(() => showToast('已复制完整信息', 'success')).catch(() => showToast('复制失败', 'error'));
+                });
+            });
+            container.querySelectorAll('[data-action="delete-card"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.card-item-compact');
+                    deleteCard(item.dataset.id);
+                });
+            });
+            startCountdowns();
+        }
+
+        function formatPan(pan) {
+            return pan ? pan.replace(/(.{4})/g, '$1 ').trim() : '****';
+        }
+
+        function formatTime(seconds) {
+            if (seconds <= 0) return '已过期';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return mins >= 60 ? `${Math.floor(mins/60)}小时${mins%60}分` : `${mins}分${secs}秒`;
+        }
+
+        function formatCreatedTime(isoTime) {
+            if (!isoTime) return '';
+            const date = new Date(isoTime);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const mins = String(date.getMinutes()).padStart(2, '0');
+            return `${month}-${day} ${hours}:${mins}`;
+        }
+
+        function formatAddress(addr) {
+            if (!addr) return '';
+            const parts = [];
+            // 地址行: address1 + address2
+            const addrLine = [addr.address1, addr.address2].filter(Boolean).join(' ');
+            if (addrLine) parts.push(addrLine);
+            // 城市
+            if (addr.city) parts.push(addr.city);
+            // 州 + 邮编
+            const stateZip = [addr.region, addr.postal_code].filter(Boolean).join(' ');
+            if (stateZip) parts.push(stateZip);
+            // 国家
+            if (addr.country) parts.push(addr.country);
+            return parts.join(', ') || '-';
+        }
+
+        let countdownInterval;
+        function startCountdowns() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                document.querySelectorAll('.countdown').forEach(el => {
+                    let seconds = parseInt(el.dataset.seconds) - 1;
+                    el.dataset.seconds = seconds;
+                    el.textContent = formatTime(seconds);
+                    if (seconds <= 0) setTimeout(refreshCards, 2000);
+                    else if (seconds <= 60) el.classList.add('expiring');
+                });
+            }, 1000);
+        }
+
+        function createCards() {
+            const count = parseInt(document.getElementById('cardCount').value) || 1;
+            const cardLimit = parseInt(document.getElementById('cardLimit').value) || 0;
+            const cardType = document.getElementById('cardType').value || 'credit';
+            const expireMinutes = parseInt(document.getElementById('expireTime').value) || 60;
+            const interval = Math.max(3, parseInt(document.getElementById('interval').value) || 3);
+            
+            document.getElementById('createBtn').disabled = true;
+            document.getElementById('createProgress').style.display = 'block';
+            document.getElementById('createProgressFill').style.width = '0%';
+            document.getElementById('createProgressText').textContent = `0 / ${count}`;
+            document.getElementById('createProgressMessage').textContent = '开始创建...';
+            
+            createEventSource = new EventSource(`/api/create_stream?count=${count}&card_limit=${cardLimit}&card_type=${cardType}&expire_minutes=${expireMinutes}&interval=${interval}&token=${accessToken}`);
+            
+            createEventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'error') {
+                    createEventSource.close();
+                    createEventSource = null;
+                    document.getElementById('createProgress').style.display = 'none';
+                    document.getElementById('createBtn').disabled = false;
+                    showToast(data.message, 'error');
+                } else if (data.type === 'waiting') {
+                    document.getElementById('createProgressMessage').textContent = data.message;
+                } else if (data.type === 'progress' || data.type === 'card_created') {
+                    const percent = data.total > 0 ? (data.current / data.total * 100) : 0;
+                    document.getElementById('createProgressFill').style.width = percent + '%';
+                    document.getElementById('createProgressText').textContent = `${data.current} / ${data.total}`;
+                    document.getElementById('createProgressMessage').textContent = data.type === 'card_created' ? `卡片 ...${data.card.pan.slice(-4)} 创建成功` : data.message;
+                    if (data.type === 'card_created') refreshCards();
+                } else if (data.type === 'complete') {
+                    createEventSource.close();
+                    createEventSource = null;
+                    setTimeout(() => {
+                        document.getElementById('createProgress').style.display = 'none';
+                        document.getElementById('createBtn').disabled = false;
+                        if (data.created > 0) showToast(`成功创建 ${data.created} 张卡片`, 'success');
+                        refreshCards();
+                    }, 500);
+                }
+            };
+            
+            createEventSource.onerror = function() {
+                createEventSource.close();
+                createEventSource = null;
+                document.getElementById('createProgress').style.display = 'none';
+                document.getElementById('createBtn').disabled = false;
+                showToast('连接失败', 'error');
+            };
+        }
+
+        async function deleteCard(cardId) {
+            if (!await showConfirm('确定要删除这张卡片吗？', '删除卡片')) return;
+            try {
+                const response = await fetch(`/api/cancel/${cardId}`, { method: 'POST', headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return deleteCard(cardId); }
+                const data = await response.json();
+                data.success ? (showToast('卡片已删除', 'success'), refreshCards()) : showToast(data.error || '删除失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function deleteAllCards() {
+            let cards = allCards;
+            if (cardFilter !== 'all') {
+                cards = cards.filter(c => c.card_type === cardFilter);
+            }
+            const filterText = cardFilter === 'all' ? '所有' : (cardFilter === 'credit' ? '信用卡' : '借记卡');
+            if (!cards.length) { showToast('没有卡片可删除', 'info'); return; }
+            if (!await showConfirm(`确定要删除${filterText}卡片吗？（共 ${cards.length} 张）`, '删除卡片')) return;
+            
+            document.getElementById('deleteAllBtn').disabled = true;
+            document.getElementById('deleteProgress').style.display = 'block';
+            document.getElementById('deleteProgressFill').style.width = '0%';
+            
+            // 如果是筛选删除，逐个删除
+            if (cardFilter !== 'all') {
+                let deleted = 0;
+                for (let i = 0; i < cards.length; i++) {
+                    try {
+                        const response = await fetch(`/api/cancel/${cards[i].card_id}`, { method: 'POST', headers: getAuthHeaders() });
+                        if (response.ok) deleted++;
+                        document.getElementById('deleteProgressFill').style.width = ((i + 1) / cards.length * 100) + '%';
+                        document.getElementById('deleteProgressText').textContent = `${i + 1} / ${cards.length}`;
+                    } catch (e) {}
+                }
+                document.getElementById('deleteProgress').style.display = 'none';
+                document.getElementById('deleteAllBtn').disabled = false;
+                showToast(`已删除 ${deleted} 张卡片`, 'success');
+                refreshCards();
+                return;
+            }
+            
+            deleteEventSource = new EventSource(`/api/cancel_all_stream?token=${accessToken}`);
+            deleteEventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'progress') {
+                    document.getElementById('deleteProgressFill').style.width = (data.current / data.total * 100) + '%';
+                    document.getElementById('deleteProgressText').textContent = `${data.current} / ${data.total}`;
+                } else if (data.type === 'complete') {
+                    deleteEventSource.close();
+                    deleteEventSource = null;
+                    setTimeout(() => {
+                        document.getElementById('deleteProgress').style.display = 'none';
+                        document.getElementById('deleteAllBtn').disabled = false;
+                        showToast(data.total > 0 ? `已删除 ${data.cancelled} 张卡片` : '没有卡片需要删除', data.total > 0 ? 'success' : 'info');
+                        refreshCards();
+                    }, 500);
+                }
+            };
+            deleteEventSource.onerror = function() {
+                deleteEventSource.close();
+                deleteEventSource = null;
+                document.getElementById('deleteProgress').style.display = 'none';
+                document.getElementById('deleteAllBtn').disabled = false;
+                showToast('连接失败', 'error');
+            };
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                // 兼容非安全上下文
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    return Promise.resolve();
+                } catch (e) {
+                    document.body.removeChild(textarea);
+                    return Promise.reject(e);
+                }
+            }
+        }
+
+        function copyCard(pan, cvv, exp) {
+            copyToClipboard(`卡号: ${pan}\nCVV: ${cvv}\n有效期: ${exp}`).then(() => showToast('已复制到剪贴板', 'success')).catch(() => showToast('复制失败', 'error'));
+        }
+
+        async function copyAllCards() {
+            let cards = allCards;
+            if (cardFilter !== 'all') {
+                cards = cards.filter(c => c.card_type === cardFilter);
+            }
+            if (!cards.length) { showToast('没有卡片可复制', 'info'); return; }
+            const text = cards.map(c => `${c.pan} ${c.exp_month} ${String(c.exp_year).slice(-2)} ${c.cvv}`).join('\n');
+            copyToClipboard(text).then(() => showToast(`已复制 ${cards.length} 张卡片`, 'success'));
+        }
+
+        function openWithdrawModal() {
+            const modal = document.getElementById('withdrawModal');
+            document.getElementById('withdrawCount').value = 1;
+            document.getElementById('withdrawNote').value = '';
+            document.getElementById('withdrawLinkWrap').style.display = 'none';
+            document.getElementById('withdrawLink').value = '';
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeWithdrawModal() {
+            const modal = document.getElementById('withdrawModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 200);
+        }
+
+        function copyWithdrawLink() {
+            const link = document.getElementById('withdrawLink').value;
+            if (!link) return;
+            copyToClipboard(link).then(() => showToast('链接已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+        }
+
+        async function createWithdrawLink() {
+            const count = parseInt(document.getElementById('withdrawCount').value) || 1;
+            const cardType = document.getElementById('withdrawCardType').value || 'credit';
+            const note = document.getElementById('withdrawNote').value.trim();
+            const submitBtn = document.getElementById('withdrawSubmitBtn');
+            
+            if (count < 1) {
+                showToast('数量必须大于 0', 'info');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            try {
+                const response = await fetch('/api/keys/withdraw', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ count, card_type: cardType, note })
+                });
+                if (response.status === 401) { await checkAuth(); return createWithdrawLink(); }
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('withdrawLink').value = data.link || '';
+                    document.getElementById('withdrawLinkWrap').style.display = 'block';
+                    showToast(`已生成 ${data.generated} 张提卡卡密`, 'success');
+                } else {
+                    showToast(data.error || '生成失败', 'error');
+                }
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // ==================== 卡密相关 ====================
+
+        async function refreshKeys(page = 1) {
+            try {
+                const response = await fetch(`/api/keys?page=${page}&page_size=${keysPageSize}`, { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshKeys(page); }
+                const data = await response.json();
+                allKeys = data.ids || [];
+                currentKeysPage = data.page || 1;
+                totalKeysPages = data.total_pages || 1;
+                totalKeysCount = data.total || 0;
+                renderKeys(allKeys);
+            } catch (error) { console.error('获取卡密列表失败:', error); }
+        }
+
+        function filterKeys(type) {
+            keyFilter = type;
+            document.querySelectorAll('#keysPanel .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === type);
+            });
+            refreshKeys(1);
+        }
+
+        function renderKeys(keys) {
+            const container = document.getElementById('keysContainer');
+            // 后端已过滤未使用且未销毁的卡密，无需再次过滤
+            let displayKeys = keys;
+            
+            // 应用卡片类型过滤器（信用卡/借记卡）
+            if (keyFilter !== 'all') {
+                displayKeys = displayKeys.filter(k => k.card_type === keyFilter);
+            }
+            
+            document.getElementById('keyCount2').textContent = totalKeysCount;
+
+            if (!displayKeys.length) {
+                container.innerHTML = '<div class="empty-state">暂无卡密</div>';
+                document.getElementById('keysPaginationContainer').innerHTML = renderKeysPagination();
+                return;
+            }
+
+            container.innerHTML = displayKeys.map(key => `
+                <div class="key-item-compact" data-key-id="${key.id}">
+                    <span class="key-code" data-copy="${key.id}" title="点击复制卡密">${key.id}</span>
+                    <span class="key-limit-badge">$${key.card_limit ?? 0}</span>
+                    <span class="card-type-badge ${key.card_type === 'debit' ? 'debit' : 'credit'}">${key.card_type === 'debit' ? '借' : '信'}</span>
+                    <span class="card-created-time">${formatCreatedTime(key.created_time)}</span>
+                    <span class="key-expire">${key.expire_minutes}分钟</span>
+                    <button class="btn-copy btn-sm" data-action="copy-key">复制</button>
+                    <button class="btn-delete btn-sm" data-action="delete-key">删除</button>
+                </div>
+            `).join('');
+            
+            // 渲染分页到固定容器
+            document.getElementById('keysPaginationContainer').innerHTML = renderKeysPagination();
+            
+            // 绑定点击复制事件
+            container.querySelectorAll('[data-copy]').forEach(el => {
+                el.addEventListener('click', function() {
+                    copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+                });
+            });
+            // 绑定按钮事件
+            container.querySelectorAll('[data-action="copy-key"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.key-item-compact');
+                    copyKey(item.dataset.keyId);
+                });
+            });
+            container.querySelectorAll('[data-action="delete-key"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.key-item-compact');
+                    deleteKey(item.dataset.keyId);
+                });
+            });
+        }
+
+        function renderKeysPagination() {
+            if (totalKeysPages <= 1) return '';
+            
+            let pages = [];
+            const maxVisible = 5;
+            let start = Math.max(1, currentKeysPage - Math.floor(maxVisible / 2));
+            let end = Math.min(totalKeysPages, start + maxVisible - 1);
+            if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+            
+            for (let i = start; i <= end; i++) pages.push(i);
+            
+            return `
+                <div class="pagination">
+                    <select class="page-size-select" onchange="changeKeysPageSize(this.value)">
+                        ${[100, 200, 500, 1000, 2000, 5000].map(size => `<option value="${size}" ${keysPageSize === size ? 'selected' : ''}>${size}/页</option>`).join('')}
+                    </select>
+                    <button class="page-btn" onclick="goToKeysPage(1)" ${currentKeysPage === 1 ? 'disabled' : ''}>«</button>
+                    <button class="page-btn" onclick="goToKeysPage(${currentKeysPage - 1})" ${currentKeysPage === 1 ? 'disabled' : ''}>‹</button>
+                    ${pages.map(p => `<button class="page-btn ${p === currentKeysPage ? 'active' : ''}" onclick="goToKeysPage(${p})">${p}</button>`).join('')}
+                    <button class="page-btn" onclick="goToKeysPage(${currentKeysPage + 1})" ${currentKeysPage === totalKeysPages ? 'disabled' : ''}>›</button>
+                    <button class="page-btn" onclick="goToKeysPage(${totalKeysPages})" ${currentKeysPage === totalKeysPages ? 'disabled' : ''}>»</button>
+                </div>
+            `;
+        }
+
+        function goToKeysPage(page) {
+            if (page < 1 || page > totalKeysPages) return;
+            refreshKeys(page);
+        }
+
+        function changeKeysPageSize(size) {
+            keysPageSize = parseInt(size);
+            refreshKeys(1); // 切换每页数量后回到第一页
+        }
+
+        async function generateKeys() {
+            const count = parseInt(document.getElementById('keyCount').value) || 1;
+            const cardLimit = parseInt(document.getElementById('keyCardLimit').value) || 0;
+            const cardType = document.getElementById('keyCardType').value || 'credit';
+            const expireMinutes = parseInt(document.getElementById('keyExpireTime').value) || 60;
+            
+            document.getElementById('generateKeyBtn').disabled = true;
+            try {
+                const response = await fetch('/api/keys/generate', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ count, card_limit: cardLimit, card_type: cardType, expire_minutes: expireMinutes })
+                });
+                if (response.status === 401) { await checkAuth(); return generateKeys(); }
+                const data = await response.json();
+                data.success ? (showToast(`成功生成 ${data.generated} 个卡密`, 'success'), refreshKeys()) : showToast(data.error || '生成失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+            finally { document.getElementById('generateKeyBtn').disabled = false; }
+        }
+
+        function switchKeyMode(mode) {
+            const generateMode = document.getElementById('generateMode');
+            const keyListHeader = document.getElementById('keyListHeader');
+            const keyListScroll = document.getElementById('keyListScroll');
+            const keysPaginationContainer = document.getElementById('keysPaginationContainer');
+            const destroyModeHeader = document.getElementById('destroyModeHeader');
+            const destroyModeScroll = document.getElementById('destroyModeScroll');
+            const generateBtn = document.getElementById('modeGenerateBtn');
+            const destroyBtn = document.getElementById('modeDestroyBtn');
+            
+            if (mode === 'generate') {
+                generateMode.style.display = 'block';
+                keyListHeader.style.display = 'flex';
+                keyListScroll.style.display = 'block';
+                keysPaginationContainer.style.display = 'block';
+                destroyModeHeader.style.display = 'none';
+                destroyModeScroll.style.display = 'none';
+                generateBtn.classList.add('active');
+                destroyBtn.classList.remove('active');
+            } else {
+                generateMode.style.display = 'none';
+                keyListHeader.style.display = 'none';
+                keyListScroll.style.display = 'none';
+                keysPaginationContainer.style.display = 'none';
+                destroyModeHeader.style.display = 'flex';
+                destroyModeScroll.style.display = 'block';
+                generateBtn.classList.remove('active');
+                destroyBtn.classList.add('active');
+            }
+        }
+
+        let destroyFilter = 'all';
+        let allDestroyKeys = []; // 保存所有输入的卡密
+
+        function getKeyType(keyId) {
+            const trimmedKey = keyId.trim();
+            const key = allKeys.find(k => k.id === trimmedKey);
+            if (key) {
+                return key.card_type;
+            } else {
+                // 根据前缀判断: 0开头是信用卡, 1开头是借记卡
+                if (trimmedKey.startsWith('0')) return 'credit';
+                else if (trimmedKey.startsWith('1')) return 'debit';
+            }
+            return null;
+        }
+
+        function updateDestroyStats() {
+            const keysText = document.getElementById('destroyKeysInput').value.trim();
+            const keyIds = keysText ? keysText.split('\n').filter(k => k.trim()) : [];
+            
+            // 更新全部卡密列表
+            if (destroyFilter === 'all') {
+                allDestroyKeys = keyIds;
+            }
+            
+            let creditCount = 0;
+            let debitCount = 0;
+            
+            allDestroyKeys.forEach(keyId => {
+                const type = getKeyType(keyId);
+                if (type === 'credit') creditCount++;
+                else if (type === 'debit') debitCount++;
+            });
+            
+            // 根据过滤器显示数量
+            let displayCount = keyIds.length;
+            let totalCount = allDestroyKeys.length;
+            
+            document.getElementById('destroyKeyCount').textContent = destroyFilter === 'all' ? totalCount : `${displayCount}/${totalCount}`;
+        }
+
+        function filterDestroyKeys(filter) {
+            destroyFilter = filter;
+            
+            // 更新按钮状态
+            document.querySelectorAll('#destroyModeHeader .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            
+            // 过滤 textarea 内容
+            const textarea = document.getElementById('destroyKeysInput');
+            if (filter === 'all') {
+                textarea.value = allDestroyKeys.join('\n');
+            } else {
+                const filtered = allDestroyKeys.filter(keyId => getKeyType(keyId) === filter);
+                textarea.value = filtered.join('\n');
+            }
+            
+            updateDestroyStats();
+        }
+
+        async function destroyKeys() {
+            const keysText = document.getElementById('destroyKeysInput').value.trim();
+            if (!keysText) {
+                showToast('请输入要销毁的卡密', 'error');
+                return;
+            }
+            
+            const keyCount = keysText.split('\n').filter(k => k.trim()).length;
+            if (!await showConfirm(`确定要销毁 ${keyCount} 个卡密吗？\n已兑换的卡密会同时删除对应卡片`, '销毁卡密')) return;
+            
+            const btn = document.getElementById('destroyKeysBtn');
+            btn.disabled = true;
+            btn.textContent = '处理中...';
+            
+            try {
+                const response = await fetch('/api/keys/destroy', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ keys: keysText })
+                });
+                if (response.status === 401) { await checkAuth(); return destroyKeys(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    document.getElementById('destroyKeysInput').value = '';
+                    allDestroyKeys = [];
+                    destroyFilter = 'all';
+                    document.querySelectorAll('#destroyModeHeader .filter-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.filter === 'all');
+                    });
+                    updateDestroyStats();
+                    refreshKeys();
+                    refreshRecords();
+                } else {
+                    showToast(data.error || '销毁失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+            finally {
+                btn.disabled = false;
+                btn.textContent = '销毁卡密';
+            }
+        }
+
+        function copyKey(keyId) {
+            copyToClipboard(keyId).then(() => showToast('卡密已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+        }
+
+        async function copyAllKeys() {
+            let keys = allKeys.filter(k => !k.used && !k.destroyed);
+            if (keyFilter !== 'all') {
+                keys = keys.filter(k => k.card_type === keyFilter);
+            }
+            if (!keys.length) { showToast('没有卡密可复制', 'info'); return; }
+            copyToClipboard(keys.map(k => k.id).join('\n')).then(() => showToast(`已复制 ${keys.length} 个卡密`, 'success'));
+        }
+
+        async function deleteKey(keyId) {
+            if (!await showConfirm('确定要删除这个卡密吗？', '删除卡密')) return;
+            try {
+                const response = await fetch(`/api/keys/delete/${keyId}`, { method: 'POST', headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return deleteKey(keyId); }
+                const data = await response.json();
+                data.success ? (showToast('卡密已删除', 'success'), refreshKeys()) : showToast(data.error || '删除失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function deleteAllKeys() {
+            const filterText = keyFilter === 'all' ? '所有' : (keyFilter === 'credit' ? '信用卡' : '借记卡');
+            // 获取实际要删除的数量
+            let deleteCount = totalKeysCount;
+            if (keyFilter !== 'all') {
+                // 如果有过滤器，需要从后端获取该类型的数量
+                try {
+                    const countResp = await fetch(`/api/keys/count?card_type=${keyFilter}`, { headers: getAuthHeaders() });
+                    const countData = await countResp.json();
+                    deleteCount = countData.count || 0;
+                } catch (e) { deleteCount = 0; }
+            }
+            if (!deleteCount) { showToast('没有卡密可删除', 'info'); return; }
+            if (!await showConfirm(`确定要删除${filterText}卡密吗？（共 ${deleteCount} 个）`, '删除卡密')) return;
+            try {
+                // 使用高性能批量删除 API
+                const cardType = keyFilter === 'all' ? null : keyFilter;
+                const response = await fetch('/api/keys/delete_unused', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ card_type: cardType })
+                });
+                if (response.status === 401) { await checkAuth(); return deleteAllKeys(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`已删除 ${data.deleted} 个卡密`, 'success');
+                    refreshKeys();
+                } else {
+                    showToast(data.error || '删除失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        // ==================== 兑换记录 ====================
+
+        async function refreshRecords() {
+            try {
+                const response = await fetch('/api/keys/records', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshRecords(); }
+                const data = await response.json();
+                renderRecords(data.records || []);
+            } catch (error) { console.error('获取兑换记录失败:', error); }
+        }
+
+        function renderRecords(records) {
+            const container = document.getElementById('recordsContainer');
+            document.getElementById('recordCount').textContent = records.length;
+
+            if (!records.length) {
+                container.innerHTML = '<div class="empty-state">暂无兑换记录</div>';
+                return;
+            }
+
+            container.innerHTML = records.map(r => {
+                const card = r.card || {};
+                const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
+                const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
+                const usedTime = r.used_time ? new Date(r.used_time).toLocaleString() : '未知';
+                const expireTime = r.expire_time ? new Date(r.expire_time) : null;
+                const isExpired = expireTime && expireTime < new Date();
+                const isDestroyed = r.destroyed;
+                const expireDisplay = expireTime ? expireTime.toLocaleString() : '未知';
+                const statusClass = isDestroyed ? 'destroyed' : (isExpired ? 'expired' : '');
+                const statusText = isDestroyed ? '已销毁' : (isExpired ? '已过期' : expireDisplay);
+                return `
+                <div class="record-item ${statusClass}" data-full="${fullInfo}" data-key-id="${r.key_id}">
+                    <span class="record-key" data-copy="${r.key_id}">${r.key_id}</span>
+                    <span class="record-arrow">→</span>
+                    <span class="record-pan" data-copy="${card.pan}" title="点击复制卡号">${formatPan(card.pan)}</span>
+                    <span class="record-exp" data-copy="${expShort}">${card.exp_month}/${card.exp_year}</span>
+                    <span class="record-cvv" data-copy="${card.cvv}">${card.cvv}</span>
+                    <span class="record-limit">$${r.card_limit ?? 0}</span>
+                    <span class="card-type-badge ${r.card_type === 'debit' ? 'debit' : 'credit'}">${r.card_type === 'debit' ? '借' : '信'}</span>
+                    <span class="record-expire ${isDestroyed ? 'text-destroyed' : (isExpired ? 'text-expired' : '')}">${statusText}</span>
+                    <button class="btn-copy btn-sm" data-action="copy-record">复制</button>
+                    <button class="btn-delete btn-sm" data-action="delete-record">删除</button>
+                </div>
+            `}).join('');
+
+            // 绑定点击复制事件
+            container.querySelectorAll('[data-copy]').forEach(el => {
+                el.addEventListener('click', function() {
+                    copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+                });
+            });
+            container.querySelectorAll('[data-action="copy-record"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.record-item');
+                    copyToClipboard(item.dataset.full).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
+                });
+            });
+            container.querySelectorAll('[data-action="delete-record"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.record-item');
+                    deleteRecord(item.dataset.keyId);
+                });
+            });
+        }
+
+        async function deleteRecord(keyId) {
+            if (!await showConfirm('确定要删除这条兑换记录吗？', '删除记录')) return;
+            try {
+                const response = await fetch(`/api/keys/records/${keyId}`, { method: 'DELETE', headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return deleteRecord(keyId); }
+                const data = await response.json();
+                data.success ? (showToast('记录已删除', 'success'), refreshRecords()) : showToast(data.error || '删除失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function deleteAllRecords() {
+            if (!await showConfirm('确定要删除所有兑换记录吗？', '删除全部记录')) return;
+            try {
+                const response = await fetch('/api/keys/records', { method: 'DELETE', headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return deleteAllRecords(); }
+                const data = await response.json();
+                data.success ? (showToast(`已删除 ${data.deleted} 条记录`, 'success'), refreshRecords()) : showToast(data.error || '删除失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function copyAllRecords() {
+            try {
+                const response = await fetch('/api/keys/records', { headers: getAuthHeaders() });
+                const data = await response.json();
+                const records = data.records || [];
+                if (!records.length) { showToast('没有记录可复制', 'info'); return; }
+                const text = records.map(r => {
+                    const card = r.card || {};
+                    const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
+                    return `${card.pan} ${expShort} ${card.cvv}`;
+                }).join('\n');
+                copyToClipboard(text).then(() => showToast(`已复制 ${records.length} 条记录`, 'success'));
+            } catch (error) { showToast('获取记录失败', 'error'); }
+        }
+
+        // ==================== 用户管理 ====================
+
+        async function refreshUsers() {
+            try {
+                const response = await fetch('/api/users', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshUsers(); }
+                if (response.status === 403) { showToast('需要管理员权限', 'error'); return; }
+                const data = await response.json();
+                renderUsers(data.users || []);
+            } catch (error) { console.error('获取用户列表失败:', error); }
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('usersContainer');
+            document.getElementById('userCount').textContent = users.length;
+
+            if (!users.length) {
+                container.innerHTML = '<div class="empty-state">暂无用户</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <div class="user-item">
+                    <div class="user-main">
+                        <div class="user-name">
+                            ${user.username}
+                            ${user.is_admin ? '<span class="admin-badge">管理员</span>' : ''}
+                            ${user.username === currentUsername ? '<span class="current-badge">当前</span>' : ''}
+                        </div>
+                        <div class="user-info">创建时间: ${user.created_at ? new Date(user.created_at * 1000).toLocaleString() : '未知'}</div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-copy" onclick="openPasswordModal('${user.username}')">修改密码</button>
+                        ${user.username !== currentUsername ? `<button class="btn-delete" onclick="deleteUser('${user.username}')">删除</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addUser() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const isAdminVal = document.getElementById('newIsAdmin').value === 'true';
+            
+            if (!username || !password) {
+                showToast('请输入用户名和密码', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ username, password, is_admin: isAdminVal })
+                });
+                if (response.status === 401) { await checkAuth(); return addUser(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast('用户添加成功', 'success');
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    refreshUsers();
+                } else {
+                    showToast(data.error || '添加失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function deleteUser(username) {
+            if (!await showConfirm(`确定要删除用户 ${username} 吗？`, '删除用户')) return;
+            try {
+                const response = await fetch(`/api/users/${username}`, { method: 'DELETE', headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return deleteUser(username); }
+                const data = await response.json();
+                data.success ? (showToast('用户已删除', 'success'), refreshUsers()) : showToast(data.error || '删除失败', 'error');
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        function openPasswordModal(username) {
+            document.getElementById('editUsername').value = username;
+            document.getElementById('displayUsername').value = username;
+            document.getElementById('editPassword').value = '';
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        async function savePassword() {
+            const username = document.getElementById('editUsername').value;
+            const password = document.getElementById('editPassword').value;
+            
+            if (!password) {
+                showToast('请输入新密码', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/users/${username}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ password })
+                });
+                if (response.status === 401) { await checkAuth(); return savePassword(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast('密码修改成功', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.error || '修改失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        // ==================== Mercury 账户管理 ====================
+        let allMercuryAccounts = [];
+        let currentOrgFilter = '';
+        let currentTimeFilter = 0;  // 时间过滤（分钟数，0表示全部）
+        let statusEventSource = null;
+        let allCardsCache = {};  // 缓存所有账户的卡片数据 { user_id: [cards] }
+
+        // 订阅账户状态更新 SSE
+        function subscribeAccountStatus() {
+            if (statusEventSource) {
+                statusEventSource.close();
+            }
+            
+            statusEventSource = new EventSource(`/api/mercury-accounts/status-stream?token=${accessToken}`);
+            
+            statusEventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'status_update') {
+                    // 更新本地数据
+                    const acc = allMercuryAccounts.find(a => a.user_id === data.user_id);
+                    if (acc) {
+                        acc.account_status = data.status;
+                        acc.updated_at = data.updated_at;
+                    }
+                    // 更新 UI
+                    updateAccountStatusUI(data.user_id, data.status);
+                    console.log(`[SSE] 账户 ${data.email} 状态更新为 ${data.status}`);
+                } else if (data.type === 'card_counts') {
+                    // 更新卡片数量 UI
+                    updateCardCountsUI(data.user_id, data.credit, data.debit);
+                    console.log(`[SSE] 账户 ${data.email} 卡片数量: 信用卡 ${data.credit}, 借记卡 ${data.debit}`);
+                }
+            };
+            
+            statusEventSource.onerror = function() {
+                console.log('[SSE] 连接断开，5秒后重连...');
+                statusEventSource.close();
+                statusEventSource = null;
+                setTimeout(subscribeAccountStatus, 5000);
+            };
+        }
+
+        // 更新账户状态 UI
+        function updateAccountStatusUI(userId, status) {
+            const accountItem = document.querySelector(`.account-item[data-user-id="${userId}"]`);
+            if (!accountItem) return;
+            
+            const badge = accountItem.querySelector('.status-badge');
+            if (badge) {
+                let statusText, statusClass;
+                if (status === 'active') {
+                    statusText = 'active';
+                    statusClass = 'status-active';
+                } else if (status === 'paused') {
+                    statusText = 'paused';
+                    statusClass = 'status-paused';
+                } else {
+                    statusText = 'inactive';
+                    statusClass = 'status-inactive';
+                }
+                badge.textContent = statusText;
+                badge.className = 'status-badge ' + statusClass;
+            }
+        }
+
+        // 更新卡片数量 UI
+        function updateCardCountsUI(userId, credit, debit) {
+            const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
+            if (!container) return;
+            
+            const creditCount = container.querySelector('.credit-count');
+            const debitCount = container.querySelector('.debit-count');
+            
+            if (creditCount) creditCount.textContent = credit;
+            if (debitCount) debitCount.textContent = debit;
+            
+            // 同时更新顶部组织统计
+            updateOrgTotalCounts();
+        }
+
+        // 更新组织总卡片数量
+        function updateOrgTotalCounts() {
+            let totalCredit = 0, totalDebit = 0;
+            document.querySelectorAll('.account-cards-actions').forEach(container => {
+                const creditEl = container.querySelector('.credit-count');
+                const debitEl = container.querySelector('.debit-count');
+                const credit = parseInt(creditEl?.textContent) || 0;
+                const debit = parseInt(debitEl?.textContent) || 0;
+                totalCredit += credit;
+                totalDebit += debit;
+            });
+            
+            const orgCreditCount = document.getElementById('orgCreditCount');
+            const orgDebitCount = document.getElementById('orgDebitCount');
+            if (orgCreditCount) orgCreditCount.textContent = totalCredit;
+            if (orgDebitCount) orgDebitCount.textContent = totalDebit;
+        }
+
+        async function refreshMercuryAccounts() {
+            try {
+                const response = await fetch('/api/mercury-accounts', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshMercuryAccounts(); }
+                if (response.status === 403) { showToast('需要管理员权限', 'error'); return; }
+                const data = await response.json();
+                allMercuryAccounts = data.accounts || [];
+                updateOrgFilter();
+                filterByOrg();
+            } catch (error) { console.error('获取 Mercury 账户列表失败:', error); }
+        }
+
+        function updateOrgFilter() {
+            const select = document.getElementById('orgFilter');
+            const orgs = [...new Set(allMercuryAccounts.map(a => a.organization).filter(Boolean))];
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">全部组织</option>' + orgs.map(o => `<option value="${o}">${o}</option>`).join('');
+            if (orgs.includes(currentValue)) select.value = currentValue;
+        }
+
+        function filterByOrg() {
+            currentOrgFilter = document.getElementById('orgFilter').value;
+            const filtered = currentOrgFilter 
+                ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
+                : allMercuryAccounts;
+            renderMercuryAccounts(filtered, true);
+            
+            // 重置时间过滤为全部时间
+            document.getElementById('timeFilter').value = '0';
+            currentTimeFilter = 0;
+            
+            // 始终显示组织卡片操作按钮，加载卡片数量
+            document.getElementById('orgCardActions').style.display = 'flex';
+            
+            // 清空缓存并重新获取所有卡片数据
+            allCardsCache = {};
+            loadAllCardsAndCount();
+        }
+
+        function onTimeFilterChange() {
+            currentTimeFilter = parseInt(document.getElementById('timeFilter').value) || 0;
+            // 从缓存中过滤并更新总数量
+            updateCardCountsFromCache();
+            // 更新每个子账户的卡片数量
+            updateAllAccountCardCountsUI();
+        }
+
+        // 更新所有子账户的卡片数量显示
+        function updateAllAccountCardCountsUI() {
+            const containers = document.querySelectorAll('.account-cards-actions[data-user-id]');
+            for (const container of containers) {
+                const userId = container.dataset.userId;
+                updateAccountCardCountsUI(userId);
+            }
+        }
+
+        // 从缓存中根据时间过滤并更新卡片数量
+        function updateCardCountsFromCache() {
+            const orgAccounts = currentOrgFilter 
+                ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
+                : allMercuryAccounts;
+            
+            let totalCredit = 0, totalDebit = 0;
+            const now = new Date();
+            const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
+            
+            for (const acc of orgAccounts) {
+                const cards = allCardsCache[acc.user_id] || [];
+                for (const card of cards) {
+                    // 时间过滤
+                    if (thresholdTime && card.createdAtDateStr) {
+                        const createdAt = new Date(card.createdAtDateStr);
+                        if (createdAt > thresholdTime) {
+                            // 卡片创建时间在阈值之后，跳过
+                            continue;
+                        }
+                    }
+                    
+                    if (card.card_type === 'credit') {
+                        totalCredit++;
+                    } else if (card.card_type === 'debit') {
+                        totalDebit++;
+                    }
+                }
+            }
+            
+            document.getElementById('orgCreditCount').textContent = totalCredit;
+            document.getElementById('orgDebitCount').textContent = totalDebit;
+        }
+
+        // 加载所有卡片数据并缓存
+        async function loadAllCardsAndCount() {
+            const orgAccounts = currentOrgFilter 
+                ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
+                : allMercuryAccounts;
+            
+            document.getElementById('orgCreditCount').textContent = '...';
+            document.getElementById('orgDebitCount').textContent = '...';
+            
+            for (const acc of orgAccounts) {
+                try {
+                    const response = await fetch(`/api/mercury-accounts/${acc.user_id}/cards`, { headers: getAuthHeaders() });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            allCardsCache[acc.user_id] = data.cards || [];
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            }
+            
+            // 更新数量显示
+            updateCardCountsFromCache();
+        }
+
+        // 保留旧的函数用于其他地方调用（如SSE更新）
+        async function loadOrgCardCounts() {
+            // 如果有缓存，从缓存更新；否则重新加载
+            const orgAccounts = currentOrgFilter 
+                ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
+                : allMercuryAccounts;
+            
+            const hasCacheForAll = orgAccounts.every(acc => acc.user_id in allCardsCache);
+            if (hasCacheForAll) {
+                updateCardCountsFromCache();
+            } else {
+                await loadAllCardsAndCount();
+            }
+        }
+
+        let clearCardsAborted = false;
+
+        function stopClearCards() {
+            clearCardsAborted = true;
+            if (clearCardEventSource) {
+                clearCardEventSource.close();
+                clearCardEventSource = null;
+            }
+            document.getElementById('clearCardsProgress').style.display = 'none';
+            document.getElementById('clearCreditBtn').disabled = false;
+            document.getElementById('clearDebitBtn').disabled = false;
+            showToast('已停止清空', 'info');
+            
+            // 清空缓存并重新加载卡片数据
+            allCardsCache = {};
+            loadAllCardsAndCount();
+            loadAllCardCounts();
+        }
+
+        function clearAccountCardsStream(userId, cardType, onProgress, minutesAgo = 0) {
+            return new Promise((resolve) => {
+                let url = `/api/mercury-accounts/${userId}/clear-cards-stream?card_type=${cardType}&token=${accessToken}`;
+                if (minutesAgo > 0) {
+                    url += `&minutes_ago=${minutesAgo}`;
+                }
+                const es = new EventSource(url);
+                clearCardEventSource = es;
+                let deleted = 0, failed = 0, total = 0;
+                
+                es.onmessage = function(event) {
+                    if (clearCardsAborted) {
+                        es.close();
+                        resolve({ deleted, failed, total, aborted: true });
+                        return;
+                    }
+                    
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'error') {
+                        es.close();
+                        resolve({ deleted: 0, failed: 0, total: 0, error: data.message });
+                    } else if (data.type === 'start') {
+                        total = data.total;
+                    } else if (data.type === 'progress') {
+                        onProgress(data.current, data.total);
+                    } else if (data.type === 'complete') {
+                        es.close();
+                        resolve({ deleted: data.deleted, failed: data.failed, total: data.total });
+                    }
+                };
+                
+                es.onerror = function() {
+                    es.close();
+                    resolve({ deleted: 0, failed: 0, total: 0, error: '连接失败' });
+                };
+            });
+        }
+
+        async function clearOrgCards(cardType) {
+            const typeName = cardType === 'credit' ? '信用卡' : '借记卡';
+            const scopeName = currentOrgFilter ? `组织 "${currentOrgFilter}"` : '全部组织';
+            const timeDesc = currentTimeFilter > 0 ? `（${currentTimeFilter}分钟前创建的）` : '';
+            if (!await showConfirm(`确定要清空${scopeName}的${timeDesc}${typeName}吗？此操作不可恢复！`, `清空${typeName}`)) return;
+            
+            const orgAccounts = currentOrgFilter 
+                ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
+                : allMercuryAccounts;
+            
+            if (!orgAccounts.length) {
+                showToast('没有账户需要处理', 'info');
+                return;
+            }
+            
+            // 显示进度条，先统计总卡数
+            clearCardsAborted = false;
+            document.getElementById('clearCreditBtn').disabled = true;
+            document.getElementById('clearDebitBtn').disabled = true;
+            document.getElementById('clearCardsProgress').style.display = 'block';
+            document.getElementById('clearCardsTitle').textContent = `正在统计${typeName}数量...`;
+            document.getElementById('clearCardsProgressFill').style.width = '0%';
+            document.getElementById('clearCardsProgressText').textContent = '统计中...';
+            document.getElementById('clearCardsProgressMessage').textContent = '';
+            
+            // 从缓存中统计卡片数量（带时间过滤）
+            let totalCards = 0;
+            const now = new Date();
+            const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
+            
+            for (const acc of orgAccounts) {
+                const cards = allCardsCache[acc.user_id] || [];
+                for (const card of cards) {
+                    if (card.card_type !== cardType) continue;
+                    
+                    // 时间过滤
+                    if (thresholdTime && card.createdAtDateStr) {
+                        const createdAt = new Date(card.createdAtDateStr);
+                        if (createdAt > thresholdTime) continue;
+                    }
+                    totalCards++;
+                }
+            }
+            
+            if (totalCards === 0) {
+                document.getElementById('clearCardsProgress').style.display = 'none';
+                document.getElementById('clearCreditBtn').disabled = false;
+                document.getElementById('clearDebitBtn').disabled = false;
+                showToast(`没有${typeName}需要删除`, 'info');
+                return;
+            }
+            
+            document.getElementById('clearCardsTitle').textContent = `正在删除...`;
+            document.getElementById('clearCardsProgressText').textContent = `0 / ${totalCards}`;
+            
+            let totalDeleted = 0, totalFailed = 0;
+            
+            for (let i = 0; i < orgAccounts.length; i++) {
+                if (clearCardsAborted) break;
+                
+                const acc = orgAccounts[i];
+                document.getElementById('clearCardsProgressMessage').textContent = `正在处理 ${acc.name}...`;
+                
+                const result = await clearAccountCardsStream(acc.user_id, cardType, (current, total) => {
+                    const percent = ((totalDeleted + current) / totalCards * 100).toFixed(0);
+                    document.getElementById('clearCardsProgressFill').style.width = percent + '%';
+                    document.getElementById('clearCardsProgressText').textContent = `${totalDeleted + current} / ${totalCards}`;
+                }, currentTimeFilter);
+                
+                if (result.aborted) break;
+                totalDeleted += result.deleted || 0;
+                totalFailed += result.failed || 0;
+            }
+            
+            // 隐藏进度条
+            document.getElementById('clearCardsProgress').style.display = 'none';
+            document.getElementById('clearCreditBtn').disabled = false;
+            document.getElementById('clearDebitBtn').disabled = false;
+            
+            showToast(`清空完成: 删除 ${totalDeleted} 张，失败 ${totalFailed} 张`, 'success');
+            
+            // 清空缓存并重新加载卡片数据
+            allCardsCache = {};
+            loadAllCardsAndCount();
+            loadAllCardCounts();
+        }
+
+        function renderMercuryAccounts(accounts, isFiltered = false) {
+            const container = document.getElementById('accountsContainer');
+            document.getElementById('accountCount').textContent = isFiltered ? accounts.length : allMercuryAccounts.length;
+
+            if (!accounts.length) {
+                container.innerHTML = '<div class="empty-state">暂无 Mercury 账户<br><small style="color: #888;">添加账户后，创建卡片时将随机选择使用</small></div>';
+                return;
+            }
+
+            container.innerHTML = accounts.map(acc => {
+                const accountStatus = acc.account_status || 'active';
+                let statusText, statusClass;
+                if (accountStatus === 'active') {
+                    statusText = 'active';
+                    statusClass = 'status-active';
+                } else if (accountStatus === 'paused') {
+                    statusText = 'paused';
+                    statusClass = 'status-paused';
+                } else {
+                    statusText = 'inactive';
+                    statusClass = 'status-inactive';
+                }
+                let proxyDisplay = '';
+                if (acc.proxy) {
+                    const proxyInfo = allProxies.find(p => p.url === acc.proxy);
+                    const proxyName = proxyInfo && proxyInfo.name ? proxyInfo.name : '代理';
+                    proxyDisplay = `<span class="proxy-badge" title="${acc.proxy}">${proxyName}</span>`;
+                }
+                return `
+                <div class="account-item" data-user-id="${acc.user_id}" data-proxy="${acc.proxy || ''}">
+                    <div class="account-main">
+                        <div class="account-header">
+                            <span class="account-email">${acc.email}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            ${proxyDisplay}
+                        </div>
+                        <div class="account-info">
+                            <span class="info-item"><label>姓名</label>${acc.name}</span>
+                            <span class="info-item"><label>组织</label>${acc.organization}</span>
+                            <span class="info-item"><label>信用额度</label>$${(acc.credit_limit || 0).toFixed(2)}</span>
+                            <span class="info-item"><label>可用余额</label>$${(acc.available_balance || 0).toFixed(2)}</span>
+                        </div>
+                        ${acc.legal_address && Object.keys(acc.legal_address).length > 0 ? `
+                        <div class="account-info account-address">
+                            <span class="info-item"><label>地址</label>${formatAddress(acc.legal_address)}</span>
+                        </div>` : ''}
+                        <div class="account-meta">
+                            <span>更新: ${acc.updated_at ? new Date(acc.updated_at).toLocaleString() : '未知'}</span>
+                        </div>
+                    </div>
+                    <div class="account-actions-row">
+                        <div class="account-cards-actions" data-user-id="${acc.user_id}">
+                            <button class="btn-warning" onclick="clearMercuryCards('${acc.user_id}', 'credit')">
+                                清空信用卡 <span class="card-count credit-count">-</span>
+                            </button>
+                            <button class="btn-warning debit" onclick="clearMercuryCards('${acc.user_id}', 'debit')">
+                                清空借记卡 <span class="card-count debit-count">-</span>
+                            </button>
+                        </div>
+                        <div class="account-actions">
+                            <button class="btn-secondary" onclick="openProxyModal('${acc.user_id}')">代理</button>
+                            <button class="btn-secondary" onclick="refreshMercuryAccount('${acc.user_id}')">刷新</button>
+                            <button class="btn-delete" onclick="deleteMercuryAccount('${acc.user_id}')">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            
+            // 加载卡片数量
+            loadAllCardCounts();
+        }
+
+        function openAddAccountModal(mode) {
+            updateProxySelectors();
+            if (mode === 'session') {
+                document.getElementById('addSessionModal').classList.add('show');
+                document.getElementById('newSession').value = '';
+            } else {
+                document.getElementById('addCredentialsModal').classList.add('show');
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginEmailPassword').value = '';
+                document.getElementById('loginMercuryPassword').value = '';
+                document.getElementById('loginTotpSecret').value = '';
+            }
+        }
+        
+        function closeAddAccountModal() {
+            document.getElementById('addCredentialsModal').classList.remove('show');
+            document.getElementById('addSessionModal').classList.remove('show');
+        }
+
+        async function addMercuryAccount() {
+            const sessionCookie = document.getElementById('newSession').value.trim();
+            const proxyUrl = document.getElementById('accountProxySelect').value;
+            
+            if (!sessionCookie) {
+                showToast('请输入 _SESSION cookie', 'error');
+                return;
+            }
+            
+            document.getElementById('addAccountBtn').disabled = true;
+            document.getElementById('addAccountBtn').textContent = '添加中...';
+            
+            try {
+                const response = await fetch('/api/mercury-accounts', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ session: sessionCookie, proxy: proxyUrl })
+                });
+                if (response.status === 401) { await checkAuth(); return addMercuryAccount(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || '账户添加成功', 'success');
+                    closeAddAccountModal();
+                    refreshMercuryAccounts();
+                } else {
+                    showToast(data.error || '添加失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+            finally {
+                document.getElementById('addAccountBtn').disabled = false;
+                document.getElementById('addAccountBtn').textContent = '添加账户';
+            }
+        }
+
+        async function addMercuryAccountByLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const emailPassword = document.getElementById('loginEmailPassword').value.trim();
+            const mercuryPassword = document.getElementById('loginMercuryPassword').value.trim();
+            const totpSecret = document.getElementById('loginTotpSecret').value.trim();
+            const proxyUrl = document.getElementById('loginProxySelect').value;
+            
+            if (!email) { showToast('请输入邮箱地址', 'error'); return; }
+            if (!emailPassword) { showToast('请输入邮箱密码', 'error'); return; }
+            if (!mercuryPassword) { showToast('请输入 Mercury 密码', 'error'); return; }
+            if (!totpSecret) { showToast('请输入 2FA 密钥', 'error'); return; }
+            
+            const btn = document.getElementById('addAccountByLoginBtn');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            
+            try {
+                const response = await fetch('/api/mercury-accounts/login', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        email: email,
+                        email_password: emailPassword,
+                        mercury_password: mercuryPassword,
+                        totp_secret: totpSecret,
+                        proxy: proxyUrl
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return addMercuryAccountByLogin(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || '账户添加成功', 'success');
+                    closeAddAccountModal();
+                    refreshMercuryAccounts();
+                } else {
+                    showToast(data.error || '登录失败', 'error');
+                }
+            } catch (error) { showToast('请求失败: ' + error, 'error'); }
+            finally {
+                btn.disabled = false;
+                btn.textContent = '登录添加';
+            }
+        }
+
+        async function switchMercuryAccount(userId) {
+            if (!await showConfirm('确定要切换到这个账户吗？切换后需要刷新页面。', '切换账户')) return;
+            
+            try {
+                const response = await fetch(`/api/mercury-accounts/${userId}/switch`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return switchMercuryAccount(userId); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || '账户切换成功', 'success');
+                    refreshMercuryAccounts();
+                } else {
+                    showToast(data.error || '切换失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function refreshMercuryAccount(userId) {
+            try {
+                const response = await fetch(`/api/mercury-accounts/${userId}/refresh`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return refreshMercuryAccount(userId); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast('账户信息已刷新', 'success');
+                    // 更新本地账户数据
+                    if (data.account) {
+                        const idx = allMercuryAccounts.findIndex(a => a.user_id === userId);
+                        if (idx !== -1) {
+                            allMercuryAccounts[idx] = { ...allMercuryAccounts[idx], ...data.account };
+                        }
+                    }
+                    // 只获取当前账户的卡片数量（会通过 SSE 更新 UI）
+                    loadCardCounts(userId);
+                } else {
+                    showToast(data.error || '刷新失败', 'error');
+                    // 刷新失败时也更新状态
+                    loadCardCounts(userId);
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        async function deleteMercuryAccount(userId) {
+            if (!await showConfirm('确定要删除这个 Mercury 账户吗？', '删除账户')) return;
+            
+            try {
+                const response = await fetch(`/api/mercury-accounts/${userId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteMercuryAccount(userId); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast('账户已删除', 'success');
+                    refreshMercuryAccounts();
+                } else {
+                    showToast(data.error || '删除失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        let clearCardEventSource = null;
+
+        async function clearMercuryCards(userId, cardType) {
+            const typeName = cardType === 'credit' ? '信用卡' : '借记卡';
+            const timeDesc = currentTimeFilter > 0 ? `（${currentTimeFilter}分钟前创建的）` : '所有';
+            if (!await showConfirm(`确定要清空该账户在 Mercury 后台的${timeDesc}${typeName}吗？此操作不可恢复！`, `清空${typeName}`)) return;
+            
+            // 找到账户信息
+            const acc = allMercuryAccounts.find(a => a.user_id === userId);
+            const accName = acc?.name || '账户';
+            
+            // 禁用按钮
+            const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
+            const btns = container?.querySelectorAll('.btn-warning');
+            btns?.forEach(b => b.disabled = true);
+            
+            // 显示进度条
+            document.getElementById('clearCreditBtn').disabled = true;
+            document.getElementById('clearDebitBtn').disabled = true;
+            document.getElementById('clearCardsProgress').style.display = 'block';
+            document.getElementById('clearCardsTitle').textContent = `正在删除...`;
+            document.getElementById('clearCardsProgressFill').style.width = '0%';
+            document.getElementById('clearCardsProgressText').textContent = '连接中...';
+            document.getElementById('clearCardsProgressMessage').textContent = accName;
+            
+            // 使用流式接口（带时间过滤参数）
+            let streamUrl = `/api/mercury-accounts/${userId}/clear-cards-stream?card_type=${cardType}&token=${accessToken}`;
+            if (currentTimeFilter > 0) {
+                streamUrl += `&minutes_ago=${currentTimeFilter}`;
+            }
+            clearCardEventSource = new EventSource(streamUrl);
+            
+            clearCardEventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'error') {
+                    clearCardEventSource.close();
+                    clearCardEventSource = null;
+                    document.getElementById('clearCardsProgress').style.display = 'none';
+                    document.getElementById('clearCreditBtn').disabled = false;
+                    document.getElementById('clearDebitBtn').disabled = false;
+                    btns?.forEach(b => b.disabled = false);
+                    showToast(data.message, 'error');
+                } else if (data.type === 'start') {
+                    document.getElementById('clearCardsProgressText').textContent = `0 / ${data.total}`;
+                } else if (data.type === 'progress') {
+                    const percent = (data.current / data.total * 100).toFixed(0);
+                    document.getElementById('clearCardsProgressFill').style.width = percent + '%';
+                    document.getElementById('clearCardsProgressText').textContent = `${data.current} / ${data.total}`;
+                } else if (data.type === 'complete') {
+                    clearCardEventSource.close();
+                    clearCardEventSource = null;
+                    document.getElementById('clearCardsProgressFill').style.width = '100%';
+                    document.getElementById('clearCardsProgressText').textContent = `${data.deleted} / ${data.total}`;
+                    
+                    setTimeout(() => {
+                        document.getElementById('clearCardsProgress').style.display = 'none';
+                        document.getElementById('clearCreditBtn').disabled = false;
+                        document.getElementById('clearDebitBtn').disabled = false;
+                        btns?.forEach(b => b.disabled = false);
+                        
+                        if (data.deleted > 0 || data.total === 0) {
+                            showToast(`已删除 ${data.deleted} 张${typeName}`, 'success');
+                        }
+                        // 清空该账户的缓存并重新加载
+                        delete allCardsCache[userId];
+                        loadCardCounts(userId);
+                        loadOrgCardCounts();
+                    }, 500);
+                }
+            };
+            
+            clearCardEventSource.onerror = function() {
+                clearCardEventSource.close();
+                clearCardEventSource = null;
+                document.getElementById('clearCardsProgress').style.display = 'none';
+                document.getElementById('clearCreditBtn').disabled = false;
+                document.getElementById('clearDebitBtn').disabled = false;
+                btns?.forEach(b => b.disabled = false);
+                showToast('连接失败', 'error');
+            };
+        }
+
+        // 更新单个账户的卡片数量显示（从缓存过滤）
+        function updateAccountCardCountsUI(userId) {
+            const cards = allCardsCache[userId] || [];
+            const now = new Date();
+            const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
+            
+            let creditCount = 0, debitCount = 0;
+            for (const card of cards) {
+                // 时间过滤
+                if (thresholdTime && card.createdAtDateStr) {
+                    const createdAt = new Date(card.createdAtDateStr);
+                    if (createdAt > thresholdTime) continue;
+                }
+                
+                if (card.card_type === 'credit') creditCount++;
+                else if (card.card_type === 'debit') debitCount++;
+            }
+            
+            const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
+            if (container) {
+                container.querySelector('.credit-count').textContent = creditCount;
+                container.querySelector('.debit-count').textContent = debitCount;
+            }
+        }
+
+        async function loadCardCounts(userId) {
+            // 如果缓存中没有该账户的卡片数据，先获取
+            if (!(userId in allCardsCache)) {
+                try {
+                    const response = await fetch(`/api/mercury-accounts/${userId}/cards`, {
+                        headers: getAuthHeaders()
+                    });
+                    if (response.status === 401) { await checkAuth(); return loadCardCounts(userId); }
+                    const data = await response.json();
+                    if (data.success) {
+                        allCardsCache[userId] = data.cards || [];
+                    }
+                } catch (error) { console.error('获取卡片数据失败:', error); }
+            }
+            // 从缓存中过滤并更新UI
+            updateAccountCardCountsUI(userId);
+        }
+
+        async function loadAllCardCounts() {
+            const containers = document.querySelectorAll('.account-cards-actions[data-user-id]');
+            for (const container of containers) {
+                const userId = container.dataset.userId;
+                await loadCardCounts(userId);
+            }
+        }
+
+        function openProxyModal(userId) {
+            const item = document.querySelector(`.account-item[data-user-id="${userId}"]`);
+            const currentProxy = item ? item.dataset.proxy : '';
+            document.getElementById('proxyUserId').value = userId;
+            const proxySelect = document.getElementById('proxySelect');
+            // 设置选择框的值为当前代理
+            if (currentProxy && Array.from(proxySelect.options).some(opt => opt.value === currentProxy)) {
+                proxySelect.value = currentProxy;
+            } else if (currentProxy) {
+                proxySelect.value = '';
+            } else {
+                proxySelect.value = '';
+            }
+            const modal = document.getElementById('proxyModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+
+        function closeProxyModal() {
+            const modal = document.getElementById('proxyModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 200);
+        }
+
+        async function saveProxy() {
+            const userId = document.getElementById('proxyUserId').value;
+            const selectValue = document.getElementById('proxySelect').value;
+            const proxy = selectValue === '__clear__' ? '' : selectValue;
+            
+            try {
+                const response = await fetch(`/api/mercury-accounts/${userId}/proxy`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ proxy })
+                });
+                if (response.status === 401) { await checkAuth(); return saveProxy(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(proxy ? '代理已设置' : '代理已清除', 'success');
+                    closeProxyModal();
+                    refreshMercuryAccounts();
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+        function showConfirm(message, title = '确认') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                document.getElementById('confirmTitle').textContent = title;
+                document.getElementById('confirmMessage').textContent = message;
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                
+                const okBtn = document.getElementById('confirmOkBtn');
+                const cancelBtn = document.getElementById('confirmCancelBtn');
+                
+                const cleanup = () => {
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.style.display = 'none', 200);
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
+                
+                const onOk = () => { cleanup(); resolve(true); };
+                const onCancel = () => { cleanup(); resolve(false); };
+                
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ==================== 公告设置 ====================
+        async function loadAnnouncement() {
+            try {
+                const response = await fetch('/api/settings/announcement', { headers: getAuthHeaders() });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('announcementContent').value = data.content || '';
+                        updateAnnouncementPreview();
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load announcement:', e);
+            }
+        }
+
+        async function saveAnnouncement() {
+            const content = document.getElementById('announcementContent').value;
+            try {
+                const response = await fetch('/api/settings/announcement', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('公告已保存', 'success');
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('保存失败', 'error');
+            }
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function insertEmoji(emoji) {
+            const textarea = document.getElementById('announcementContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + emoji + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+            textarea.focus();
+            updateAnnouncementPreview();
+        }
+
+        function updateAnnouncementPreview() {
+            const content = document.getElementById('announcementContent').value;
+            const preview = document.getElementById('announcementPreview');
+            if (content.trim()) {
+                preview.innerHTML = marked.parse(content, { breaks: true });
+            } else {
+                preview.innerHTML = '<span style="color: var(--text-secondary);">预览区域</span>';
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const picker = document.getElementById('emojiPicker');
+            if (picker && picker.style.display !== 'none') {
+                if (!e.target.closest('#emojiPicker') && !e.target.closest('[onclick*="toggleEmojiPicker"]')) {
+                    picker.style.display = 'none';
+                }
+            }
+        });
+
+        // ==================== 代理管理 ====================
+        let allProxies = [];
+        let proxyLatencyCache = {};
+
+        async function refreshProxies() {
+            try {
+                // 先加载默认代理设置
+                await loadDefaultProxy();
+                
+                const response = await fetch('/api/proxies', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshProxies(); }
+                const data = await response.json();
+                if (data.success) {
+                    allProxies = data.proxies || [];
+                    renderProxies(allProxies);
+                    updateProxySelectors();
+                }
+            } catch (error) {
+                console.error('获取代理列表失败:', error);
+            }
+        }
+
+        // 默认代理 ID (从服务端获取)
+        let defaultProxyId = '';
+        
+        async function loadDefaultProxy() {
+            try {
+                const response = await fetch('/api/proxies/default', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return loadDefaultProxy(); }
+                const data = await response.json();
+                if (data.success) {
+                    defaultProxyId = data.default_proxy_id || '';
+                }
+            } catch (error) {
+                console.error('获取默认代理失败:', error);
+            }
+        }
+        
+        async function setDefaultProxy(proxyId) {
+            const newProxyId = (defaultProxyId === proxyId) ? '' : proxyId;
+            try {
+                const response = await fetch('/api/proxies/default', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ proxy_id: newProxyId })
+                });
+                if (response.status === 401) { await checkAuth(); return setDefaultProxy(proxyId); }
+                const data = await response.json();
+                if (data.success) {
+                    defaultProxyId = newProxyId;
+                    showToast(data.message, 'success');
+                    renderProxies(allProxies);
+                    updateProxySelectors();
+                } else {
+                    showToast(data.error || '设置失败', 'error');
+                }
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+        
+        function renderProxies(proxies) {
+            const container = document.getElementById('proxiesContainer');
+            const badge = document.getElementById('proxyCount');
+            badge.textContent = proxies.length;
+
+            if (!proxies.length) {
+                container.innerHTML = '<div class="empty-state">暂无保存的代理</div>';
+                return;
+            }
+
+            container.innerHTML = proxies.map(proxy => {
+                const cached = proxyLatencyCache[proxy.id];
+                let latencyText = '-';
+                let latencyClass = 'proxy-latency';
+                if (cached) {
+                    if (cached.success) {
+                        latencyText = `${cached.latency}ms`;
+                        if (cached.latency < 500) latencyClass += ' good';
+                        else if (cached.latency < 1500) latencyClass += ' medium';
+                        else latencyClass += ' slow';
+                    } else {
+                        latencyText = cached.error || '失败';
+                        latencyClass += ' failed';
+                    }
+                }
+                const isDefault = proxy.id === defaultProxyId;
+                const defaultBtnClass = isDefault ? 'btn-primary' : 'btn-secondary';
+                const defaultBtnText = isDefault ? '取消默认' : '设为默认';
+                return `
+                <div class="proxy-item" data-id="${proxy.id}">
+                    <div class="proxy-info">
+                        <span class="proxy-name">${proxy.name || proxy.url}${isDefault ? ' <span style="color: var(--primary); font-size: 12px;">★</span>' : ''}</span>
+                        <span class="proxy-url">${proxy.url}</span>
+                    </div>
+                    <span class="${latencyClass}" id="latency-${proxy.id}">${latencyText}</span>
+                    <div class="proxy-actions">
+                        <button class="${defaultBtnClass}" onclick="setDefaultProxy('${proxy.id}')" style="white-space: nowrap;">${defaultBtnText}</button>
+                        <button class="btn-secondary btn-test" onclick="testProxyLatency('${proxy.id}')">测试</button>
+                        <button class="btn-delete" onclick="deleteProxyItem('${proxy.id}')">删除</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function getProxyOptionText(proxy) {
+            const name = proxy.name || proxy.url;
+            const cached = proxyLatencyCache[proxy.id];
+            if (cached) {
+                if (cached.success) {
+                    return `${name} (${cached.latency}ms)`;
+                } else {
+                    return `${name} (${cached.error || '失败'})`;
+                }
+            }
+            return name;
+        }
+
+        function updateProxySelectors() {
+            // 获取默认代理的 URL
+            const defaultProxy = allProxies.find(p => p.id === defaultProxyId);
+            const defaultProxyUrl = defaultProxy ? defaultProxy.url : '';
+            
+            // 构建代理选项，默认代理放在第一位
+            let sortedProxies = [...allProxies];
+            if (defaultProxy) {
+                sortedProxies = [defaultProxy, ...allProxies.filter(p => p.id !== defaultProxyId)];
+            }
+            
+            const proxyOptions = '<option value="">不使用代理</option>' + 
+                sortedProxies.map(p => {
+                    const isDefault = p.id === defaultProxyId;
+                    const label = isDefault ? `${getProxyOptionText(p)} ★` : getProxyOptionText(p);
+                    return `<option value="${p.url}">${label}</option>`;
+                }).join('');
+            
+            // 更新添加账户时的代理选择器 (Session Cookie 模式)
+            const accountSelect = document.getElementById('accountProxySelect');
+            if (accountSelect) {
+                accountSelect.innerHTML = proxyOptions;
+                // 默认选择默认代理
+                if (defaultProxyUrl) {
+                    accountSelect.value = defaultProxyUrl;
+                }
+            }
+            
+            // 更新添加账户时的代理选择器 (邮箱登录模式)
+            const loginSelect = document.getElementById('loginProxySelect');
+            if (loginSelect) {
+                loginSelect.innerHTML = proxyOptions;
+                // 默认选择默认代理
+                if (defaultProxyUrl) {
+                    loginSelect.value = defaultProxyUrl;
+                }
+            }
+
+            // 更新代理弹窗中的代理选择器
+            const proxySelect = document.getElementById('proxySelect');
+            if (proxySelect) {
+                proxySelect.innerHTML = '<option value="">-- 选择代理 --</option>' +
+                    '<option value="__clear__">清除代理</option>' +
+                    sortedProxies.map(p => `<option value="${p.url}">${getProxyOptionText(p)}</option>`).join('');
+            }
+        }
+
+        async function addNewProxy() {
+            const name = document.getElementById('newProxyName').value.trim();
+            const url = document.getElementById('newProxyUrl').value.trim();
+
+            if (!url) {
+                showToast('请输入代理地址', 'error');
+                return;
+            }
+
+            document.getElementById('addProxyBtn').disabled = true;
+            document.getElementById('addProxyBtn').textContent = '验证中...';
+
+            try {
+                const response = await fetch('/api/proxies', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ name, url })
+                });
+                if (response.status === 401) { await checkAuth(); return addNewProxy(); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || '代理添加成功', 'success');
+                    document.getElementById('newProxyName').value = '';
+                    document.getElementById('newProxyUrl').value = '';
+                    refreshProxies();
+                } else {
+                    showToast(data.error || '添加失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+            finally {
+                document.getElementById('addProxyBtn').disabled = false;
+                document.getElementById('addProxyBtn').textContent = '添加代理';
+            }
+        }
+
+        async function deleteProxyItem(proxyId) {
+            if (!await showConfirm('确定要删除这个代理吗？', '删除代理')) return;
+
+            try {
+                const response = await fetch(`/api/proxies/${proxyId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteProxyItem(proxyId); }
+                const data = await response.json();
+                if (data.success) {
+                    showToast('代理删除成功', 'success');
+                    refreshProxies();
+                } else {
+                    showToast(data.error || '删除失败', 'error');
+                }
+            } catch (error) { showToast('请求失败', 'error'); }
+        }
+
+
+        async function testProxyLatency(proxyId) {
+            const latencyEl = document.getElementById(`latency-${proxyId}`);
+            const btn = document.querySelector(`.proxy-item[data-id="${proxyId}"] .btn-test`);
+            
+            latencyEl.textContent = '测试中...';
+            latencyEl.className = 'proxy-latency testing';
+            if (btn) btn.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/proxies/${proxyId}/test`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return testProxyLatency(proxyId); }
+                const data = await response.json();
+                
+                // 保存到缓存
+                proxyLatencyCache[proxyId] = data;
+                
+                if (data.success) {
+                    const latency = data.latency;
+                    latencyEl.textContent = `${latency}ms`;
+                    if (latency < 500) {
+                        latencyEl.className = 'proxy-latency good';
+                    } else if (latency < 1500) {
+                        latencyEl.className = 'proxy-latency medium';
+                    } else {
+                        latencyEl.className = 'proxy-latency slow';
+                    }
+                } else {
+                    latencyEl.textContent = data.error || '失败';
+                    latencyEl.className = 'proxy-latency failed';
+                }
+            } catch (error) {
+                proxyLatencyCache[proxyId] = { success: false, error: '错误' };
+                latencyEl.textContent = '错误';
+                latencyEl.className = 'proxy-latency failed';
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        function subscribeProxyLatency() {
+            if (proxyLatencyEventSource) {
+                proxyLatencyEventSource.close();
+            }
+            
+            const token = localStorage.getItem('access_token');
+            proxyLatencyEventSource = new EventSource(`/api/proxies/latency-stream?token=${token}`);
+            
+            proxyLatencyEventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    updateProxyLatencyDisplay(data);
+                } catch (e) {}
+            };
+            
+            proxyLatencyEventSource.onerror = function() {
+                // 断开后5秒重连
+                setTimeout(() => {
+                    if (isAdmin) subscribeProxyLatency();
+                }, 5000);
+            };
+        }
+
+        function updateProxyLatencyDisplay(data) {
+            for (const [proxyId, result] of Object.entries(data)) {
+                // 保存到本地缓存
+                proxyLatencyCache[proxyId] = result;
+                
+                // 处理本地延迟
+                const latencyEl = proxyId === '__local__' 
+                    ? document.getElementById('localLatency')
+                    : document.getElementById(`latency-${proxyId}`);
+                if (!latencyEl) continue;
+                
+                if (result.success) {
+                    const latency = result.latency;
+                    latencyEl.textContent = `${latency}ms`;
+                    if (latency < 500) {
+                        latencyEl.className = 'proxy-latency good';
+                    } else if (latency < 1500) {
+                        latencyEl.className = 'proxy-latency medium';
+                    } else {
+                        latencyEl.className = 'proxy-latency slow';
+                    }
+                } else {
+                    latencyEl.textContent = result.error || '失败';
+                    latencyEl.className = 'proxy-latency failed';
+                }
+            }
+            // 更新下拉选择器中的延迟显示
+            updateProxySelectors();
+        }
+
+        // 初始化
+        async function init() {
+            const authed = await checkAuth();
+            if (!authed) return;
+            
+            // 显示用户信息
+            document.getElementById('currentUser').textContent = currentUsername || '用户';
+            
+            // 显示用户管理、代理管理和后台账户标签（仅管理员）
+            if (isAdmin) {
+                document.getElementById('usersTab').style.display = 'flex';
+                document.getElementById('proxiesTab').style.display = 'flex';
+                document.getElementById('accountsTab').style.display = 'flex';
+                document.getElementById('settingsTab').style.display = 'flex';
+                
+                // 订阅代理延迟更新
+                subscribeProxyLatency();
+                
+                // 加载公告设置
+                loadAnnouncement();
+            }
+            
+            refreshCards();
+            refreshKeys();
+            
+            // 每10分钟自动刷新token
+            setInterval(autoRefresh, 10 * 60 * 1000);
+            setInterval(refreshCards, 30000);
+            setInterval(() => refreshKeys(currentKeysPage), 30000);
+        }
+
+        init();
+        
+        // 移动端滑动切换 Tab
+        (function() {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const minSwipeDistance = 50;
+            
+            function getVisibleTabs() {
+                return tabOrder.filter((tab) => {
+                    if (tab === 'users' || tab === 'accounts' || tab === 'proxies' || tab === 'settings') {
+                        return isAdmin;
+                    }
+                    return true;
+                });
+            }
+            
+            function handleSwipe() {
+                const visibleTabs = getVisibleTabs();
+                const currentIndex = visibleTabs.indexOf(currentTab);
+                const swipeDistance = touchStartX - touchEndX;
+                
+                if (Math.abs(swipeDistance) < minSwipeDistance) return;
+                
+                let newIndex, direction;
+                if (swipeDistance > 0) {
+                    // 向左滑 -> 下一个
+                    newIndex = Math.min(currentIndex + 1, visibleTabs.length - 1);
+                    direction = 'left';
+                } else {
+                    // 向右滑 -> 上一个
+                    newIndex = Math.max(currentIndex - 1, 0);
+                    direction = 'right';
+                }
+                
+                if (newIndex !== currentIndex) {
+                    switchTab(visibleTabs[newIndex], direction);
+                }
+            }
+            
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                mainContent.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, { passive: true });
+            }
+        })();
+        
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>

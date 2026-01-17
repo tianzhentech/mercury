@@ -1,0 +1,22 @@
+{
+    "users": [
+        {
+            "username": "admin",
+            "password_hash": "ea7e0b095fd43df491456c039876a256fb98cb52a33fc430e35ec8694318fb8a",
+            "is_admin": true,
+            "created_at": 1765316121
+        },
+        {
+            "username": "test",
+            "password_hash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+            "is_admin": false,
+            "created_at": 1765482989
+        },
+        {
+            "username": "temp3",
+            "password_hash": "3f1454fc5d5c22415b6e89a684885c99693eb325d1116d3ae3686867046cce80",
+            "is_admin": false,
+            "created_at": 1766927863
+        }
+    ]
+}
