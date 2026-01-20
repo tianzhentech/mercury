@@ -175,7 +175,6 @@
                                 </svg>
                             </button>
                         </div>
-                        <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
                         <button class="btn-secondary" onclick="copyAllCards()">复制所有</button>
                         <button class="btn-danger" id="deleteAllBtn" onclick="deleteAllCards()">删除所有</button>
                     </div>
@@ -259,6 +258,7 @@
                         </span>
                     </h2>
                     <div class="header-actions">
+                        <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
                         <button class="btn-secondary" onclick="copyAllKeys()">复制所有</button>
                         <button class="btn-danger" onclick="deleteAllKeys()">删除所有</button>
                     </div>
@@ -628,18 +628,27 @@
                     <label>备注</label>
                     <input type="text" id="withdrawNote" placeholder="可选">
                 </div>
-                <div id="withdrawLinkWrap" class="withdraw-link" style="display: none;">
-                    <label>提卡链接</label>
-                    <div class="withdraw-link-row">
-                        <input type="text" id="withdrawLink" readonly>
-                        <button class="btn-secondary" onclick="copyWithdrawLink()">复制</button>
-                    </div>
-                    <p class="help-text">打开链接可查看卡密并兑换</p>
-                </div>
             </div>
             <div class="modal-footer">
+                <button class="btn-secondary" id="withdrawHistoryBtn" onclick="openWithdrawHistoryModal()">提卡记录</button>
                 <button class="btn-secondary" onclick="closeWithdrawModal()">关闭</button>
                 <button id="withdrawSubmitBtn" onclick="createWithdrawLink()">生成链接</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提卡记录弹窗 -->
+    <div id="withdrawHistoryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>提卡记录</h3>
+                <button class="btn-close" onclick="closeWithdrawHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="withdrawHistoryList" class="withdraw-history-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeWithdrawHistoryModal()">关闭</button>
             </div>
         </div>
     </div>
@@ -1223,8 +1232,6 @@
             const modal = document.getElementById('withdrawModal');
             document.getElementById('withdrawCount').value = 1;
             document.getElementById('withdrawNote').value = '';
-            document.getElementById('withdrawLinkWrap').style.display = 'none';
-            document.getElementById('withdrawLink').value = '';
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
         }
@@ -1233,12 +1240,6 @@
             const modal = document.getElementById('withdrawModal');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 200);
-        }
-
-        function copyWithdrawLink() {
-            const link = document.getElementById('withdrawLink').value;
-            if (!link) return;
-            copyToClipboard(link).then(() => showToast('链接已复制', 'success')).catch(() => showToast('复制失败', 'error'));
         }
 
         async function createWithdrawLink() {
@@ -1262,9 +1263,18 @@
                 if (response.status === 401) { await checkAuth(); return createWithdrawLink(); }
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('withdrawLink').value = data.link || '';
-                    document.getElementById('withdrawLinkWrap').style.display = 'block';
-                    showToast(`已生成 ${data.generated} 张提卡卡密`, 'success');
+                    const link = data.link || '';
+                    if (link) {
+                        appendWithdrawHistory(link, cardType, count, note);
+                        copyToClipboard(link)
+                            .then(() => showToast('链接已生成并复制', 'success'))
+                            .catch(() => showToast('链接已生成，复制失败', 'error'));
+                    } else {
+                        showToast(`已生成 ${data.generated} 张提卡卡密`, 'success');
+                    }
+                    // 立即刷新卡密列表，移除已提取的卡密
+                    await refreshKeys(currentKeysPage);
+                    closeWithdrawModal();
                 } else {
                     showToast(data.error || '生成失败', 'error');
                 }
@@ -1272,6 +1282,147 @@
                 showToast('请求失败', 'error');
             } finally {
                 submitBtn.disabled = false;
+            }
+        }
+
+        // ==================== 提卡记录 ====================
+        const WITHDRAW_HISTORY_KEY = 'withdraw_history';
+
+        function loadWithdrawHistory() {
+            let history = [];
+            try {
+                const raw = localStorage.getItem(WITHDRAW_HISTORY_KEY);
+                if (raw) history = JSON.parse(raw) || [];
+            } catch (e) { history = []; }
+            renderWithdrawHistory(history);
+        }
+
+        function saveWithdrawHistory(history) {
+            try {
+                localStorage.setItem(WITHDRAW_HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+            } catch (e) {}
+        }
+
+        function appendWithdrawHistory(link, cardType, count, note) {
+            if (!link) return;
+            let history = [];
+            try {
+                const raw = localStorage.getItem(WITHDRAW_HISTORY_KEY);
+                history = raw ? JSON.parse(raw) : [];
+            } catch (e) { history = []; }
+            history.unshift({ link, time: new Date().toISOString(), card_type: cardType, count, note });
+            history = history.slice(0, 50);
+            saveWithdrawHistory(history);
+        }
+
+        function removeWithdrawHistoryByLink(link) {
+            if (!link) return;
+            try {
+                const raw = localStorage.getItem(WITHDRAW_HISTORY_KEY);
+                const history = raw ? JSON.parse(raw) : [];
+                const filtered = history.filter(item => item.link !== link);
+                saveWithdrawHistory(filtered);
+                renderWithdrawHistory(filtered);
+            } catch (e) {}
+        }
+
+        function clearWithdrawHistory() {
+            localStorage.removeItem(WITHDRAW_HISTORY_KEY);
+            renderWithdrawHistory([]);
+        }
+
+        function renderWithdrawHistory(history) {
+            const listEl = document.getElementById('withdrawHistoryList');
+            if (!listEl) return;
+            if (!history || history.length === 0) {
+                listEl.innerHTML = '<div class="empty-state" style="padding: 8px 0;">暂无记录</div>';
+                return;
+            }
+            const items = history.map(item => {
+                const timeText = new Date(item.time).toLocaleString();
+                const typeIcon = item.card_type === 'debit' ? '借' : '信';
+                const countText = item.count ? `${item.count} 张` : '';
+                const safeLink = item.link.replace(/'/g, "\\'");
+                const safeNote = (item.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                    <div class="withdraw-history-item">
+                        <div class="withdraw-history-main">
+                            <span class="withdraw-history-link" title="${item.link}">${item.link}</span>
+                            ${safeNote ? `<div class="withdraw-history-note" title="${safeNote}">备注：${safeNote}</div>` : ''}
+                            <div class="withdraw-history-tags">
+                                <span class="card-type-badge ${item.card_type === 'debit' ? 'debit' : 'credit'}">${typeIcon}</span>
+                                <span class="withdraw-history-count">${countText}</span>
+                            </div>
+                        </div>
+                        <div class="withdraw-history-actions">
+                            <button class="btn-sm" onclick="copyToClipboard('${safeLink}').then(() => showToast('链接已复制', 'success')).catch(() => showToast('复制失败', 'error'))">复制</button>
+                            <button class="btn-danger-outline btn-sm" onclick="destroyWithdrawHistory('${safeLink}', this)">销毁</button>
+                        </div>
+                        <span class="withdraw-history-time">${timeText}</span>
+                    </div>
+                `;
+            }).join('');
+            listEl.innerHTML = items;
+        }
+
+        function openWithdrawHistoryModal() {
+            const modal = document.getElementById('withdrawHistoryModal');
+            if (!modal) return;
+            loadWithdrawHistory();
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeWithdrawHistoryModal() {
+            const modal = document.getElementById('withdrawHistoryModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 200);
+        }
+
+        function extractWithdrawToken(link) {
+            try {
+                const url = new URL(link);
+                const parts = url.pathname.split('/').filter(Boolean);
+                return parts[parts.length - 1] || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function destroyWithdrawHistory(link, buttonEl) {
+            const token = extractWithdrawToken(link);
+            if (!token) { showToast('链接无效', 'error'); return; }
+            if (buttonEl) buttonEl.disabled = true;
+            try {
+                const batchResp = await fetch(`/api/withdraw/${token}`);
+                const batchData = await batchResp.json();
+                if (!batchData.success || !batchData.batch || !batchData.batch.ids) {
+                    showToast('获取卡密失败', 'error');
+                    return;
+                }
+                const ids = batchData.batch.ids.map(i => i.id).filter(Boolean);
+                if (!ids.length) { showToast('没有可销毁的卡密', 'info'); return; }
+
+                const destroyResp = await fetch('/api/keys/destroy', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keys: ids.join('\n') })
+                });
+                if (destroyResp.status === 401) { await checkAuth(); return destroyWithdrawHistory(link, buttonEl); }
+                const destroyResult = await destroyResp.json();
+                if (destroyResult.success) {
+                    showToast(destroyResult.message || `已销毁 ${destroyResult.destroyed_keys || ids.length} 个卡密`, 'success');
+                    refreshKeys(currentKeysPage);
+                    // 将已销毁的记录从本地记录中移除
+                    removeWithdrawHistoryByLink(link);
+                } else {
+                    showToast(destroyResult.error || '销毁失败', 'error');
+                }
+            } catch (error) {
+                showToast('销毁请求失败', 'error');
+            } finally {
+                if (buttonEl) buttonEl.disabled = false;
             }
         }
 

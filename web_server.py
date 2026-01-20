@@ -29,7 +29,7 @@ from account.accounts import (
     start_proxy_latency_checker, has_active_accounts, get_all_active_accounts,
     get_default_proxy_id, set_default_proxy_id
 )
-from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token
+from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token, allocate_existing_ids_for_withdraw
 from user.login import login, refresh_access_token, verify_access_token
 from user.user import create_user, delete_user, update_user, get_all_users, is_admin, init_default_admin
 
@@ -1070,22 +1070,37 @@ def create_withdraw_keys():
             return jsonify({"success": False, "error": "数量必须大于 0"}), 400
         
         token = uuid.uuid4().hex
-        ids = generate_ids(
-            count,
-            expire_minutes,
-            card_limit=card_limit,
+        allocated = allocate_existing_ids_for_withdraw(
+            token=token,
+            note=note,
+            username=current_user,
             card_type=card_type,
-            created_by=current_user,
-            hidden=True,
-            hidden_token=token,
-            hidden_note=note
+            count=count
         )
+        remaining = max(0, count - len(allocated))
+        
+        generated = []
+        if remaining > 0:
+            generated = generate_ids(
+                remaining,
+                expire_minutes,
+                card_limit=card_limit,
+                card_type=card_type,
+                created_by=current_user,
+                hidden=True,
+                hidden_token=token,
+                hidden_note=note
+            )
+        
+        prepared_total = len(allocated) + len(generated)
         
         link = f"{request.host_url.rstrip('/')}/withdraw/{token}"
         
         return jsonify({
             "success": True,
-            "generated": len(ids),
+            "generated": prepared_total,
+            "from_existing": len(allocated),
+            "generated_new": len(generated),
             "link": link,
             "token": token
         })

@@ -384,6 +384,64 @@ def use_id(card_id, card_info=None):
         return True, row["expire_minutes"]
 
 
+def allocate_existing_ids_for_withdraw(token, note, username, card_type, count):
+    """
+    优先提取现有未使用的卡密并标记为隐藏，用于提卡链接
+    """
+    if count <= 0:
+        return []
+
+    _init_db()
+    with _get_cursor() as cursor:
+        conditions = [
+            "used = 0",
+            "(destroyed = 0 OR destroyed IS NULL)",
+            "(hidden = 0 OR hidden IS NULL)",
+            "card_type = ?"
+        ]
+        params = [card_type]
+
+        if username:
+            conditions.append("created_by = ?")
+            params.append(username)
+
+        where_clause = " AND ".join(conditions)
+        params.append(count)
+
+        cursor.execute(
+            f"""
+            SELECT * FROM ids
+            WHERE {where_clause}
+            ORDER BY created_time ASC
+            LIMIT ?
+            """,
+            params
+        )
+        rows = cursor.fetchall()
+
+        if not rows:
+            return []
+
+        ids = [row["id"] for row in rows]
+        placeholders = ",".join("?" * len(ids))
+        update_params = [token, note, *ids]
+
+        cursor.execute(
+            f"UPDATE ids SET hidden = 1, hidden_token = ?, hidden_note = ? WHERE id IN ({placeholders})",
+            update_params
+        )
+
+        result = []
+        for row in rows:
+            item = _row_to_dict(row)
+            item["hidden"] = True
+            item["hidden_token"] = token
+            item["hidden_note"] = note
+            result.append(item)
+
+        return result
+
+
 def query_redeemed(card_id):
     """
     查询已兑换卡密的卡片信息
