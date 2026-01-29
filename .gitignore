@@ -1,0 +1,28 @@
+# Python 缓存
+**/__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+venv/
+.venv/
+env/
+.env/
+niko/
+
+# macOS
+.DS_Store
+
+# IDE/编辑器
+.claude/
+.vscode/
+
+# 数据库文件
+id/id.db
+id/id.db-shm
+id/id.db-wal
+
+# 敏感配置
+account/accounts.json
+account/user_info.json
+settings.json
