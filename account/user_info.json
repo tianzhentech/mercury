@@ -2,28 +2,28 @@
     "accounts": [
         {
             "user": {
-                "id": "ed70a7c2-f1f3-11f0-a44c-47076ec64966",
-                "email": "njithznz720@outlook.com",
+                "id": "b5b55a26-f310-11f0-9a20-3f2b781ae39c",
+                "email": "lzwpurbot4746@outlook.com",
                 "first_name": "06",
                 "last_name": "06",
-                "phone_number": "+12272082385",
+                "phone_number": "+12272091674",
                 "status": "active",
-                "created_at": "2026-01-15T09:24:01.134909Z",
+                "created_at": "2026-01-16T19:22:34.201883Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "4027 Celtic Lane",
+                    "address1": "55 South Forest Street",
                     "address2": "",
-                    "city": "Fort Collins",
+                    "city": "Denver",
                     "region": "CO",
-                    "postal_code": "80524",
+                    "postal_code": "80246",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "d84ffd18-f093-11f0-bb85-ebaa558b320d",
-                "name": "Granite Gear LLC",
-                "legal_business_name": "Granite Gear LLC",
-                "callsign": "granite-gear-llc",
+                "id": "9f843390-b282-11f0-a306-5365fb03af64",
+                "name": "Biberson Technologies LLC",
+                "legal_business_name": "Biberson Technologies LLC",
+                "callsign": "biberson-technologies-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -31,32 +31,52 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "ed73a40e-f1f3-11f0-a44c-9bbdd424d315"
+                "org_user_id": "b5b873be-f310-11f0-9a20-13a7566aac8a"
             },
             "credit_account": {
-                "account_id": "c0e0f23a-f1ed-11f0-8b2d-7fd737a79afd",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
+                "account_id": "30c64844-b4f8-11f0-b189-e728a8b4b0f1",
+                "available_balance": 3.5,
+                "credit_limit": 3.84,
                 "account_status": "active",
-                "created_at": "2026-01-15T08:39:49.360488Z"
+                "created_at": "2025-10-29T18:50:51.072243Z"
             },
             "depository_accounts": [
                 {
-                    "id": "2f201512-f191-11f0-855c-93d59018aa19",
+                    "id": "30aec7c8-b4f8-11f0-b189-33c0608195e6",
                     "name": "Checking",
                     "nickname": null,
-                    "account_number": "187297680018144",
-                    "routing_number": "121145433",
+                    "account_number": "202595333232",
+                    "routing_number": "091311229",
+                    "available_balance": 0.13,
+                    "current_balance": 0.13,
+                    "account_status": "active"
+                },
+                {
+                    "id": "6fc448f4-cf9a-11f0-ba65-77ffd735f9db",
+                    "name": "Checking",
+                    "nickname": "ROGERS WILLAM",
+                    "account_number": "202521745452",
+                    "routing_number": "091311229",
                     "available_balance": 0.0,
                     "current_balance": 0.0,
                     "account_status": "active"
                 },
                 {
-                    "id": "2f540b9c-f191-11f0-965e-c7101361fa22",
+                    "id": "01772f14-d7c0-11f0-aae4-87927010a503",
+                    "name": "Checking",
+                    "nickname": "sp",
+                    "account_number": "202542103094",
+                    "routing_number": "091311229",
+                    "available_balance": 3.71,
+                    "current_balance": 3.71,
+                    "account_status": "active"
+                },
+                {
+                    "id": "30b37070-b4f8-11f0-b189-03a930be04bd",
                     "name": "Savings",
                     "nickname": null,
-                    "account_number": "418271155692121",
-                    "routing_number": "121145433",
+                    "account_number": "202593346142",
+                    "routing_number": "091311229",
                     "available_balance": 0.0,
                     "current_balance": 0.0,
                     "account_status": "active"

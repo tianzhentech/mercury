@@ -1,4 +1,8 @@
 {
-  "announcement": "",
-  "announcement_time": "2026-01-16 01:27:08"
+  "announcement": "123",
+  "announcement_time": "2026-01-28 19:40:23",
+  "max_batch_count": 16,
+  "batch_interval": 8,
+  "maintenance_mode": false,
+  "announcement_size": 150
 }

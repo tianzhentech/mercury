@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,10 +12,13 @@
     <link rel="icon" type="image/png" href="/static/favicon.png">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/redeem.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
     <div class="main-container">
         <!-- 左侧面板 - 输入区 -->
@@ -23,12 +27,12 @@
                 <img src="/static/icon.png" alt="Logo" class="header-logo">
                 <h1>Niko 虚拟卡</h1>
             </div>
-            
+
             <div class="input-section">
-                <textarea id="redeemKeyInput" placeholder="请输入卡密（每行一个，最多10个）..."></textarea>
-                <p class="input-hint">支持批量兑换，每行输入一个卡密，每个间隔3秒处理</p>
+                <textarea id="redeemKeyInput" placeholder="请输入卡密（每行一个）..."></textarea>
+                <p class="input-hint" id="inputHint">支持批量兑换，每行输入一个卡密</p>
                 <button class="submit-btn" id="redeemBtn" onclick="redeemOrQuery()">兑换 / 查询</button>
-                
+
                 <div id="progressSection" class="progress-section" style="display: none;">
                     <div class="progress-info">
                         <div class="spinner"></div>
@@ -40,16 +44,16 @@
                     <div id="progressCount" class="progress-count">0 / 0</div>
                 </div>
             </div>
-            
+
             <div class="footer">
                 NikoCard · v{{ version }}
             </div>
         </div>
-        
+
         <!-- 右侧面板 - 结果区 -->
         <div class="right-panel">
             <!-- 卡片导航 -->
-            <div id="cardNavigation" class="card-navigation" style="display: none;">
+            <div id="cardNavigation" class="card-navigation" style="display: none; position: relative;">
                 <button class="nav-btn" id="prevBtn" onclick="showPrevCard()" disabled>←</button>
                 <div class="card-indicator">
                     <span class="current" id="currentIndex">1</span>
@@ -58,8 +62,18 @@
                 </div>
                 <span id="cardStatusBadge" class="card-status-badge success">已兑换</span>
                 <button class="nav-btn" id="nextBtn" onclick="showNextCard()" disabled>→</button>
+
+                <!-- 销毁全部按钮 -->
+                <button id="destroyAllBtn" class="destroy-all-btn" onclick="destroyAllCards()" style="display: none;">
+                    销毁全部
+                </button>
+
+                <!-- 复制全部按钮 -->
+                <button id="copyAllBtn" class="copy-all-btn" onclick="copyAllCards()" style="display: none;">
+                    复制全部
+                </button>
             </div>
-            
+
             <!-- 结果内容 -->
             <div id="resultContent" class="result-content">
                 <!-- 空状态 -->
@@ -68,34 +82,37 @@
                     <div class="empty-text">输入卡密开始兑换</div>
                     <div class="empty-hint">兑换成功后卡片信息将显示在这里</div>
                 </div>
-                
+
                 <!-- 维护状态 -->
                 <div id="maintenanceState" class="empty-state" style="display: none;">
                     <div class="empty-icon">🔧</div>
                     <div class="empty-text" style="color: #f59e0b;">系统维护中</div>
                     <div class="empty-hint">服务暂时不可用，请稍后重试</div>
                 </div>
-                
+
                 <!-- 错误状态 -->
                 <div id="errorState" class="error-state" style="display: none;">
                     <div class="error-icon">❌</div>
                     <div id="errorMessage" class="error-message"></div>
                     <div id="errorKey" class="error-key"></div>
                 </div>
-                
+
                 <!-- 上方：卡片信息 + 账单地址 -->
                 <div id="topRowSection" class="top-row" style="display: none;">
                     <!-- 卡片信息 -->
                     <div id="cardInfoSection" class="info-card">
                         <div class="info-card-header">
                             <span class="info-card-title">卡片信息</span>
-                            <button class="copy-btn" id="copyCardBtn">复制卡片信息</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="destroy-btn" onclick="destroyCurrentCard()">销毁卡片</button>
+                                <button class="copy-btn" id="copyCardBtn">复制卡片信息</button>
+                            </div>
                         </div>
                         <div class="info-grid-scroll">
                             <div class="info-grid" id="cardInfoGrid"></div>
                         </div>
                     </div>
-                    
+
                     <!-- 账单地址 -->
                     <div id="addressSection" class="info-card">
                         <div class="info-card-header">
@@ -107,7 +124,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 下方：消费记录 -->
                 <div id="transactionsSection" class="info-card full-height bottom-row" style="display: none;">
                     <div class="info-card-header">
@@ -123,6 +140,18 @@
     </div>
 
     <div id="toast" class="toast"></div>
+
+    <!-- 确认模态框 -->
+    <div id="confirmModal" class="confirm-modal" style="display: none;">
+        <div class="confirm-modal-content">
+            <h3 id="confirmTitle">确认操作</h3>
+            <p id="confirmMessage" class="confirm-message">确认执行此操作吗？</p>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="closeConfirmModal()">取消</button>
+                <button id="confirmOkBtn" class="confirm-btn danger">确定</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 公告弹窗 -->
     <div id="announcementPopup" class="announcement-popup" style="display: none;">
@@ -147,10 +176,19 @@
             z-index: 1000;
             animation: slideIn 0.3s ease;
         }
+
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
+
         .announcement-header {
             display: flex;
             justify-content: space-between;
@@ -158,11 +196,13 @@
             padding: 12px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
+
         .announcement-title {
             font-weight: 600;
             color: #fff;
             font-size: 14px;
         }
+
         .announcement-close {
             background: none;
             border: none;
@@ -172,9 +212,11 @@
             padding: 0;
             line-height: 1;
         }
+
         .announcement-close:hover {
             color: #fff;
         }
+
         .announcement-content {
             padding: 16px;
             padding-bottom: 8px;
@@ -184,22 +226,71 @@
             max-height: 300px;
             overflow-y: auto;
         }
-        .announcement-content p { margin: 0 0 8px; }
-        .announcement-content p:last-child { margin-bottom: 0; }
-        .announcement-content h1 { margin: 0 0 8px; font-size: 20px; font-weight: bold; }
-        .announcement-content h2 { margin: 0 0 8px; font-size: 17px; font-weight: bold; }
-        .announcement-content h3 { margin: 0 0 8px; font-size: 15px; font-weight: bold; }
-        .announcement-content ul, .announcement-content ol { margin: 0 0 8px; padding-left: 20px; }
-        .announcement-content a { color: #6366f1; }
-        .announcement-content code { background: rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-        .announcement-content pre { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; overflow-x: auto; }
-        .announcement-content blockquote { border-left: 3px solid #6366f1; margin: 0 0 8px; padding-left: 12px; color: rgba(255,255,255,0.6); }
+
+        .announcement-content p {
+            margin: 0 0 8px;
+        }
+
+        .announcement-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .announcement-content h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .announcement-content h2 {
+            margin: 0 0 8px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .announcement-content h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .announcement-content ul,
+        .announcement-content ol {
+            margin: 0 0 8px;
+            padding-left: 20px;
+        }
+
+        .announcement-content a {
+            color: #6366f1;
+        }
+
+        .announcement-content code {
+            background: rgba(99, 102, 241, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .announcement-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .announcement-content blockquote {
+            border-left: 3px solid #6366f1;
+            margin: 0 0 8px;
+            padding-left: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
         .announcement-time {
             padding: 0 16px 12px;
             color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
             text-align: right;
         }
+
         @media (max-width: 768px) {
             .announcement-popup {
                 top: 10px;
@@ -211,8 +302,60 @@
     </style>
 
     <script>
+        // 确认模态框控制
+        let confirmCallback = null;
+
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmModal').style.display = 'flex';
+
+            confirmCallback = onConfirm;
+
+            const okBtn = document.getElementById('confirmOkBtn');
+            // 清除旧的监听器 (防止重复绑定)
+            const newOkBtn = okBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+
+            newOkBtn.addEventListener('click', () => {
+                if (confirmCallback) confirmCallback();
+                closeConfirmModal();
+            });
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            confirmCallback = null;
+        }
+
         let allResults = [];
         let currentCardIndex = 0;
+
+        // 批量兑换设置（从服务器加载）
+        let maxBatchCount = 5;
+        let batchInterval = 5;
+
+        async function loadBatchSettings() {
+            try {
+                const response = await fetch('/api/batch-settings');
+                const data = await response.json();
+                if (data.success) {
+                    maxBatchCount = data.max_batch_count || 5;
+                    batchInterval = data.batch_interval || 5;
+                    // 更新占位符和提示
+                    const input = document.getElementById('redeemKeyInput');
+                    const hint = document.getElementById('inputHint');
+                    if (input && !input.placeholder.includes('维护')) {
+                        input.placeholder = `请输入卡密（每行一个，最多${maxBatchCount}个）...`;
+                    }
+                    if (hint) {
+                        hint.textContent = `支持批量兑换，每行输入一个卡密，每个间隔${batchInterval}秒处理`;
+                    }
+                }
+            } catch (e) {
+                console.error('加载批量设置失败:', e);
+            }
+        }
 
         function formatPan(pan) {
             if (!pan) return '****';
@@ -243,7 +386,7 @@
                 const now = Date.now();
                 const remainingMs = expireTime - now;
                 const remainingEl = document.getElementById('remainingTime');
-                
+
                 if (!remainingEl) {
                     clearInterval(countdownTimer);
                     countdownTimer = null;
@@ -261,7 +404,7 @@
                 const totalSeconds = Math.floor(remainingMs / 1000);
                 const minutes = Math.floor(totalSeconds / 60);
                 const seconds = totalSeconds % 60;
-                
+
                 if (minutes > 0) {
                     remainingEl.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}秒`;
                 } else {
@@ -292,14 +435,14 @@
             const allInputKeys = input.split('\n')
                 .map(k => k.trim())
                 .filter(k => k.length > 0);
-            
-            // 限制最多10个，并立即更新输入框
-            const keys = allInputKeys.slice(0, 10);
-            
-            if (allInputKeys.length > 10) {
-                // 立即修正输入框为前10个
+
+            // 限制最多 maxBatchCount 个，并立即更新输入框
+            const keys = allInputKeys.slice(0, maxBatchCount);
+
+            if (allInputKeys.length > maxBatchCount) {
+                // 立即修正输入框为前 maxBatchCount 个
                 document.getElementById('redeemKeyInput').value = keys.join('\n');
-                showToast(`已截取前10个卡密进行处理`, 'info');
+                showToast(`已截取前${maxBatchCount}个卡密进行处理`, 'info');
             }
 
             if (keys.length === 0) {
@@ -309,7 +452,7 @@
 
             allResults = [];
             currentCardIndex = 0;
-            
+
             hideAllResults();
             document.getElementById('redeemBtn').disabled = true;
 
@@ -337,15 +480,15 @@
 
             try {
                 const result = await processOneKey(keyId, 1, 1);
-                
+
                 // 如果是维护状态，不显示结果
                 if (result.maintenance) {
                     return;
                 }
-                
+
                 allResults.push(result);
                 showResults();
-                
+
                 if (result.success) {
                     showToast(result.isQuery ? '查询成功' : '兑换成功！', 'success');
                     // 成功就清空输入框
@@ -363,7 +506,7 @@
         async function processBatchKeys(keys) {
             const total = keys.length;
             let remainingKeys = [...keys]; // 跟踪剩余的卡密
-            
+
             showProgress(true);
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressCount').textContent = `0 / ${total}`;
@@ -374,18 +517,18 @@
             for (let i = 0; i < keys.length; i++) {
                 const keyId = keys[i];
                 const index = i + 1;
-                
+
                 document.getElementById('progressText').textContent = `正在处理第 ${index} 个卡密...`;
-                
+
                 const result = await processOneKey(keyId, index, total);
-                
+
                 // 如果是维护状态，停止处理
                 if (result.maintenance) {
                     return;
                 }
-                
+
                 allResults.push(result);
-                
+
                 if (result.success) {
                     successCount++;
                     // 成功（兑换或查询）后从剩余列表中移除
@@ -396,24 +539,24 @@
                     errorCount++;
                     // 失败的保留在输入框，不做处理
                 }
-                
+
                 // 实时显示结果：每处理完一个就展示
                 showResultsRealtime(allResults.length - 1);
-                
+
                 const percent = ((i + 1) / total * 100).toFixed(0);
                 document.getElementById('progressFill').style.width = percent + '%';
                 document.getElementById('progressCount').textContent = `${i + 1} / ${total}`;
-                
-                // 只有新兑换才需要等待3秒，查询不需要等待
+
+                // 只有新兑换才需要等待，查询不需要等待
                 if (i < keys.length - 1 && !result.isQuery) {
-                    document.getElementById('progressText').textContent = `等待中...（3秒后处理下一个）`;
-                    await sleep(3000);
+                    document.getElementById('progressText').textContent = `等待中...（${batchInterval}秒后处理下一个）`;
+                    await sleep(batchInterval * 1000);
                 }
             }
 
             if (!serviceAvailable) return;
             showProgress(false);
-            
+
             if (successCount > 0 && errorCount === 0) {
                 showToast(`全部成功！共 ${successCount} 张卡`, 'success');
             } else if (successCount > 0) {
@@ -422,15 +565,15 @@
                 showToast(`全部失败，共 ${errorCount} 个`, 'error');
             }
         }
-        
+
         // 实时显示结果，每处理完一个卡密就更新右侧显示
         function showResultsRealtime(newIndex) {
             if (allResults.length === 0) return;
-            
+
             // 显示导航
             document.getElementById('cardNavigation').style.display = 'flex';
             document.getElementById('totalCards').textContent = allResults.length;
-            
+
             // 只有第一个结果时自动显示，后续不跳转，避免打断用户查看
             if (allResults.length === 1) {
                 currentCardIndex = 0;
@@ -439,19 +582,80 @@
                 // 更新导航按钮状态（可能需要启用"下一个"按钮）
                 document.getElementById('nextBtn').disabled = currentCardIndex === allResults.length - 1;
             }
+
+            // 显示/隐藏"复制全部"和"销毁全部"按钮 (超过1个结果时显示)
+            const copyAllBtn = document.getElementById('copyAllBtn');
+            const destroyAllBtn = document.getElementById('destroyAllBtn');
+            const showBatchBtns = allResults.length > 1;
+
+            if (copyAllBtn) copyAllBtn.style.display = showBatchBtns ? 'block' : 'none';
+            if (destroyAllBtn) destroyAllBtn.style.display = showBatchBtns ? 'block' : 'none';
         }
 
         function showProgress(show) {
             document.getElementById('progressSection').style.display = show ? 'block' : 'none';
         }
 
+        // 检测是否是 Mercury 卡密
+        // Mercury 卡密格式：5236（信用卡）、5481（借记卡）开头，或 0/1 开头（旧格式兼容）
+        function isMercuryCode(code) {
+            const trimmed = code.trim();
+            const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            if (!uuidPattern.test(trimmed)) return false;
+            // Mercury: 5236、5481 开头，或 0/1 开头（旧格式）
+            if (trimmed.startsWith('5236') || trimmed.startsWith('5481')) return true;
+            if (trimmed[0] === '0' || trimmed[0] === '1') return true;
+            return false;
+        }
+
+        // 检测是否是 Airwallex 卡密（不是 Mercury 的 UUID 都视为 Airwallex）
+        function isAirwallexCode(code) {
+            const trimmed = code.trim();
+            const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            if (!uuidPattern.test(trimmed)) return false;
+            return !isMercuryCode(trimmed);
+        }
+
         async function processOneKey(keyId, index, total) {
             try {
+                // 检测卡密类型
+                if (isAirwallexCode(keyId)) {
+                    // Airwallex 卡兑换
+                    document.getElementById('progressText').textContent = total > 1
+                        ? `正在兑换第 ${index} 个卡密 (Airwallex)...`
+                        : '正在兑换 (Airwallex)...';
+
+                    const response = await fetch('/api/airwallex/redeem', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: keyId })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // 设置兑换时间为当前时间
+                        if (!data.used_time) {
+                            data.used_time = new Date().toISOString();
+                        }
+                        return {
+                            success: true,
+                            isQuery: !data.is_new,  // 如果不是新卡，视为查询
+                            isAirwallex: true,
+                            index,
+                            keyId,
+                            data: data
+                        };
+                    } else {
+                        return { success: false, index, keyId, error: data.error || '兑换失败' };
+                    }
+                }
+
+                // 原有的 Mercury 卡密处理逻辑
                 // 更新进度为查询中
-                document.getElementById('progressText').textContent = total > 1 
-                    ? `正在查询第 ${index} 个卡密...` 
+                document.getElementById('progressText').textContent = total > 1
+                    ? `正在查询第 ${index} 个卡密...`
                     : '正在查询...';
-                
+
                 const queryResponse = await fetch('/api/keys/query', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -462,13 +666,13 @@
                 if (queryData.success) {
                     return { success: true, isQuery: true, index, keyId, data: queryData };
                 }
-                
+
                 if (queryData.error === '卡密未使用') {
                     // 更新进度为兑换中
-                    document.getElementById('progressText').textContent = total > 1 
-                        ? `正在兑换第 ${index} 个卡密...` 
+                    document.getElementById('progressText').textContent = total > 1
+                        ? `正在兑换第 ${index} 个卡密...`
                         : '正在兑换...';
-                    
+
                     const redeemResponse = await fetch('/api/keys/redeem', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -485,6 +689,10 @@
                     } else {
                         // 检查是否是维护状态
                         if (redeemData.maintenance) {
+                            // 如果是429，也视为一种特殊的维护/错误状态，但不要让整个界面变成维护模式，而是显示具体错误
+                            if (redeemData.error && (redeemData.error.includes('429') || redeemData.error.includes('服务器繁忙'))) {
+                                return { success: false, index, keyId, error: redeemData.error || "当前服务器繁忙，请五分钟后再试", maintenance: true };
+                            }
                             showMaintenanceMode();
                             return { success: false, index, keyId, error: redeemData.error || '兑换失败', maintenance: true };
                         }
@@ -503,32 +711,36 @@
                 document.getElementById('emptyState').style.display = 'flex';
                 return;
             }
-            
+
             // 只要有结果就显示导航
             document.getElementById('cardNavigation').style.display = 'flex';
             document.getElementById('totalCards').textContent = allResults.length;
-            
+
             showCard(currentCardIndex);
         }
 
         function showCard(index) {
             if (index < 0 || index >= allResults.length) return;
-            
+
             currentCardIndex = index;
             const result = allResults[index];
-            
+
             hideAllResults();
-            
+
             if (allResults.length > 1) {
                 document.getElementById('cardNavigation').style.display = 'flex';
             }
-            
+
             if (result.success) {
-                showCardResult(result.data, result.isQuery);
+                showCardResult(result.data, result.isQuery, result.isAirwallex);
+            } else if (result.maintenance && result.error.includes("当前服务器繁忙")) { // 特殊处理429
+                document.getElementById('errorMessage').innerHTML = `<span style="font-size: 1.2em; font-weight: bold; color: #ff4d4f;">${result.error}</span>`;
+                document.getElementById('errorKey').textContent = `卡密: ${result.keyId}`;
+                document.getElementById('errorState').style.display = 'flex';
             } else {
                 showErrorResult(result);
             }
-            
+
             updateNavigation(result);
         }
 
@@ -537,9 +749,12 @@
             document.getElementById('totalCards').textContent = allResults.length;
             document.getElementById('prevBtn').disabled = currentCardIndex === 0;
             document.getElementById('nextBtn').disabled = currentCardIndex === allResults.length - 1;
-            
+
             const badge = document.getElementById('cardStatusBadge');
-            if (result.success) {
+            if (result.data && result.data.destroyed) {
+                badge.textContent = '已销毁';
+                badge.className = 'card-status-badge error';
+            } else if (result.success) {
                 badge.textContent = result.isQuery ? '已查询' : '已兑换';
                 badge.className = 'card-status-badge ' + (result.isQuery ? 'query' : 'success');
             } else {
@@ -579,7 +794,7 @@
             return parts.join(', ') || '';
         }
 
-        function showCardResult(data, isQuery) {
+        function showCardResult(data, isQuery, isAirwallex = false) {
             const card = data.card;
             const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
             const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
@@ -589,7 +804,13 @@
             const usedTimeDisplay = new Date(usedTimeValue).toLocaleString();
             const addr = data.legal_address || {};
             const fullAddress = formatAddress(addr);
-            
+
+            // Airwallex 卡片隐藏销毁按钮
+            const destroyBtn = document.querySelector('.destroy-btn');
+            if (destroyBtn) {
+                destroyBtn.style.display = isAirwallex ? 'none' : 'inline-flex';
+            }
+
             // 卡片信息
             const cardGrid = document.getElementById('cardInfoGrid');
             cardGrid.innerHTML = `
@@ -618,12 +839,44 @@
                     <span class="info-value">${usedTimeDisplay}</span>
                 </div>
             `;
-            
-            // 启动倒计时
-            startCountdown(usedTimeValue, data.expire_minutes);
-            
+
+            // 启动倒计时或显示销毁状态
+            if (data.destroyed) {
+                const el = document.getElementById('remainingTime');
+                if (el) {
+                    el.textContent = '已销毁';
+                    el.classList.add('error');
+                    el.style.color = 'var(--danger)';
+                }
+                if (countdownTimer) clearInterval(countdownTimer);
+
+                // 禁用销毁按钮
+                const destroyBtn = document.querySelector('.destroy-btn');
+                if (destroyBtn) {
+                    destroyBtn.disabled = true;
+                    destroyBtn.textContent = '已销毁';
+                    destroyBtn.style.opacity = '0.5';
+                    destroyBtn.style.cursor = 'not-allowed';
+                    destroyBtn.style.background = '#666';
+                    destroyBtn.style.borderColor = '#666';
+                }
+            } else {
+                startCountdown(usedTimeValue, data.expire_minutes);
+
+                // 确保销毁按钮可用
+                const destroyBtn = document.querySelector('.destroy-btn');
+                if (destroyBtn) {
+                    destroyBtn.disabled = false;
+                    destroyBtn.textContent = '销毁卡片';
+                    destroyBtn.style.opacity = '';
+                    destroyBtn.style.cursor = '';
+                    destroyBtn.style.background = '';
+                    destroyBtn.style.borderColor = '';
+                }
+            }
+
             document.getElementById('copyCardBtn').onclick = () => copyText(fullInfo);
-            
+
             // 账单地址
             const street = ((addr.address1 || '') + (addr.address2 ? ' ' + addr.address2 : '')).trim();
             const randomName = generateRandomUSName();
@@ -654,9 +907,9 @@
                     <span class="info-value">${addr.country || '-'}</span>
                 </div>
             `;
-            
+
             document.getElementById('copyAddressBtn').onclick = () => copyText(fullAddress);
-            
+
             // 显示上方区域和下方消费记录
             document.getElementById('topRowSection').style.display = 'flex';
             document.getElementById('transactionsSection').style.display = 'flex';
@@ -664,7 +917,7 @@
 
         function showErrorResult(result) {
             document.getElementById('errorMessage').textContent = result.error;
-            document.getElementById('errorKey').textContent = `卡密: ${result.keyId}`;
+            document.getElementById('errorKey').textContent = `卡密: ${result.keyId} `;
             document.getElementById('errorState').style.display = 'flex';
         }
 
@@ -704,23 +957,172 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        async function copyAllCards() {
+            // 过滤出成功的卡片
+            const validCards = allResults.filter(r => r.success && r.data && r.data.card);
+            if (validCards.length === 0) {
+                showToast('没有可复制的卡片', 'error');
+                return;
+            }
+
+            const lines = validCards.map(r => {
+                const card = r.data.card;
+                // 格式: 卡号 MM YY CVV (例如: 5236860148352901 01 32 224)
+                const month = String(card.exp_month).padStart(2, '0');
+                const year = String(card.exp_year).slice(-2);
+                return `${card.pan} ${month} ${year} ${card.cvv} `;
+            });
+
+            const text = lines.join('\n');
+            try {
+                await copyToClipboard(text);
+                showToast(`已复制 ${validCards.length} 张卡片信息`, 'success');
+            } catch (err) {
+                showToast('复制失败', 'error');
+            }
+        }
+
+        async function destroyCurrentCard() {
+            if (currentCardIndex < 0 || currentCardIndex >= allResults.length) return;
+            const currentCardResult = allResults[currentCardIndex];
+            if (!currentCardResult) return;
+
+            const keyId = currentCardResult.keyId;
+            const cardId = currentCardResult.data?.card?.card_id;
+
+            // 使用自定义弹窗
+            showConfirmModal(
+                '销毁卡片确认',
+                '确定要销毁这张卡片吗？销毁后无法恢复！(同时会删除卡片和销毁卡密)',
+                async () => {
+                    await executeDestroy([{ key: keyId, card_id: cardId }]);
+                }
+            );
+        }
+
+        async function destroyAllCards() {
+            // 过滤出成功的卡片 (需包含 card_id 用于验证)
+            const validItems = allResults
+                .filter(r => r.success && r.keyId && r.data?.card?.card_id)
+                .map(r => ({
+                    key: r.keyId,
+                    card_id: r.data.card.card_id
+                }));
+
+            if (validItems.length === 0) {
+                showToast('没有可销毁的卡片', 'error');
+                return;
+            }
+
+            showConfirmModal(
+                '批量销毁确认',
+                `确定要销毁这 ${validItems.length} 张卡片吗？操作不可逆！`,
+                async () => {
+                    await executeDestroy(validItems);
+                }
+            );
+        }
+
+        async function executeDestroy(items) {
+            // 不显示全屏进度条，避免打断用户
+            // showProgress(true); 
+
+            // 临时禁用按钮防止重复点击
+            const destroyBtn = document.querySelector('.destroy-btn');
+            if (destroyBtn) destroyBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/keys/user-destroy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: items })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const totalDestroyed = result.destroyed_keys + result.failed;
+                    let msg = `已销毁`;
+                    if (result.destroyed_keys > 1) {
+                        msg = `成功销毁 ${result.destroyed_keys} 张`;
+                        if (result.failed > 0) msg += `，失败 ${result.failed} 张`;
+                    }
+
+                    showToast(msg, result.failed === 0 ? 'success' : 'warning');
+
+                    // 更新前端数据状态
+                    if (result.results) {
+                        result.results.forEach(res => {
+                            if (res.status === 'success') {
+                                const target = allResults.find(r => r.keyId === res.key);
+                                if (target) {
+                                    // 标记为已销毁，但不置为失败，以便保留卡片详情显示
+                                    if (!target.data) target.data = {};
+                                    target.data.destroyed = true;
+                                    // target.maintenance = true; // 不需要maintenance，否则会显示错误页
+                                }
+                            }
+                        });
+
+                        // 刷新当前视图
+                        const currentCardResult = allResults[currentCardIndex];
+                        if (currentCardResult && currentCardResult.data && currentCardResult.data.destroyed) {
+                            // 重新渲染当前卡片以显示"已销毁"状态
+                            showCardResult(currentCardResult.data, currentCardResult.isQuery);
+                            // 更新导航状态徽章
+                            updateNavigation(currentCardResult);
+
+                            // 再次确保按钮禁用（因为showCardResult可能重置了DOM）
+                            setTimeout(() => {
+                                const newBtn = document.querySelector('.destroy-btn');
+                                if (newBtn) {
+                                    newBtn.disabled = true;
+                                    newBtn.textContent = '已销毁';
+                                }
+                            }, 0);
+                        }
+
+                        // 检查是否所有卡片都已销毁，如果是则禁用"销毁全部"按钮
+                        const hasUndestroyed = allResults.some(r =>
+                            r.success && r.data && r.data.card && !r.data.destroyed
+                        );
+                        if (!hasUndestroyed) {
+                            const destroyAllBtn = document.getElementById('destroyAllBtn');
+                            if (destroyAllBtn) {
+                                destroyAllBtn.disabled = true;
+                                destroyAllBtn.textContent = '已销毁';
+                            }
+                        }
+                    }
+
+                } else {
+                    showToast('请求失败: ' + (result.error || '未知错误'), 'error');
+                    if (destroyBtn) destroyBtn.disabled = false;
+                }
+            } catch (e) {
+                showToast('网络请求失败', 'error');
+                if (destroyBtn) destroyBtn.disabled = false;
+            }
+            // finally { showProgress(false); } // 不需要隐藏，因为没显示
+        }
+
         // 键盘导航
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (allResults.length > 1 && document.getElementById('cardNavigation').style.display !== 'none') {
                 if (e.key === 'ArrowLeft') showPrevCard();
                 else if (e.key === 'ArrowRight') showNextCard();
             }
         });
-        
+
         // 检查服务是否可用
         let serviceAvailable = true;
-        
+
         async function checkServiceStatus() {
             try {
                 const response = await fetch('/api/service/status');
                 const data = await response.json();
                 serviceAvailable = data.available;
-                
+
                 if (!serviceAvailable) {
                     showMaintenanceMode();
                 }
@@ -728,7 +1130,7 @@
                 console.error('Failed to check service status:', e);
             }
         }
-        
+
         function showMaintenanceMode() {
             // 隐藏所有其他状态
             document.getElementById('emptyState').style.display = 'none';
@@ -745,33 +1147,42 @@
             document.getElementById('redeemKeyInput').placeholder = '服务维护中，请稍后重试...';
             serviceAvailable = false;
         }
-        
+
         // 页面加载时检查服务状态
         checkServiceStatus();
-        
+
         // 加载公告
         async function loadAnnouncement() {
             try {
                 const response = await fetch('/api/announcement');
                 const data = await response.json();
                 if (data.success && data.content && data.content.trim()) {
-                    document.getElementById('announcementText').innerHTML = marked.parse(data.content, { breaks: true });
+                    const announcementPopup = document.getElementById('announcementPopup');
+                    const announcementText = document.getElementById('announcementText');
+                    announcementText.innerHTML = marked.parse(data.content, { breaks: true });
+                    // 应用公告大小设置（整体缩放）
+                    if (data.size && data.size !== 100) {
+                        const scale = data.size / 100;
+                        announcementPopup.style.transform = `scale(${scale})`;
+                        announcementPopup.style.transformOrigin = 'top right';
+                    }
                     if (data.time) {
                         document.getElementById('announcementTime').textContent = '发布于 ' + data.time;
                     }
-                    document.getElementById('announcementPopup').style.display = 'block';
+                    announcementPopup.style.display = 'block';
                 }
             } catch (e) {
                 console.error('Failed to load announcement:', e);
             }
         }
-        
+
         function closeAnnouncement() {
             document.getElementById('announcementPopup').style.display = 'none';
         }
-        
+
         loadAnnouncement();
-        
+        loadBatchSettings();
+
         // 注册 Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
@@ -779,4 +1190,5 @@
         }
     </script>
 </body>
+
 </html>

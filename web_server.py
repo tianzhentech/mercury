@@ -218,12 +218,6 @@ def login_page():
     return render_template('login.html', version=get_version())
 
 
-@app.route('/redeem')
-def redeem():
-    """兑换卡密页面 - 用户端（无需登录）"""
-    return render_template('redeem.html', version=get_version())
-
-
 @app.route('/withdraw/<token>')
 def withdraw_page(token):
     """提卡链接页面 - 用户端（无需登录）"""
@@ -232,9 +226,11 @@ def withdraw_page(token):
 
 @app.route('/api/service/status', methods=['GET'])
 def api_service_status():
-    """检查服务是否可用（是否有活跃的后台账户）"""
-    available = has_active_accounts()
-    return jsonify({"available": available})
+    """检查服务是否可用（手动维护开关）"""
+    settings = load_settings()
+    maintenance_mode = settings.get("maintenance_mode", False)
+    return jsonify({"available": not maintenance_mode})
+
 
 
 # ==================== 认证 API ====================
@@ -572,7 +568,11 @@ def save_settings(settings):
 def api_get_announcement():
     """获取公告内容"""
     settings = load_settings()
-    return jsonify({"success": True, "content": settings.get("announcement", "")})
+    return jsonify({
+        "success": True, 
+        "content": settings.get("announcement", ""),
+        "announcement_size": settings.get("announcement_size", 100)
+    })
 
 
 @app.route('/api/settings/announcement', methods=['POST'])
@@ -582,8 +582,12 @@ def api_set_announcement():
     try:
         data = request.json
         content = data.get('content', '')
+        announcement_size = data.get('announcement_size', 100)
+        # 限制范围 50-150
+        announcement_size = max(50, min(150, int(announcement_size)))
         settings = load_settings()
         settings['announcement'] = content
+        settings['announcement_size'] = announcement_size
         settings['announcement_time'] = datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
         save_settings(settings)
         return jsonify({"success": True, "message": "公告已保存"})
@@ -598,7 +602,82 @@ def api_get_public_announcement():
     return jsonify({
         "success": True, 
         "content": settings.get("announcement", ""),
-        "time": settings.get("announcement_time", "")
+        "time": settings.get("announcement_time", ""),
+        "size": settings.get("announcement_size", 100)
+    })
+
+
+@app.route('/api/settings/maintenance', methods=['GET'])
+@require_admin
+def api_get_maintenance():
+    """获取维护模式状态"""
+    settings = load_settings()
+    return jsonify({
+        "success": True, 
+        "maintenance_mode": settings.get("maintenance_mode", False)
+    })
+
+
+@app.route('/api/settings/maintenance', methods=['POST'])
+@require_admin
+def api_set_maintenance():
+    """设置维护模式"""
+    try:
+        data = request.json
+        maintenance_mode = data.get('maintenance_mode', False)
+        settings = load_settings()
+        settings['maintenance_mode'] = bool(maintenance_mode)
+        save_settings(settings)
+        return jsonify({
+            "success": True, 
+            "message": "维护模式已" + ("开启" if maintenance_mode else "关闭")
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/settings/batch', methods=['GET'])
+@require_admin
+def api_get_batch_settings():
+    """获取批量兑换设置"""
+    settings = load_settings()
+    return jsonify({
+        "success": True,
+        "max_batch_count": settings.get("max_batch_count", 5),
+        "batch_interval": settings.get("batch_interval", 5)
+    })
+
+
+@app.route('/api/settings/batch', methods=['POST'])
+@require_admin
+def api_set_batch_settings():
+    """设置批量兑换参数"""
+    try:
+        data = request.json
+        max_batch_count = int(data.get('max_batch_count', 5))
+        batch_interval = int(data.get('batch_interval', 5))
+        
+        # 限制范围
+        max_batch_count = max(1, min(20, max_batch_count))
+        batch_interval = max(1, min(30, batch_interval))
+        
+        settings = load_settings()
+        settings['max_batch_count'] = max_batch_count
+        settings['batch_interval'] = batch_interval
+        save_settings(settings)
+        return jsonify({"success": True, "message": "设置已保存"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/batch-settings', methods=['GET'])
+def api_get_public_batch_settings():
+    """获取批量兑换设置（公开API，用于兑换页面）"""
+    settings = load_settings()
+    return jsonify({
+        "success": True,
+        "max_batch_count": settings.get("max_batch_count", 5),
+        "batch_interval": settings.get("batch_interval", 5)
     })
 
 
@@ -807,7 +886,7 @@ def create_cards_stream():
     count = int(request.args.get('count', 1))
     card_limit = int(request.args.get('card_limit', 1))
     expire_minutes = int(request.args.get('expire_minutes', 60))
-    interval = max(3, int(request.args.get('interval', 3)))
+    interval = max(5, int(request.args.get('interval', 5)))
     card_type = request.args.get('card_type', 'credit')
     
     # 获取当前用户（在闭包外获取）
@@ -835,11 +914,12 @@ def create_cards_stream():
             
             print(f"\n[创建卡片] 使用账户 {account_email} 创建第 {current}/{count} 张 ${card_limit} 卡片...")
             
-            card_id = issue_card(account, transaction_limit=card_limit, card_type=card_type)
+            card_id, create_error = issue_card(account, transaction_limit=card_limit, card_type=card_type)
             
             if not card_id:
                 failed_count += 1
-                yield f"data: {json.dumps({'type': 'progress', 'current': current, 'total': count, 'status': 'failed', 'message': f'第 {current} 张卡片创建失败 ({account_email})'})}\n\n"
+                error_msg = create_error or "创建失败"
+                yield f"data: {json.dumps({'type': 'progress', 'current': current, 'total': count, 'status': 'failed', 'message': f'第 {current} 张卡片创建失败 ({account_email}): {error_msg}'})}\n\n"
                 continue
             
             yield f"data: {json.dumps({'type': 'progress', 'current': current, 'total': count, 'status': 'revealing', 'message': f'正在获取第 {current}/{count} 张卡片详情...'})}\n\n"
@@ -1314,6 +1394,101 @@ def destroy_keys():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route('/api/keys/user-destroy', methods=['POST'])
+def destroy_keys_user():
+    """无需登录的销毁接口，需验证卡密和卡号匹配"""
+    from card.cancel import cancel_card
+    from id.id import mark_destroyed
+    
+    try:
+        data = request.get_json() or {}
+        items = data.get('items', []) # List of {key: '...', card_id: '...'}
+        
+        if not items:
+            return jsonify({"success": False, "error": "参数错误"}), 400
+        
+        results = []
+        destroyed_keys = 0
+        deleted_cards = 0
+        failed = 0
+        
+        for item in items:
+            key_id = item.get('key', '').strip()
+            request_card_id = item.get('card_id', '').strip()
+            
+            result = {"key": key_id}
+            print(f"[用户销毁] 请求销毁: key={key_id}, card_id={request_card_id}")
+            
+            # 1. 验证卡密信息
+            success, redeemed_info = query_redeemed(key_id)
+            if not success:
+                result["status"] = "failed"
+                result["error"] = "卡密无效"
+                failed += 1
+                results.append(result)
+                print(f"[用户销毁] ❌ 卡密无效: {key_id}")
+                continue
+
+            card = redeemed_info.get("card", {})
+            server_card_id = card.get("card_id")
+            
+            # 2. 核心校验：传入的 card_id 必须匹配
+            # 也可以校验 PAN 等，但 card_id 最准确
+            if not server_card_id or server_card_id != request_card_id:
+                result["status"] = "failed"
+                result["error"] = "卡片信息验证失败"
+                failed += 1
+                results.append(result)
+                print(f"[用户销毁] ❌ 验证失败: 提交={request_card_id}, 实际={server_card_id}")
+                continue
+            
+            # 3. 验证通过，执行销毁
+            card_type = card.get("card_type", "credit")
+            account_user_id = card.get("account_user_id")
+            
+            # 取消卡片
+            account = get_account_by_user_id(account_user_id)
+            card_deleted = False
+            if account:
+                print(f"[用户销毁] 取消卡片 {server_card_id} (账户: {account.get('email')})")
+                try:
+                    if cancel_card(server_card_id, account, card_type=card_type):
+                        card_deleted = True
+                        deleted_cards += 1
+                    else:
+                        print(f"[用户销毁] ⚠️ 卡片取消失败")
+                except Exception as e:
+                     print(f"[用户销毁] ⚠️ 卡片取消异常: {e}")
+            
+            # 标记销毁
+            # 已经通过 card_id 强校验，此处无需再校验 username，传入 None 跳过 id.py 中的检查
+            mark_success, mark_error = mark_destroyed(key_id, username=None)
+            if mark_success:
+                destroyed_keys += 1
+                result["status"] = "success"
+                print(f"[用户销毁] ✅ 卡密已销毁")
+            else:
+                result["status"] = "failed"
+                result["error"] = mark_error
+                failed += 1
+                print(f"[用户销毁] ❌ 标记销毁失败: {mark_error}")
+                
+            results.append(result)
+
+        return jsonify({
+            "success": True, 
+            "destroyed_keys": destroyed_keys,
+            "deleted_cards": deleted_cards,
+            "failed": failed,
+            "results": results
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route('/api/keys/redeem', methods=['POST'])
 def redeem_key():
     """兑换卡密 - 无需登录，自动重试所有活跃账户"""
@@ -1350,11 +1525,11 @@ def redeem_key():
             print(f"[兑换卡密] 尝试账户 {i+1}/{len(active_accounts)}: {account_email} 创建 ${card_limit} {card_type_name}...")
             
             try:
-                card_id = issue_card(account, transaction_limit=card_limit, card_type=card_type)
+                card_id, create_error = issue_card(account, transaction_limit=card_limit, card_type=card_type)
                 
                 if not card_id:
-                    print(f"[兑换卡密] 账户 {account_email} 创建卡片失败，尝试下一个...")
-                    last_error = "创建卡片失败"
+                    print(f"[兑换卡密] 账户 {account_email} 创建卡片失败: {create_error}，尝试下一个...")
+                    last_error = create_error or "创建卡片失败"
                     continue
                 
                 card_details = reveal_card_details(card_id, account, card_type=card_type)
@@ -1416,7 +1591,12 @@ def redeem_key():
                 continue
         
         # 所有账户都失败了
-        print(f"[兑换卡密] 所有 {len(active_accounts)} 个账户都失败了")
+        print(f"[兑换卡密] 所有 {len(active_accounts)} 个账户都失败了，最后错误: {last_error}")
+        
+        # 如果是 429 错误，标记为 maintenance 以便前端显示特定状态（可选）
+        if "429" in str(last_error) or "操作过于频繁" in str(last_error) or "rate-limited" in str(last_error):
+             return jsonify({"success": False, "error": last_error or "系统繁忙，请稍后再试", "maintenance": False}), 429
+
         return jsonify({"success": False, "error": last_error}), 500
     
     except Exception as e:
@@ -1452,6 +1632,8 @@ def query_key():
             "expire_minutes": result["expire_minutes"],
             "card_limit": result["card_limit"],
             "used_time": result["used_time"],
+            "destroyed": result.get("destroyed", False),
+            "destroyed_time": result.get("destroyed_time"),
             "legal_address": legal_address
         })
     

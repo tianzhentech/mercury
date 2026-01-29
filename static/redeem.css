@@ -24,7 +24,8 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
 }
@@ -33,7 +34,7 @@ body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
-    background-image: 
+    background-image:
         radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at bottom right, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
 }
@@ -163,7 +164,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .progress-text {
@@ -207,7 +210,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 24px;
-    margin-bottom: 0;
+    margin-bottom: 16px;
     padding: 16px;
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -282,6 +285,88 @@ body {
 .card-status-badge.query {
     background: rgba(99, 102, 241, 0.2);
     color: var(--accent-light);
+}
+
+.copy-all-btn {
+    position: absolute;
+    left: 106px;
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-all-btn:hover {
+    border-color: var(--accent);
+    color: white;
+    background: var(--accent);
+}
+
+.destroy-all-btn {
+    position: absolute;
+    left: 16px;
+    padding: 6px 12px;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--danger);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.destroy-all-btn:hover {
+    border-color: var(--danger);
+    color: white;
+    background: var(--danger);
+}
+
+.destroy-all-btn:disabled {
+    background: #666;
+    border-color: #666;
+    color: #999;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.destroy-all-btn:disabled:hover {
+    background: #666;
+    border-color: #666;
+    color: #999;
+}
+
+.destroy-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--danger);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.destroy-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.destroy-btn:disabled {
+    background: #666;
+    border-color: #666;
+    color: #999;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.destroy-btn:disabled:hover {
+    background: #666;
+    border-color: #666;
+    color: #999;
 }
 
 /* 结果内容区 */
@@ -381,7 +466,7 @@ body {
     transition: background 0.2s;
 }
 
-.info-item.clickable + .info-item {
+.info-item.clickable+.info-item {
     border-top: 1px solid var(--border);
 }
 
@@ -436,8 +521,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
 }
 
 /* 消费记录占位 */
@@ -587,5 +679,92 @@ body {
     .right-panel {
         flex: 1;
         min-height: 0;
+    }
+}
+
+/* 通用确认弹窗 */
+.confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirm-modal-content {
+    background: #1e2332;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: scaleIn 0.2s ease;
+}
+
+.confirm-modal-content h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.confirm-message {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirm-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.confirm-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.confirm-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.confirm-btn.danger {
+    background: var(--danger);
+    color: white;
+}
+
+.confirm-btn.danger:hover {
+    background: #dc2626;
+    /* darker red */
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }

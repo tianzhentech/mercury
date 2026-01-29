@@ -270,27 +270,28 @@ def save_ids(data):
 def generate_ids(count, expire_minutes, card_limit=1, card_type="credit", created_by=None, hidden=False, hidden_token=None, hidden_note=None):
     """
     生成卡密
-    
+
     Args:
         count: 生成数量
         expire_minutes: 兑换后卡片有效时间（分钟）
         card_limit: 卡片余额（美元）
         card_type: 卡片类型 ("credit" 或 "debit")
         created_by: 创建者用户名
-        
+
     Returns:
         list: 生成的卡密列表
     """
     _init_db()
     generated = []
     now_iso = _utc_now_iso()
-    
+
     with _get_cursor() as cursor:
         for _ in range(count):
-            # 根据卡类型生成UUID：信用卡以0开头，借记卡以1开头
+            # 根据卡类型生成卡密：信用卡以5236开头，借记卡以5481开头
             raw_uuid = str(uuid.uuid4())
-            prefix = '0' if card_type == 'credit' else '1'
-            typed_uuid = prefix + raw_uuid[1:]
+            prefix = '5236' if card_type == 'credit' else '5481'
+            # 替换 UUID 的前4个字符
+            typed_uuid = prefix + raw_uuid[4:]
             
             cursor.execute('''
                 INSERT INTO ids 
@@ -481,7 +482,9 @@ def query_redeemed(card_id):
             "card": card,
             "expire_minutes": row["expire_minutes"],
             "card_limit": row["card_limit"],
-            "used_time": used_time
+            "used_time": used_time,
+            "destroyed": bool(row["destroyed"]) if row["destroyed"] is not None else False,
+            "destroyed_time": row["destroyed_time"] if "destroyed_time" in row.keys() else None
         }
 
 

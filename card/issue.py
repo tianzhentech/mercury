@@ -62,15 +62,29 @@ def issue_card(account, transaction_limit=1000, card_type="credit"):
             print("=" * 30)
             print(f"成功获取 Card ID: {card_id}")
             print("=" * 30)
-            return card_id
+            return card_id, None
         else:
             print("未在响应中找到 ID 字段，完整响应如下：")
             print(json.dumps(response_data, indent=4))
-            return None
+            return None, "未找到卡片ID"
     else:
         print(f"请求失败，状态码: {response.status_code}")
         print("错误详情:", response.text)
-        return None
+        
+        error_msg = f"请求失败 ({response.status_code})"
+        if response.status_code == 429:
+            error_msg = "当前服务器繁忙，请五分钟后再试"
+        elif response.status_code == 401:
+            error_msg = "账户授权过期，请重新登录"
+            
+        try:
+            err_json = response.json()
+            if "errors" in err_json and "rate-limited" in err_json["errors"]:
+                error_msg = "当前服务器繁忙，请五分钟后再试"
+        except:
+            pass
+            
+        return None, error_msg
 
 
 def issue_debit_card(account, transaction_limit=1000):
@@ -92,9 +106,10 @@ def issue_debit_card(account, transaction_limit=1000):
     
     # 借记卡需要 depository_account_id
     depository_account_id = account.get("depository_account_id")
+    depository_account_id = account.get("depository_account_id")
     if not depository_account_id:
         print("❌ 账户没有存款账户ID，无法创建借记卡")
-        return None
+        return None, "账户没有存款账户ID"
     
     payload = {
         "cardRealm": "virtual",
@@ -117,7 +132,7 @@ def issue_debit_card(account, transaction_limit=1000):
     response = mercury_request(account, 'POST', url, headers=headers, json_data=payload)
     
     if response is None:
-        return None
+        return None, "网络请求失败"
 
     if response.status_code == 200:
         response_data = response.json()
@@ -127,15 +142,20 @@ def issue_debit_card(account, transaction_limit=1000):
             print("=" * 30)
             print(f"成功获取借记卡 ID: {card_id}")
             print("=" * 30)
-            return card_id
+            return card_id, None
         else:
             print("未在响应中找到 debitCardId 字段，完整响应如下：")
             print(json.dumps(response_data, indent=4))
-            return None
+            return None, "未找到借记卡ID"
     else:
         print(f"请求失败，状态码: {response.status_code}")
         print("错误详情:", response.text)
-        return None
+        
+        error_msg = f"请求失败 ({response.status_code})"
+        if response.status_code == 429:
+            error_msg = "当前服务器繁忙，请五分钟后再试"
+            
+        return None, error_msg
 
 
 # ==========================================
@@ -146,8 +166,10 @@ if __name__ == "__main__":
     
     account = get_random_account()
     if account:
-        card_id = issue_card(account)
+        card_id, error = issue_card(account)
         if card_id:
             print(f"\n创建的卡 ID: {card_id}")
+        else:
+            print(f"\n创建失败: {error}")
     else:
         print("没有可用的账户")

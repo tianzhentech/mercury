@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -14,6 +15,7 @@
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
     <div class="app-layout">
         <!-- 左侧导航栏 -->
@@ -35,7 +37,9 @@
                 </button>
                 <button class="nav-item" onclick="switchTab('keys')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                        <path
+                            d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                        </path>
                     </svg>
                     生成卡密
                 </button>
@@ -61,7 +65,9 @@
                 <button class="nav-item" onclick="switchTab('proxies')" id="proxiesTab" style="display: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
                         <path d="M2 12h20"></path>
                     </svg>
                     代理管理
@@ -76,7 +82,9 @@
                 <button class="nav-item" onclick="switchTab('settings')" id="settingsTab" style="display: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
                     </svg>
                     设置
                 </button>
@@ -103,440 +111,628 @@
         <!-- 右侧内容区 -->
         <main class="main-content">
 
-        <!-- 创建卡片面板 -->
-        <div id="cardsPanel" class="tab-content active">
-            <div class="panel-fixed">
-                <section class="control-panel">
-                    <h2>创建卡片</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="cardCount">开卡数量</label>
-                            <input type="number" id="cardCount" min="1" value="1">
-                        </div>
-                        <div class="form-group">
-                            <label for="cardLimit">卡片余额 ($)</label>
-                            <input type="number" id="cardLimit" min="0" max="1000" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="cardType">卡片类型</label>
-                            <select id="cardType">
-                                <option value="credit">信用卡</option>
-                                <option value="debit">借记卡</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="expireTime">过期时间 (分钟)</label>
-                            <input type="number" id="expireTime" min="1" max="1440" value="60">
-                        </div>
-                        <div class="form-group">
-                            <label for="interval">创建间隔 (秒)</label>
-                            <input type="number" id="interval" min="3" value="3">
-                        </div>
-                        <div class="form-group">
-                            <button id="createBtn" onclick="createCards()">创建卡片</button>
-                        </div>
-                    </div>
-                    
-                    <div id="createProgress" class="inline-progress" style="display: none;">
-                        <div class="progress-header">
-                            <span class="progress-title">正在创建...</span>
-                            <button class="btn-stop" onclick="stopCreate()">停止</button>
-                        </div>
-                        <div class="progress-bar">
-                            <div id="createProgressFill" class="progress-fill"></div>
-                        </div>
-                        <div class="progress-info">
-                            <span id="createProgressText">0 / 0</span>
-                            <span id="createProgressMessage"></span>
-                        </div>
-                    </div>
-                </section>
-
-                <div class="list-header">
-                    <h2>卡片列表 <span id="cardCount2" class="badge">0</span>
-                        <span class="filter-buttons">
-                            <button class="filter-btn active" data-filter="all" onclick="filterCards('all')">ALL</button>
-                            <button class="filter-btn credit" data-filter="credit" onclick="filterCards('credit')">信</button>
-                            <button class="filter-btn debit" data-filter="debit" onclick="filterCards('debit')">借</button>
-                        </span>
-                    </h2>
-                    <div class="header-actions">
-                        <div class="search-box" id="searchBox">
-                            <div class="btn-search">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.35-4.35"></path>
-                                </svg>
-                            </div>
-                            <input type="text" id="searchInput" placeholder="搜索卡号..." oninput="searchCards()" onfocus="handleSearchFocus()" onblur="handleSearchBlur()">
-                            <button class="btn-clear" onclick="clearSearch()" title="清除">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 6L6 18M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <button class="btn-secondary" onclick="copyAllCards()">复制所有</button>
-                        <button class="btn-danger" id="deleteAllBtn" onclick="deleteAllCards()">删除所有</button>
-                    </div>
-                </div>
-                
-                <div id="deleteProgress" class="inline-progress danger" style="display: none;">
-                    <div class="progress-header">
-                        <span class="progress-title">正在删除...</span>
-                        <button class="btn-stop" onclick="stopDelete()">停止</button>
-                    </div>
-                    <div class="progress-bar">
-                        <div id="deleteProgressFill" class="progress-fill"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span id="deleteProgressText">0 / 0</span>
-                        <span id="deleteProgressMessage"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel-scroll">
-                <div id="cardsContainer">
-                    <div class="empty-state">暂无卡片</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 生成卡密面板 -->
-        <div id="keysPanel" class="tab-content">
-            <div class="panel-fixed">
-                <section class="control-panel">
-                    <div class="add-mode-toggle" style="margin-bottom: 15px;">
-                        <button id="modeGenerateBtn" class="mode-btn active" onclick="switchKeyMode('generate')">生成卡密</button>
-                        <button id="modeDestroyBtn" class="mode-btn" onclick="switchKeyMode('destroy')">销毁卡密</button>
-                    </div>
-
-                    <div id="generateMode">
+            <!-- 创建卡片面板 -->
+            <div id="cardsPanel" class="tab-content active">
+                <div class="panel-fixed">
+                    <section class="control-panel">
+                        <h2>创建卡片</h2>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="keyCount">生成数量</label>
-                                <input type="number" id="keyCount" min="1" value="1">
+                                <label for="cardCount">开卡数量</label>
+                                <input type="number" id="cardCount" min="1" value="1">
                             </div>
                             <div class="form-group">
-                                <label for="keyCardLimit">卡片余额 ($)</label>
-                                <input type="number" id="keyCardLimit" min="0" max="1000" value="0">
+                                <label for="cardLimit">卡片余额 ($)</label>
+                                <input type="number" id="cardLimit" min="0" max="1000" value="0">
                             </div>
                             <div class="form-group">
-                                <label for="keyCardType">卡片类型</label>
-                                <select id="keyCardType">
+                                <label for="cardType">卡片类型</label>
+                                <select id="cardType">
                                     <option value="credit">信用卡</option>
                                     <option value="debit">借记卡</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="keyExpireTime">有效期 (分钟)</label>
-                                <input type="number" id="keyExpireTime" min="1" max="1440" value="60">
+                                <label for="expireTime">过期时间 (分钟)</label>
+                                <input type="number" id="expireTime" min="1" max="1440" value="60">
                             </div>
-                            <div class="form-group btn-group">
-                                <button id="generateKeyBtn" onclick="generateKeys()">生成卡密</button>
-                                <a href="/redeem" target="_blank" class="btn-link" title="打开兑换页面">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                        <polyline points="15 3 21 3 21 9"></polyline>
-                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                            <div class="form-group">
+                                <label for="interval">创建间隔 (秒)</label>
+                                <input type="number" id="interval" min="3" value="3">
+                            </div>
+                            <div class="form-group">
+                                <button id="createBtn" onclick="createCards()">创建卡片</button>
+                            </div>
+                        </div>
+
+                        <div id="createProgress" class="inline-progress" style="display: none;">
+                            <div class="progress-header">
+                                <span class="progress-title">正在创建...</span>
+                                <button class="btn-stop" onclick="stopCreate()">停止</button>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="createProgressFill" class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span id="createProgressText">0 / 0</span>
+                                <span id="createProgressMessage"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="list-header">
+                        <h2>卡片列表 <span id="cardCount2" class="badge">0</span>
+                            <span class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="filterCards('all')">ALL</button>
+                                <button class="filter-btn credit" data-filter="credit"
+                                    onclick="filterCards('credit')">信</button>
+                                <button class="filter-btn debit" data-filter="debit"
+                                    onclick="filterCards('debit')">借</button>
+                            </span>
+                        </h2>
+                        <div class="header-actions">
+                            <div class="search-box" id="searchBox">
+                                <div class="btn-search">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.35-4.35"></path>
                                     </svg>
-                                </a>
+                                </div>
+                                <input type="text" id="searchInput" placeholder="搜索卡号..." oninput="searchCards()"
+                                    onfocus="handleSearchFocus()" onblur="handleSearchBlur()">
+                                <button class="btn-clear" onclick="clearSearch()" title="清除">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"></path>
+                                    </svg>
+                                </button>
                             </div>
+                            <button class="btn-secondary" onclick="copyAllCards()">复制所有</button>
+                            <button class="btn-danger" id="deleteAllBtn" onclick="deleteAllCards()">删除所有</button>
                         </div>
                     </div>
 
-                    <div id="destroyMode" style="display: none;">
-                    </div>
-                </section>
-
-                <div id="keyListHeader" class="list-header">
-                    <h2>卡密列表 <span id="keyCount2" class="badge">0</span>
-                        <span class="filter-buttons">
-                            <button class="filter-btn active" data-filter="all" onclick="filterKeys('all')">ALL</button>
-                            <button class="filter-btn credit" data-filter="credit" onclick="filterKeys('credit')">信</button>
-                            <button class="filter-btn debit" data-filter="debit" onclick="filterKeys('debit')">借</button>
-                        </span>
-                    </h2>
-                    <div class="header-actions">
-                        <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
-                        <button class="btn-secondary" onclick="copyAllKeys()">复制所有</button>
-                        <button class="btn-danger" onclick="deleteAllKeys()">删除所有</button>
-                    </div>
-                </div>
-                <div id="destroyModeHeader" class="list-header" style="display: none;">
-                    <h2>待销毁 <span id="destroyKeyCount" class="badge">0</span>
-                        <span class="filter-buttons">
-                            <button class="filter-btn active" data-filter="all" onclick="filterDestroyKeys('all')">ALL</button>
-                            <button class="filter-btn credit" data-filter="credit" onclick="filterDestroyKeys('credit')">信</button>
-                            <button class="filter-btn debit" data-filter="debit" onclick="filterDestroyKeys('debit')">借</button>
-                        </span>
-                    </h2>
-                    <div class="header-actions">
-                        <button id="destroyKeysBtn" class="btn-danger" onclick="destroyKeys()">销毁卡密</button>
-                    </div>
-                </div>
-            </div>
-            <div id="keyListScroll" class="panel-scroll">
-                <div id="keysContainer">
-                    <div class="empty-state">暂无卡密</div>
-                </div>
-            </div>
-            <div id="keysPaginationContainer" class="pagination-fixed"></div>
-            <div id="destroyModeScroll" style="display: none; flex: 1; overflow: hidden; padding: 3px;">
-                <textarea id="destroyKeysInput" placeholder="输入要销毁的卡密，一行一个&#10;如已兑换会先删除对应卡片" oninput="updateDestroyStats()" style="width: 100%; height: 100%; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-sizing: border-box; outline-offset: -1px;"></textarea>
-            </div>
-        </div>
-
-        <!-- 兑换记录面板 -->
-        <div id="recordsPanel" class="tab-content">
-            <div class="panel-fixed">
-                <div class="list-header">
-                    <h2>兑换记录 <span class="badge" id="recordCount">0</span></h2>
-                    <div class="header-actions">
-                        <button class="btn-secondary" onclick="copyAllRecords()">复制所有</button>
-                        <button class="btn-danger" onclick="deleteAllRecords()">删除所有</button>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-scroll">
-                <div id="recordsContainer">
-                    <div class="empty-state">暂无兑换记录</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 用户管理面板 -->
-        <div id="usersPanel" class="tab-content">
-            <div class="panel-fixed">
-                <section class="control-panel">
-                    <h2>添加用户</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newUsername">用户名</label>
-                            <input type="text" id="newUsername" placeholder="输入用户名">
+                    <div id="deleteProgress" class="inline-progress danger" style="display: none;">
+                        <div class="progress-header">
+                            <span class="progress-title">正在删除...</span>
+                            <button class="btn-stop" onclick="stopDelete()">停止</button>
                         </div>
-                        <div class="form-group">
-                            <label for="newPassword">密码</label>
-                            <input type="password" id="newPassword" placeholder="输入密码">
+                        <div class="progress-bar">
+                            <div id="deleteProgressFill" class="progress-fill"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="newIsAdmin">角色</label>
-                            <select id="newIsAdmin">
-                                <option value="false">普通用户</option>
-                                <option value="true">管理员</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <button onclick="addUser()">添加用户</button>
-                        </div>
-                    </div>
-                </section>
-
-                <div class="list-header">
-                    <h2>用户列表 <span id="userCount" class="badge">0</span></h2>
-                </div>
-            </div>
-            <div class="panel-scroll">
-                <div id="usersContainer">
-                    <div class="empty-state">暂无用户</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 代理管理面板 -->
-        <div id="proxiesPanel" class="tab-content">
-            <div class="panel-fixed">
-                <section class="control-panel">
-                    <h2>添加代理</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newProxyName">代理名称</label>
-                            <input type="text" id="newProxyName" placeholder="备注名称（可选）">
-                        </div>
-                        <div class="form-group" style="flex: 2;">
-                            <label for="newProxyUrl">代理地址</label>
-                            <input type="text" id="newProxyUrl" placeholder="http://ip:port 或 socks5://ip:port">
-                        </div>
-                        <div class="form-group">
-                            <button id="addProxyBtn" onclick="addNewProxy()">添加代理</button>
-                        </div>
-                    </div>
-                    <p class="help-text" style="margin-top: 10px; color: #888; font-size: 12px;">
-                        支持格式：http://ip:port、socks5://ip:port、ip:port:user:pass
-                    </p>
-                </section>
-
-                <div class="list-header">
-                    <h2>代理列表 <span id="proxyCount" class="badge">0</span></h2>
-                    <div class="local-latency">
-                        <span>本地延迟</span>
-                        <span class="proxy-latency" id="localLatency">-</span>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-scroll">
-                <div id="proxiesContainer">
-                    <div class="empty-state">暂无保存的代理</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 后台账户管理面板 -->
-        <div id="accountsPanel" class="tab-content">
-            <div class="panel-fixed">
-
-                <div class="list-header">
-                    <h2>Mercury 账户列表 <span id="accountCount" class="badge">0</span></h2>
-                    <div class="org-filter-row">
-                        <button class="btn-secondary" onclick="openAddAccountModal('credentials')">邮箱登录添加</button>
-                        <button class="btn-secondary" onclick="openAddAccountModal('session')">Session Cookie 添加</button>
-                        <select id="orgFilter" onchange="filterByOrg()">
-                            <option value="">全部组织</option>
-                        </select>
-                        <select id="timeFilter" onchange="onTimeFilterChange()">
-                            <option value="0">全部时间</option>
-                            <option value="20">20分钟前</option>
-                            <option value="30">30分钟前</option>
-                            <option value="40">40分钟前</option>
-                            <option value="50">50分钟前</option>
-                        </select>
-                        <div class="org-card-actions" id="orgCardActions" style="display: none;">
-                            <button class="btn-warning" id="clearCreditBtn" onclick="clearOrgCards('credit')">
-                                清空信用卡 <span class="card-count" id="orgCreditCount">-</span>
-                            </button>
-                            <button class="btn-warning debit" id="clearDebitBtn" onclick="clearOrgCards('debit')">
-                                清空借记卡 <span class="card-count" id="orgDebitCount">-</span>
-                            </button>
+                        <div class="progress-info">
+                            <span id="deleteProgressText">0 / 0</span>
+                            <span id="deleteProgressMessage"></span>
                         </div>
                     </div>
                 </div>
-                <div id="clearCardsProgress" class="inline-progress danger" style="display: none;">
-                    <div class="progress-header">
-                        <span class="progress-title" id="clearCardsTitle">正在清空...</span>
-                        <button class="btn-stop" onclick="stopClearCards()">停止</button>
-                    </div>
-                    <div class="progress-bar">
-                        <div id="clearCardsProgressFill" class="progress-fill"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span id="clearCardsProgressText">0 / 0</span>
-                        <span id="clearCardsProgressMessage"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-scroll">
-                <div id="accountsContainer">
-                    <div class="empty-state">暂无账户</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 设置面板 -->
-        <div id="settingsPanel" class="tab-content">
-            <div class="panel-fixed">
-                <div class="list-header" style="margin-bottom: 16px;">
-                    <h2>系统设置</h2>
+                <div class="panel-scroll">
+                    <div id="cardsContainer">
+                        <div class="empty-state">暂无卡片</div>
+                    </div>
                 </div>
-                <section class="control-panel" style="margin-bottom: 20px;">
-                    <h3>兑换页面公告</h3>
-                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">设置兑换页面打开时显示的公告内容，留空则不显示公告（支持 Markdown）</p>
-                    <style>
-                        .emoji-grid span { cursor: pointer; font-size: 20px; padding: 4px; border-radius: 6px; text-align: center; transition: background 0.2s; }
-                        .emoji-grid span:hover { background: rgba(99,102,241,0.2); }
-                        .announcement-editor { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-                        .announcement-preview { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; height: 120px; overflow-y: auto; color: var(--text-primary); font-size: 14px; line-height: 1.6; box-sizing: border-box; }
-                        .announcement-preview p { margin: 0 0 8px; }
-                        .announcement-preview p:last-child { margin-bottom: 0; }
-                        .announcement-preview h1 { margin: 0 0 8px; font-size: 20px; font-weight: bold; }
-                        .announcement-preview h2 { margin: 0 0 8px; font-size: 17px; font-weight: bold; }
-                        .announcement-preview h3 { margin: 0 0 8px; font-size: 15px; font-weight: bold; }
-                        .announcement-preview ul, .announcement-preview ol { margin: 0 0 8px; padding-left: 20px; }
-                        .announcement-preview a { color: #6366f1; }
-                        .announcement-preview code { background: rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-                        .announcement-preview blockquote { border-left: 3px solid #6366f1; margin: 0 0 8px; padding-left: 12px; color: var(--text-secondary); }
-                        @media (max-width: 768px) { .announcement-editor { grid-template-columns: 1fr; } }
-                    </style>
-                    <div class="announcement-editor">
-                        <div style="position: relative;">
-                            <textarea id="announcementContent" placeholder="输入公告内容（支持 Markdown）..." oninput="updateAnnouncementPreview()" style="width: 100%; height: 120px; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; padding-bottom: 36px; box-sizing: border-box;"></textarea>
-                            <button type="button" onclick="toggleEmojiPicker()" style="position: absolute; bottom: 8px; right: 8px; background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 4px; opacity: 0.6; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'" title="插入表情">😊</button>
-                            <div id="emojiPicker" style="display: none; position: absolute; bottom: 40px; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 280px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                                <div class="emoji-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
-                                    <span onclick="insertEmoji('😀')">😀</span>
-                                    <span onclick="insertEmoji('😊')">😊</span>
-                                    <span onclick="insertEmoji('😄')">😄</span>
-                                    <span onclick="insertEmoji('😁')">😁</span>
-                                    <span onclick="insertEmoji('😆')">😆</span>
-                                    <span onclick="insertEmoji('😅')">😅</span>
-                                    <span onclick="insertEmoji('🤣')">🤣</span>
-                                    <span onclick="insertEmoji('😂')">😂</span>
-                                    <span onclick="insertEmoji('🙂')">🙂</span>
-                                    <span onclick="insertEmoji('😉')">😉</span>
-                                    <span onclick="insertEmoji('😍')">😍</span>
-                                    <span onclick="insertEmoji('🥰')">🥰</span>
-                                    <span onclick="insertEmoji('😘')">😘</span>
-                                    <span onclick="insertEmoji('😎')">😎</span>
-                                    <span onclick="insertEmoji('🤩')">🤩</span>
-                                    <span onclick="insertEmoji('🥳')">🥳</span>
-                                    <span onclick="insertEmoji('😇')">😇</span>
-                                    <span onclick="insertEmoji('🤔')">🤔</span>
-                                    <span onclick="insertEmoji('🤗')">🤗</span>
-                                    <span onclick="insertEmoji('😐')">😐</span>
-                                    <span onclick="insertEmoji('😑')">😑</span>
-                                    <span onclick="insertEmoji('😶')">😶</span>
-                                    <span onclick="insertEmoji('🙄')">🙄</span>
-                                    <span onclick="insertEmoji('😏')">😏</span>
-                                    <span onclick="insertEmoji('😴')">😴</span>
-                                    <span onclick="insertEmoji('😷')">😷</span>
-                                    <span onclick="insertEmoji('🤒')">🤒</span>
-                                    <span onclick="insertEmoji('😢')">😢</span>
-                                    <span onclick="insertEmoji('😭')">😭</span>
-                                    <span onclick="insertEmoji('😤')">😤</span>
-                                    <span onclick="insertEmoji('😠')">😠</span>
-                                    <span onclick="insertEmoji('🤬')">🤬</span>
-                                    <span onclick="insertEmoji('👍')">👍</span>
-                                    <span onclick="insertEmoji('👎')">👎</span>
-                                    <span onclick="insertEmoji('👏')">👏</span>
-                                    <span onclick="insertEmoji('🙌')">🙌</span>
-                                    <span onclick="insertEmoji('🤝')">🤝</span>
-                                    <span onclick="insertEmoji('✌️')">✌️</span>
-                                    <span onclick="insertEmoji('🤞')">🤞</span>
-                                    <span onclick="insertEmoji('💪')">💪</span>
-                                    <span onclick="insertEmoji('❤️')">❤️</span>
-                                    <span onclick="insertEmoji('💔')">💔</span>
-                                    <span onclick="insertEmoji('💯')">💯</span>
-                                    <span onclick="insertEmoji('✨')">✨</span>
-                                    <span onclick="insertEmoji('🔥')">🔥</span>
-                                    <span onclick="insertEmoji('⭐')">⭐</span>
-                                    <span onclick="insertEmoji('🎉')">🎉</span>
-                                    <span onclick="insertEmoji('🎊')">🎊</span>
-                                    <span onclick="insertEmoji('🎁')">🎁</span>
-                                    <span onclick="insertEmoji('📢')">📢</span>
-                                    <span onclick="insertEmoji('📣')">📣</span>
-                                    <span onclick="insertEmoji('💡')">💡</span>
-                                    <span onclick="insertEmoji('⚠️')">⚠️</span>
-                                    <span onclick="insertEmoji('❌')">❌</span>
-                                    <span onclick="insertEmoji('✅')">✅</span>
-                                    <span onclick="insertEmoji('⏰')">⏰</span>
-                                    <span onclick="insertEmoji('💰')">💰</span>
+            </div>
+
+            <!-- 生成卡密面板 -->
+            <div id="keysPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <section class="control-panel">
+                        <div class="add-mode-toggle" style="margin-bottom: 15px;">
+                            <button id="modeGenerateBtn" class="mode-btn active"
+                                onclick="switchKeyMode('generate')">生成卡密</button>
+                            <button id="modeDestroyBtn" class="mode-btn"
+                                onclick="switchKeyMode('destroy')">销毁卡密</button>
+                        </div>
+
+                        <div id="generateMode">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="keyCount">生成数量</label>
+                                    <input type="number" id="keyCount" min="1" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="keyCardLimit">卡片余额 ($)</label>
+                                    <input type="number" id="keyCardLimit" min="0" max="1000" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="keyCardType">卡片类型</label>
+                                    <select id="keyCardType">
+                                        <option value="credit">信用卡</option>
+                                        <option value="debit">借记卡</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="keyExpireTime">有效期 (分钟)</label>
+                                    <input type="number" id="keyExpireTime" min="1" max="1440" value="60">
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button id="generateKeyBtn" onclick="generateKeys()">生成卡密</button>
+                                    <a href="https://actcard.xyz/" target="_blank" class="btn-link" title="打开兑换页面">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                                        </svg>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <div id="announcementPreview" class="announcement-preview"><span style="color: var(--text-secondary);">预览区域</span></div>
+
+                        <div id="destroyMode" style="display: none;">
+                        </div>
+                    </section>
+
+                    <div id="keyListHeader" class="list-header">
+                        <h2>卡密列表 <span id="keyCount2" class="badge">0</span>
+                            <span class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="filterKeys('all')">ALL</button>
+                                <button class="filter-btn credit" data-filter="credit"
+                                    onclick="filterKeys('credit')">信</button>
+                                <button class="filter-btn debit" data-filter="debit"
+                                    onclick="filterKeys('debit')">借</button>
+                            </span>
+                        </h2>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
+                            <button class="btn-secondary" onclick="copyAllKeys()">复制所有</button>
+                            <button class="btn-danger" onclick="deleteAllKeys()">删除所有</button>
+                        </div>
                     </div>
-                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
-                        <button onclick="saveAnnouncement()">保存公告</button>
-                        <a href="/redeem" target="_blank" class="btn-link" title="预览兑换页面">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </a>
+                    <div id="destroyModeHeader" class="list-header" style="display: none;">
+                        <h2>待销毁 <span id="destroyKeyCount" class="badge">0</span>
+                            <span class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="filterDestroyKeys('all')">ALL</button>
+                                <button class="filter-btn credit" data-filter="credit"
+                                    onclick="filterDestroyKeys('credit')">信</button>
+                                <button class="filter-btn debit" data-filter="debit"
+                                    onclick="filterDestroyKeys('debit')">借</button>
+                            </span>
+                        </h2>
+                        <div class="header-actions">
+                            <button id="destroyKeysBtn" class="btn-danger" onclick="destroyKeys()">销毁卡密</button>
+                        </div>
                     </div>
-                </section>
+                </div>
+                <div id="keyListScroll" class="panel-scroll">
+                    <div id="keysContainer">
+                        <div class="empty-state">暂无卡密</div>
+                    </div>
+                </div>
+                <div id="keysPaginationContainer" class="pagination-fixed"></div>
+                <div id="destroyModeScroll" style="display: none; flex: 1; overflow: hidden; padding: 3px;">
+                    <textarea id="destroyKeysInput" placeholder="输入要销毁的卡密，一行一个&#10;如已兑换会先删除对应卡片"
+                        oninput="updateDestroyStats()"
+                        style="width: 100%; height: 100%; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-sizing: border-box; outline-offset: -1px;"></textarea>
+                </div>
             </div>
-        </div>
+
+            <!-- 兑换记录面板 -->
+            <div id="recordsPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <div class="list-header">
+                        <h2>兑换记录 <span class="badge" id="recordCount">0</span></h2>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="copyAllRecords()">复制所有</button>
+                            <button class="btn-danger" onclick="deleteAllRecords()">删除所有</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-scroll">
+                    <div id="recordsContainer">
+                        <div class="empty-state">暂无兑换记录</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理面板 -->
+            <div id="usersPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <section class="control-panel">
+                        <h2>添加用户</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newUsername">用户名</label>
+                                <input type="text" id="newUsername" placeholder="输入用户名">
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">密码</label>
+                                <input type="password" id="newPassword" placeholder="输入密码">
+                            </div>
+                            <div class="form-group">
+                                <label for="newIsAdmin">角色</label>
+                                <select id="newIsAdmin">
+                                    <option value="false">普通用户</option>
+                                    <option value="true">管理员</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button onclick="addUser()">添加用户</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="list-header">
+                        <h2>用户列表 <span id="userCount" class="badge">0</span></h2>
+                    </div>
+                </div>
+                <div class="panel-scroll">
+                    <div id="usersContainer">
+                        <div class="empty-state">暂无用户</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 代理管理面板 -->
+            <div id="proxiesPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <section class="control-panel">
+                        <h2>添加代理</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newProxyName">代理名称</label>
+                                <input type="text" id="newProxyName" placeholder="备注名称（可选）">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="newProxyUrl">代理地址</label>
+                                <input type="text" id="newProxyUrl" placeholder="http://ip:port 或 socks5://ip:port">
+                            </div>
+                            <div class="form-group">
+                                <button id="addProxyBtn" onclick="addNewProxy()">添加代理</button>
+                            </div>
+                        </div>
+                        <p class="help-text" style="margin-top: 10px; color: #888; font-size: 12px;">
+                            支持格式：http://ip:port、socks5://ip:port、ip:port:user:pass
+                        </p>
+                    </section>
+
+                    <div class="list-header">
+                        <h2>代理列表 <span id="proxyCount" class="badge">0</span></h2>
+                        <div class="local-latency">
+                            <span>本地延迟</span>
+                            <span class="proxy-latency" id="localLatency">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-scroll">
+                    <div id="proxiesContainer">
+                        <div class="empty-state">暂无保存的代理</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 后台账户管理面板 -->
+            <div id="accountsPanel" class="tab-content">
+                <div class="panel-fixed">
+
+                    <div class="list-header">
+                        <h2>Mercury 账户列表 <span id="accountCount" class="badge">0</span></h2>
+                        <div class="org-filter-row">
+                            <button class="btn-secondary" onclick="openAddAccountModal('credentials')">邮箱登录添加</button>
+                            <button class="btn-secondary" onclick="openAddAccountModal('session')">Session Cookie
+                                添加</button>
+                            <select id="orgFilter" onchange="filterByOrg()">
+                                <option value="">全部组织</option>
+                            </select>
+                            <select id="timeFilter" onchange="onTimeFilterChange()">
+                                <option value="0">全部时间</option>
+                                <option value="20">20分钟前</option>
+                                <option value="30">30分钟前</option>
+                                <option value="40">40分钟前</option>
+                                <option value="50">50分钟前</option>
+                            </select>
+                            <div class="org-card-actions" id="orgCardActions" style="display: none;">
+                                <button class="btn-warning" id="clearCreditBtn" onclick="clearOrgCards('credit')">
+                                    清空信用卡 <span class="card-count" id="orgCreditCount">-</span>
+                                </button>
+                                <button class="btn-warning debit" id="clearDebitBtn" onclick="clearOrgCards('debit')">
+                                    清空借记卡 <span class="card-count" id="orgDebitCount">-</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="clearCardsProgress" class="inline-progress danger" style="display: none;">
+                        <div class="progress-header">
+                            <span class="progress-title" id="clearCardsTitle">正在清空...</span>
+                            <button class="btn-stop" onclick="stopClearCards()">停止</button>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="clearCardsProgressFill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="clearCardsProgressText">0 / 0</span>
+                            <span id="clearCardsProgressMessage"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-scroll">
+                    <div id="accountsContainer">
+                        <div class="empty-state">暂无账户</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置面板 -->
+            <div id="settingsPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <div class="list-header" style="margin-bottom: 16px;">
+                        <h2>系统设置</h2>
+                    </div>
+                    <section class="control-panel">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="margin: 0;">兑换页面公告</h3>
+                            <label class="toggle-switch" title="开启后兑换页面将显示维护中状态">
+                                <input type="checkbox" id="maintenanceToggle" onchange="toggleMaintenance()">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">维护模式</span>
+                            </label>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+                            设置兑换页面打开时显示的公告内容，留空则不显示公告（支持 Markdown）</p>
+                        <style>
+                            .toggle-switch {
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                cursor: pointer;
+                                user-select: none;
+                            }
+
+                            .toggle-switch input {
+                                display: none;
+                            }
+
+                            .toggle-slider {
+                                width: 40px;
+                                height: 22px;
+                                background: var(--bg-tertiary);
+                                border-radius: 11px;
+                                position: relative;
+                                transition: background 0.3s;
+                            }
+
+                            .toggle-slider::before {
+                                content: '';
+                                position: absolute;
+                                width: 18px;
+                                height: 18px;
+                                background: #fff;
+                                border-radius: 50%;
+                                top: 2px;
+                                left: 2px;
+                                transition: transform 0.3s;
+                            }
+
+                            .toggle-switch input:checked+.toggle-slider {
+                                background: #f59e0b;
+                            }
+
+                            .toggle-switch input:checked+.toggle-slider::before {
+                                transform: translateX(18px);
+                            }
+
+                            .toggle-label {
+                                font-size: 13px;
+                                color: var(--text-secondary);
+                            }
+
+                            .toggle-switch input:checked~.toggle-label {
+                                color: #f59e0b;
+                            }
+
+                            .emoji-grid span {
+                                cursor: pointer;
+                                font-size: 20px;
+                                padding: 4px;
+                                border-radius: 6px;
+                                text-align: center;
+                                transition: background 0.2s;
+                            }
+
+                            .emoji-grid span:hover {
+                                background: rgba(99, 102, 241, 0.2);
+                            }
+
+                            .announcement-editor {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 12px;
+                                align-items: start;
+                            }
+
+                            .announcement-preview {
+                                background: var(--bg-card);
+                                border: 1px solid var(--border);
+                                border-radius: 12px;
+                                padding: 12px;
+                                height: 120px;
+                                overflow-y: auto;
+                                color: var(--text-primary);
+                                font-size: 14px;
+                                line-height: 1.6;
+                                box-sizing: border-box;
+                            }
+
+                            .announcement-preview p {
+                                margin: 0 0 8px;
+                            }
+
+                            .announcement-preview p:last-child {
+                                margin-bottom: 0;
+                            }
+
+                            .announcement-preview h1 {
+                                margin: 0 0 8px;
+                                font-size: 20px;
+                                font-weight: bold;
+                            }
+
+                            .announcement-preview h2 {
+                                margin: 0 0 8px;
+                                font-size: 17px;
+                                font-weight: bold;
+                            }
+
+                            .announcement-preview h3 {
+                                margin: 0 0 8px;
+                                font-size: 15px;
+                                font-weight: bold;
+                            }
+
+                            .announcement-preview ul,
+                            .announcement-preview ol {
+                                margin: 0 0 8px;
+                                padding-left: 20px;
+                            }
+
+                            .announcement-preview a {
+                                color: #6366f1;
+                            }
+
+                            .announcement-preview code {
+                                background: rgba(99, 102, 241, 0.2);
+                                padding: 2px 6px;
+                                border-radius: 4px;
+                                font-size: 13px;
+                            }
+
+                            .announcement-preview blockquote {
+                                border-left: 3px solid #6366f1;
+                                margin: 0 0 8px;
+                                padding-left: 12px;
+                                color: var(--text-secondary);
+                            }
+
+                            @media (max-width: 768px) {
+                                .announcement-editor {
+                                    grid-template-columns: 1fr;
+                                }
+                            }
+                        </style>
+                        <div class="announcement-editor">
+                            <div style="position: relative;">
+                                <textarea id="announcementContent" placeholder="输入公告内容（支持 Markdown）..."
+                                    oninput="updateAnnouncementPreview()"
+                                    style="width: 100%; height: 120px; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; padding-bottom: 36px; box-sizing: border-box;"></textarea>
+                                <button type="button" onclick="toggleEmojiPicker()"
+                                    style="position: absolute; bottom: 8px; right: 8px; background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 4px; opacity: 0.6; transition: opacity 0.2s;"
+                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"
+                                    title="插入表情">😊</button>
+                                <div id="emojiPicker"
+                                    style="display: none; position: absolute; bottom: 40px; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 280px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                    <div class="emoji-grid"
+                                        style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
+                                        <span onclick="insertEmoji('😀')">😀</span>
+                                        <span onclick="insertEmoji('😊')">😊</span>
+                                        <span onclick="insertEmoji('😄')">😄</span>
+                                        <span onclick="insertEmoji('😁')">😁</span>
+                                        <span onclick="insertEmoji('😆')">😆</span>
+                                        <span onclick="insertEmoji('😅')">😅</span>
+                                        <span onclick="insertEmoji('🤣')">🤣</span>
+                                        <span onclick="insertEmoji('😂')">😂</span>
+                                        <span onclick="insertEmoji('🙂')">🙂</span>
+                                        <span onclick="insertEmoji('😉')">😉</span>
+                                        <span onclick="insertEmoji('😍')">😍</span>
+                                        <span onclick="insertEmoji('🥰')">🥰</span>
+                                        <span onclick="insertEmoji('😘')">😘</span>
+                                        <span onclick="insertEmoji('😎')">😎</span>
+                                        <span onclick="insertEmoji('🤩')">🤩</span>
+                                        <span onclick="insertEmoji('🥳')">🥳</span>
+                                        <span onclick="insertEmoji('😇')">😇</span>
+                                        <span onclick="insertEmoji('🤔')">🤔</span>
+                                        <span onclick="insertEmoji('🤗')">🤗</span>
+                                        <span onclick="insertEmoji('😐')">😐</span>
+                                        <span onclick="insertEmoji('😑')">😑</span>
+                                        <span onclick="insertEmoji('😶')">😶</span>
+                                        <span onclick="insertEmoji('🙄')">🙄</span>
+                                        <span onclick="insertEmoji('😏')">😏</span>
+                                        <span onclick="insertEmoji('😴')">😴</span>
+                                        <span onclick="insertEmoji('😷')">😷</span>
+                                        <span onclick="insertEmoji('🤒')">🤒</span>
+                                        <span onclick="insertEmoji('😢')">😢</span>
+                                        <span onclick="insertEmoji('😭')">😭</span>
+                                        <span onclick="insertEmoji('😤')">😤</span>
+                                        <span onclick="insertEmoji('😠')">😠</span>
+                                        <span onclick="insertEmoji('🤬')">🤬</span>
+                                        <span onclick="insertEmoji('👍')">👍</span>
+                                        <span onclick="insertEmoji('👎')">👎</span>
+                                        <span onclick="insertEmoji('👏')">👏</span>
+                                        <span onclick="insertEmoji('🙌')">🙌</span>
+                                        <span onclick="insertEmoji('🤝')">🤝</span>
+                                        <span onclick="insertEmoji('✌️')">✌️</span>
+                                        <span onclick="insertEmoji('🤞')">🤞</span>
+                                        <span onclick="insertEmoji('💪')">💪</span>
+                                        <span onclick="insertEmoji('❤️')">❤️</span>
+                                        <span onclick="insertEmoji('💔')">💔</span>
+                                        <span onclick="insertEmoji('💯')">💯</span>
+                                        <span onclick="insertEmoji('✨')">✨</span>
+                                        <span onclick="insertEmoji('🔥')">🔥</span>
+                                        <span onclick="insertEmoji('⭐')">⭐</span>
+                                        <span onclick="insertEmoji('🎉')">🎉</span>
+                                        <span onclick="insertEmoji('🎊')">🎊</span>
+                                        <span onclick="insertEmoji('🎁')">🎁</span>
+                                        <span onclick="insertEmoji('📢')">📢</span>
+                                        <span onclick="insertEmoji('📣')">📣</span>
+                                        <span onclick="insertEmoji('💡')">💡</span>
+                                        <span onclick="insertEmoji('⚠️')">⚠️</span>
+                                        <span onclick="insertEmoji('❌')">❌</span>
+                                        <span onclick="insertEmoji('✅')">✅</span>
+                                        <span onclick="insertEmoji('⏰')">⏰</span>
+                                        <span onclick="insertEmoji('💰')">💰</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="announcementPreview" class="announcement-preview"><span
+                                    style="color: var(--text-secondary);">预览区域</span></div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
+                            <label
+                                style="font-size: 13px; color: var(--text-secondary); white-space: nowrap;">公告大小:</label>
+                            <input type="range" id="announcementSizeSlider" min="50" max="150" value="100"
+                                style="flex: 1; accent-color: var(--primary);" oninput="updateAnnouncementSizeLabel()">
+                            <span id="announcementSizeLabel"
+                                style="font-size: 13px; min-width: 45px; text-align: right;">100%</span>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
+                            <button onclick="saveAnnouncement()">保存公告</button>
+                            <a href="https://actcard.xyz/" target="_blank" class="btn-link" title="预览兑换页面">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="control-panel">
+                        <h3>批量兑换设置</h3>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                            设置兑换页面批量操作的限制参数</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>最大批量数量</label>
+                                <input type="number" id="maxBatchCountInput" min="1" max="20" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label>兑换间隔（秒）</label>
+                                <input type="number" id="batchIntervalInput" min="1" max="30" value="5">
+                            </div>
+                            <div class="form-group">
+                                <button onclick="saveBatchSettings()">保存设置</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -561,6 +757,23 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closePasswordModal()">取消</button>
                 <button onclick="savePassword()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- 警告弹窗 -->
+    <div id="alertModal" class="modal" style="display: none; z-index: 2000;">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h3>提示</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage" style="color: #ef4444; font-weight: 500; font-size: 16px;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeAlertModal()" style="width: 100%;">确定</button>
             </div>
         </div>
     </div>
@@ -748,7 +961,7 @@
                 window.location.href = '/login';
                 return false;
             }
-            
+
             // 尝试刷新token
             try {
                 const response = await fetch('/api/auth/refresh', {
@@ -757,7 +970,7 @@
                     body: JSON.stringify({ refresh_token: refreshToken })
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     accessToken = data.access_token;
                     localStorage.setItem('access_token', accessToken);
@@ -785,7 +998,7 @@
         // 自动刷新token
         async function autoRefresh() {
             if (!refreshToken) return;
-            
+
             try {
                 const response = await fetch('/api/auth/refresh', {
                     method: 'POST',
@@ -793,7 +1006,7 @@
                     body: JSON.stringify({ refresh_token: refreshToken })
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     accessToken = data.access_token;
                     localStorage.setItem('access_token', accessToken);
@@ -815,40 +1028,40 @@
         // 标签页切换
         let currentTab = 'cards';
         const tabOrder = ['cards', 'keys', 'records', 'users', 'proxies', 'accounts', 'settings'];
-        
+
         // 代理延迟 SSE
         let proxyLatencyEventSource = null;
-        
+
         function switchTab(tab, direction = null) {
             if (tab === currentTab) return;
-            
+
             const isMobile = window.innerWidth <= 768;
             const oldIndex = tabOrder.indexOf(currentTab);
             const newIndex = tabOrder.indexOf(tab);
             const oldTab = currentTab;
-            
+
             // 自动判断方向
             if (direction === null) {
                 direction = newIndex > oldIndex ? 'left' : 'right';
             }
-            
+
             const currentPanel = document.querySelector('.tab-content.active');
             const newPanel = document.getElementById(tab + 'Panel');
-            
+
             // 更新导航
             document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
             const navIndex = tabOrder.indexOf(tab);
             if (navItems[navIndex]) navItems[navIndex].classList.add('active');
-            
+
             if (isMobile && currentPanel && newPanel) {
                 // 移动端滑动动画
                 currentPanel.classList.remove('active', 'slide-in-left', 'slide-in-right');
                 currentPanel.classList.add(direction === 'left' ? 'slide-out-left' : 'slide-out-right');
-                
+
                 newPanel.classList.remove('slide-out-left', 'slide-out-right');
                 newPanel.classList.add('active', direction === 'left' ? 'slide-in-right' : 'slide-in-left');
-                
+
                 setTimeout(() => {
                     currentPanel.classList.remove('slide-out-left', 'slide-out-right');
                     newPanel.classList.remove('slide-in-left', 'slide-in-right');
@@ -858,15 +1071,15 @@
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 if (newPanel) newPanel.classList.add('active');
             }
-            
+
             currentTab = tab;
-            
+
             // 离开 accounts 页面时关闭 SSE
             if (oldTab === 'accounts' && statusEventSource) {
                 statusEventSource.close();
                 statusEventSource = null;
             }
-            
+
             // 刷新数据
             if (tab === 'records') refreshRecords();
             else if (tab === 'users') refreshUsers();
@@ -958,20 +1171,20 @@
         function renderCards(cards, isSearchResult = false) {
             const container = document.getElementById('cardsContainer');
             const badge = document.getElementById('cardCount2');
-            
+
             // 应用过滤器
             let filteredCards = cards;
             if (cardFilter !== 'all') {
                 filteredCards = cards.filter(c => c.card_type === cardFilter);
             }
-            
+
             // 按创建时间排序（最新的在前）
             filteredCards = [...filteredCards].sort((a, b) => {
                 const timeA = new Date(a.created_time || 0);
                 const timeB = new Date(b.created_time || 0);
                 return timeB - timeA;
             });
-            
+
             const totalCount = allCards.length;
             if (isSearchResult || cardFilter !== 'all') {
                 badge.textContent = `${filteredCards.length}/${totalCount}`;
@@ -1000,21 +1213,21 @@
                     <button class="btn-delete btn-sm" data-action="delete-card">删除</button>
                 </div>
             `}).join('');
-            
+
             // 绑定点击复制事件
             container.querySelectorAll('[data-copy]').forEach(el => {
-                el.addEventListener('click', function() {
+                el.addEventListener('click', function () {
                     copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
                 });
             });
             container.querySelectorAll('[data-action="copy-full"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.card-item-compact');
                     copyToClipboard(item.dataset.full).then(() => showToast('已复制完整信息', 'success')).catch(() => showToast('复制失败', 'error'));
                 });
             });
             container.querySelectorAll('[data-action="delete-card"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.card-item-compact');
                     deleteCard(item.dataset.id);
                 });
@@ -1030,7 +1243,7 @@
             if (seconds <= 0) return '已过期';
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
-            return mins >= 60 ? `${Math.floor(mins/60)}小时${mins%60}分` : `${mins}分${secs}秒`;
+            return mins >= 60 ? `${Math.floor(mins / 60)}小时${mins % 60}分` : `${mins}分${secs}秒`;
         }
 
         function formatCreatedTime(isoTime) {
@@ -1079,16 +1292,20 @@
             const cardType = document.getElementById('cardType').value || 'credit';
             const expireMinutes = parseInt(document.getElementById('expireTime').value) || 60;
             const interval = Math.max(3, parseInt(document.getElementById('interval').value) || 3);
-            
+
             document.getElementById('createBtn').disabled = true;
+
+            // 每次创建前先重置 alert 状态（虽然 alert 是模态的，但作为保险）
+            closeAlertModal();
+
             document.getElementById('createProgress').style.display = 'block';
             document.getElementById('createProgressFill').style.width = '0%';
             document.getElementById('createProgressText').textContent = `0 / ${count}`;
             document.getElementById('createProgressMessage').textContent = '开始创建...';
-            
+
             createEventSource = new EventSource(`/api/create_stream?count=${count}&card_limit=${cardLimit}&card_type=${cardType}&expire_minutes=${expireMinutes}&interval=${interval}&token=${accessToken}`);
-            
-            createEventSource.onmessage = function(event) {
+
+            createEventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 if (data.type === 'error') {
                     createEventSource.close();
@@ -1098,10 +1315,20 @@
                     showToast(data.message, 'error');
                 } else if (data.type === 'waiting') {
                     document.getElementById('createProgressMessage').textContent = data.message;
-                } else if (data.type === 'progress' || data.type === 'card_created') {
                     const percent = data.total > 0 ? (data.current / data.total * 100) : 0;
                     document.getElementById('createProgressFill').style.width = percent + '%';
                     document.getElementById('createProgressText').textContent = `${data.current} / ${data.total}`;
+
+                    // 检查是否包含 429 错误信息
+                    if (data.status === 'failed' && (data.message.includes('429') || data.message.includes('服务器繁忙') || data.message.includes('操作过于频繁'))) {
+                        createEventSource.close();
+                        createEventSource = null;
+                        document.getElementById('createProgress').style.display = 'none';
+                        document.getElementById('createBtn').disabled = false;
+                        showAlert('当前服务器繁忙，请五分钟后再试');
+                        return;
+                    }
+
                     document.getElementById('createProgressMessage').textContent = data.type === 'card_created' ? `卡片 ...${data.card.pan.slice(-4)} 创建成功` : data.message;
                     if (data.type === 'card_created') refreshCards();
                 } else if (data.type === 'complete') {
@@ -1115,8 +1342,8 @@
                     }, 500);
                 }
             };
-            
-            createEventSource.onerror = function() {
+
+            createEventSource.onerror = function () {
                 createEventSource.close();
                 createEventSource = null;
                 document.getElementById('createProgress').style.display = 'none';
@@ -1143,11 +1370,11 @@
             const filterText = cardFilter === 'all' ? '所有' : (cardFilter === 'credit' ? '信用卡' : '借记卡');
             if (!cards.length) { showToast('没有卡片可删除', 'info'); return; }
             if (!await showConfirm(`确定要删除${filterText}卡片吗？（共 ${cards.length} 张）`, '删除卡片')) return;
-            
+
             document.getElementById('deleteAllBtn').disabled = true;
             document.getElementById('deleteProgress').style.display = 'block';
             document.getElementById('deleteProgressFill').style.width = '0%';
-            
+
             // 如果是筛选删除，逐个删除
             if (cardFilter !== 'all') {
                 let deleted = 0;
@@ -1157,7 +1384,7 @@
                         if (response.ok) deleted++;
                         document.getElementById('deleteProgressFill').style.width = ((i + 1) / cards.length * 100) + '%';
                         document.getElementById('deleteProgressText').textContent = `${i + 1} / ${cards.length}`;
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 document.getElementById('deleteProgress').style.display = 'none';
                 document.getElementById('deleteAllBtn').disabled = false;
@@ -1165,9 +1392,9 @@
                 refreshCards();
                 return;
             }
-            
+
             deleteEventSource = new EventSource(`/api/cancel_all_stream?token=${accessToken}`);
-            deleteEventSource.onmessage = function(event) {
+            deleteEventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 if (data.type === 'progress') {
                     document.getElementById('deleteProgressFill').style.width = (data.current / data.total * 100) + '%';
@@ -1183,7 +1410,7 @@
                     }, 500);
                 }
             };
-            deleteEventSource.onerror = function() {
+            deleteEventSource.onerror = function () {
                 deleteEventSource.close();
                 deleteEventSource = null;
                 document.getElementById('deleteProgress').style.display = 'none';
@@ -1247,12 +1474,12 @@
             const cardType = document.getElementById('withdrawCardType').value || 'credit';
             const note = document.getElementById('withdrawNote').value.trim();
             const submitBtn = document.getElementById('withdrawSubmitBtn');
-            
+
             if (count < 1) {
                 showToast('数量必须大于 0', 'info');
                 return;
             }
-            
+
             submitBtn.disabled = true;
             try {
                 const response = await fetch('/api/keys/withdraw', {
@@ -1300,7 +1527,7 @@
         function saveWithdrawHistory(history) {
             try {
                 localStorage.setItem(WITHDRAW_HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function appendWithdrawHistory(link, cardType, count, note) {
@@ -1323,7 +1550,7 @@
                 const filtered = history.filter(item => item.link !== link);
                 saveWithdrawHistory(filtered);
                 renderWithdrawHistory(filtered);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function clearWithdrawHistory() {
@@ -1453,12 +1680,12 @@
             const container = document.getElementById('keysContainer');
             // 后端已过滤未使用且未销毁的卡密，无需再次过滤
             let displayKeys = keys;
-            
+
             // 应用卡片类型过滤器（信用卡/借记卡）
             if (keyFilter !== 'all') {
                 displayKeys = displayKeys.filter(k => k.card_type === keyFilter);
             }
-            
+
             document.getElementById('keyCount2').textContent = totalKeysCount;
 
             if (!displayKeys.length) {
@@ -1478,25 +1705,25 @@
                     <button class="btn-delete btn-sm" data-action="delete-key">删除</button>
                 </div>
             `).join('');
-            
+
             // 渲染分页到固定容器
             document.getElementById('keysPaginationContainer').innerHTML = renderKeysPagination();
-            
+
             // 绑定点击复制事件
             container.querySelectorAll('[data-copy]').forEach(el => {
-                el.addEventListener('click', function() {
+                el.addEventListener('click', function () {
                     copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
                 });
             });
             // 绑定按钮事件
             container.querySelectorAll('[data-action="copy-key"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.key-item-compact');
                     copyKey(item.dataset.keyId);
                 });
             });
             container.querySelectorAll('[data-action="delete-key"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.key-item-compact');
                     deleteKey(item.dataset.keyId);
                 });
@@ -1505,15 +1732,15 @@
 
         function renderKeysPagination() {
             if (totalKeysPages <= 1) return '';
-            
+
             let pages = [];
             const maxVisible = 5;
             let start = Math.max(1, currentKeysPage - Math.floor(maxVisible / 2));
             let end = Math.min(totalKeysPages, start + maxVisible - 1);
             if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-            
+
             for (let i = start; i <= end; i++) pages.push(i);
-            
+
             return `
                 <div class="pagination">
                     <select class="page-size-select" onchange="changeKeysPageSize(this.value)">
@@ -1543,7 +1770,7 @@
             const cardLimit = parseInt(document.getElementById('keyCardLimit').value) || 0;
             const cardType = document.getElementById('keyCardType').value || 'credit';
             const expireMinutes = parseInt(document.getElementById('keyExpireTime').value) || 60;
-            
+
             document.getElementById('generateKeyBtn').disabled = true;
             try {
                 const response = await fetch('/api/keys/generate', {
@@ -1567,7 +1794,7 @@
             const destroyModeScroll = document.getElementById('destroyModeScroll');
             const generateBtn = document.getElementById('modeGenerateBtn');
             const destroyBtn = document.getElementById('modeDestroyBtn');
-            
+
             if (mode === 'generate') {
                 generateMode.style.display = 'block';
                 keyListHeader.style.display = 'flex';
@@ -1608,36 +1835,36 @@
         function updateDestroyStats() {
             const keysText = document.getElementById('destroyKeysInput').value.trim();
             const keyIds = keysText ? keysText.split('\n').filter(k => k.trim()) : [];
-            
+
             // 更新全部卡密列表
             if (destroyFilter === 'all') {
                 allDestroyKeys = keyIds;
             }
-            
+
             let creditCount = 0;
             let debitCount = 0;
-            
+
             allDestroyKeys.forEach(keyId => {
                 const type = getKeyType(keyId);
                 if (type === 'credit') creditCount++;
                 else if (type === 'debit') debitCount++;
             });
-            
+
             // 根据过滤器显示数量
             let displayCount = keyIds.length;
             let totalCount = allDestroyKeys.length;
-            
+
             document.getElementById('destroyKeyCount').textContent = destroyFilter === 'all' ? totalCount : `${displayCount}/${totalCount}`;
         }
 
         function filterDestroyKeys(filter) {
             destroyFilter = filter;
-            
+
             // 更新按钮状态
             document.querySelectorAll('#destroyModeHeader .filter-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.filter === filter);
             });
-            
+
             // 过滤 textarea 内容
             const textarea = document.getElementById('destroyKeysInput');
             if (filter === 'all') {
@@ -1646,7 +1873,7 @@
                 const filtered = allDestroyKeys.filter(keyId => getKeyType(keyId) === filter);
                 textarea.value = filtered.join('\n');
             }
-            
+
             updateDestroyStats();
         }
 
@@ -1656,14 +1883,14 @@
                 showToast('请输入要销毁的卡密', 'error');
                 return;
             }
-            
+
             const keyCount = keysText.split('\n').filter(k => k.trim()).length;
             if (!await showConfirm(`确定要销毁 ${keyCount} 个卡密吗？\n已兑换的卡密会同时删除对应卡片`, '销毁卡密')) return;
-            
+
             const btn = document.getElementById('destroyKeysBtn');
             btn.disabled = true;
             btn.textContent = '处理中...';
-            
+
             try {
                 const response = await fetch('/api/keys/destroy', {
                     method: 'POST',
@@ -1797,18 +2024,18 @@
 
             // 绑定点击复制事件
             container.querySelectorAll('[data-copy]').forEach(el => {
-                el.addEventListener('click', function() {
+                el.addEventListener('click', function () {
                     copyToClipboard(this.dataset.copy).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
                 });
             });
             container.querySelectorAll('[data-action="copy-record"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.record-item');
                     copyToClipboard(item.dataset.full).then(() => showToast('已复制', 'success')).catch(() => showToast('复制失败', 'error'));
                 });
             });
             container.querySelectorAll('[data-action="delete-record"]').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const item = this.closest('.record-item');
                     deleteRecord(item.dataset.keyId);
                 });
@@ -1893,12 +2120,12 @@
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value;
             const isAdminVal = document.getElementById('newIsAdmin').value === 'true';
-            
+
             if (!username || !password) {
                 showToast('请输入用户名和密码', 'error');
                 return;
             }
-            
+
             try {
                 const response = await fetch('/api/users', {
                     method: 'POST',
@@ -1946,12 +2173,12 @@
         async function savePassword() {
             const username = document.getElementById('editUsername').value;
             const password = document.getElementById('editPassword').value;
-            
+
             if (!password) {
                 showToast('请输入新密码', 'error');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`/api/users/${username}`, {
                     method: 'PUT',
@@ -1981,12 +2208,12 @@
             if (statusEventSource) {
                 statusEventSource.close();
             }
-            
+
             statusEventSource = new EventSource(`/api/mercury-accounts/status-stream?token=${accessToken}`);
-            
-            statusEventSource.onmessage = function(event) {
+
+            statusEventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
-                
+
                 if (data.type === 'status_update') {
                     // 更新本地数据
                     const acc = allMercuryAccounts.find(a => a.user_id === data.user_id);
@@ -2003,8 +2230,8 @@
                     console.log(`[SSE] 账户 ${data.email} 卡片数量: 信用卡 ${data.credit}, 借记卡 ${data.debit}`);
                 }
             };
-            
-            statusEventSource.onerror = function() {
+
+            statusEventSource.onerror = function () {
                 console.log('[SSE] 连接断开，5秒后重连...');
                 statusEventSource.close();
                 statusEventSource = null;
@@ -2016,7 +2243,7 @@
         function updateAccountStatusUI(userId, status) {
             const accountItem = document.querySelector(`.account-item[data-user-id="${userId}"]`);
             if (!accountItem) return;
-            
+
             const badge = accountItem.querySelector('.status-badge');
             if (badge) {
                 let statusText, statusClass;
@@ -2039,13 +2266,13 @@
         function updateCardCountsUI(userId, credit, debit) {
             const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
             if (!container) return;
-            
+
             const creditCount = container.querySelector('.credit-count');
             const debitCount = container.querySelector('.debit-count');
-            
+
             if (creditCount) creditCount.textContent = credit;
             if (debitCount) debitCount.textContent = debit;
-            
+
             // 同时更新顶部组织统计
             updateOrgTotalCounts();
         }
@@ -2061,7 +2288,7 @@
                 totalCredit += credit;
                 totalDebit += debit;
             });
-            
+
             const orgCreditCount = document.getElementById('orgCreditCount');
             const orgDebitCount = document.getElementById('orgDebitCount');
             if (orgCreditCount) orgCreditCount.textContent = totalCredit;
@@ -2090,18 +2317,18 @@
 
         function filterByOrg() {
             currentOrgFilter = document.getElementById('orgFilter').value;
-            const filtered = currentOrgFilter 
+            const filtered = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
             renderMercuryAccounts(filtered, true);
-            
+
             // 重置时间过滤为全部时间
             document.getElementById('timeFilter').value = '0';
             currentTimeFilter = 0;
-            
+
             // 始终显示组织卡片操作按钮，加载卡片数量
             document.getElementById('orgCardActions').style.display = 'flex';
-            
+
             // 清空缓存并重新获取所有卡片数据
             allCardsCache = {};
             loadAllCardsAndCount();
@@ -2126,14 +2353,14 @@
 
         // 从缓存中根据时间过滤并更新卡片数量
         function updateCardCountsFromCache() {
-            const orgAccounts = currentOrgFilter 
+            const orgAccounts = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
-            
+
             let totalCredit = 0, totalDebit = 0;
             const now = new Date();
             const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
-            
+
             for (const acc of orgAccounts) {
                 const cards = allCardsCache[acc.user_id] || [];
                 for (const card of cards) {
@@ -2145,7 +2372,7 @@
                             continue;
                         }
                     }
-                    
+
                     if (card.card_type === 'credit') {
                         totalCredit++;
                     } else if (card.card_type === 'debit') {
@@ -2153,20 +2380,20 @@
                     }
                 }
             }
-            
+
             document.getElementById('orgCreditCount').textContent = totalCredit;
             document.getElementById('orgDebitCount').textContent = totalDebit;
         }
 
         // 加载所有卡片数据并缓存
         async function loadAllCardsAndCount() {
-            const orgAccounts = currentOrgFilter 
+            const orgAccounts = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
-            
+
             document.getElementById('orgCreditCount').textContent = '...';
             document.getElementById('orgDebitCount').textContent = '...';
-            
+
             for (const acc of orgAccounts) {
                 try {
                     const response = await fetch(`/api/mercury-accounts/${acc.user_id}/cards`, { headers: getAuthHeaders() });
@@ -2178,7 +2405,7 @@
                     }
                 } catch (e) { console.error(e); }
             }
-            
+
             // 更新数量显示
             updateCardCountsFromCache();
         }
@@ -2186,10 +2413,10 @@
         // 保留旧的函数用于其他地方调用（如SSE更新）
         async function loadOrgCardCounts() {
             // 如果有缓存，从缓存更新；否则重新加载
-            const orgAccounts = currentOrgFilter 
+            const orgAccounts = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
-            
+
             const hasCacheForAll = orgAccounts.every(acc => acc.user_id in allCardsCache);
             if (hasCacheForAll) {
                 updateCardCountsFromCache();
@@ -2210,7 +2437,7 @@
             document.getElementById('clearCreditBtn').disabled = false;
             document.getElementById('clearDebitBtn').disabled = false;
             showToast('已停止清空', 'info');
-            
+
             // 清空缓存并重新加载卡片数据
             allCardsCache = {};
             loadAllCardsAndCount();
@@ -2226,14 +2453,14 @@
                 const es = new EventSource(url);
                 clearCardEventSource = es;
                 let deleted = 0, failed = 0, total = 0;
-                
-                es.onmessage = function(event) {
+
+                es.onmessage = function (event) {
                     if (clearCardsAborted) {
                         es.close();
                         resolve({ deleted, failed, total, aborted: true });
                         return;
                     }
-                    
+
                     const data = JSON.parse(event.data);
                     if (data.type === 'error') {
                         es.close();
@@ -2247,8 +2474,8 @@
                         resolve({ deleted: data.deleted, failed: data.failed, total: data.total });
                     }
                 };
-                
-                es.onerror = function() {
+
+                es.onerror = function () {
                     es.close();
                     resolve({ deleted: 0, failed: 0, total: 0, error: '连接失败' });
                 };
@@ -2260,16 +2487,16 @@
             const scopeName = currentOrgFilter ? `组织 "${currentOrgFilter}"` : '全部组织';
             const timeDesc = currentTimeFilter > 0 ? `（${currentTimeFilter}分钟前创建的）` : '';
             if (!await showConfirm(`确定要清空${scopeName}的${timeDesc}${typeName}吗？此操作不可恢复！`, `清空${typeName}`)) return;
-            
-            const orgAccounts = currentOrgFilter 
+
+            const orgAccounts = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
-            
+
             if (!orgAccounts.length) {
                 showToast('没有账户需要处理', 'info');
                 return;
             }
-            
+
             // 显示进度条，先统计总卡数
             clearCardsAborted = false;
             document.getElementById('clearCreditBtn').disabled = true;
@@ -2279,17 +2506,17 @@
             document.getElementById('clearCardsProgressFill').style.width = '0%';
             document.getElementById('clearCardsProgressText').textContent = '统计中...';
             document.getElementById('clearCardsProgressMessage').textContent = '';
-            
+
             // 从缓存中统计卡片数量（带时间过滤）
             let totalCards = 0;
             const now = new Date();
             const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
-            
+
             for (const acc of orgAccounts) {
                 const cards = allCardsCache[acc.user_id] || [];
                 for (const card of cards) {
                     if (card.card_type !== cardType) continue;
-                    
+
                     // 时间过滤
                     if (thresholdTime && card.createdAtDateStr) {
                         const createdAt = new Date(card.createdAtDateStr);
@@ -2298,7 +2525,7 @@
                     totalCards++;
                 }
             }
-            
+
             if (totalCards === 0) {
                 document.getElementById('clearCardsProgress').style.display = 'none';
                 document.getElementById('clearCreditBtn').disabled = false;
@@ -2306,36 +2533,36 @@
                 showToast(`没有${typeName}需要删除`, 'info');
                 return;
             }
-            
+
             document.getElementById('clearCardsTitle').textContent = `正在删除...`;
             document.getElementById('clearCardsProgressText').textContent = `0 / ${totalCards}`;
-            
+
             let totalDeleted = 0, totalFailed = 0;
-            
+
             for (let i = 0; i < orgAccounts.length; i++) {
                 if (clearCardsAborted) break;
-                
+
                 const acc = orgAccounts[i];
                 document.getElementById('clearCardsProgressMessage').textContent = `正在处理 ${acc.name}...`;
-                
+
                 const result = await clearAccountCardsStream(acc.user_id, cardType, (current, total) => {
                     const percent = ((totalDeleted + current) / totalCards * 100).toFixed(0);
                     document.getElementById('clearCardsProgressFill').style.width = percent + '%';
                     document.getElementById('clearCardsProgressText').textContent = `${totalDeleted + current} / ${totalCards}`;
                 }, currentTimeFilter);
-                
+
                 if (result.aborted) break;
                 totalDeleted += result.deleted || 0;
                 totalFailed += result.failed || 0;
             }
-            
+
             // 隐藏进度条
             document.getElementById('clearCardsProgress').style.display = 'none';
             document.getElementById('clearCreditBtn').disabled = false;
             document.getElementById('clearDebitBtn').disabled = false;
-            
+
             showToast(`清空完成: 删除 ${totalDeleted} 张，失败 ${totalFailed} 张`, 'success');
-            
+
             // 清空缓存并重新加载卡片数据
             allCardsCache = {};
             loadAllCardsAndCount();
@@ -2409,7 +2636,7 @@
                     </div>
                 </div>
             `}).join('');
-            
+
             // 加载卡片数量
             loadAllCardCounts();
         }
@@ -2427,7 +2654,7 @@
                 document.getElementById('loginTotpSecret').value = '';
             }
         }
-        
+
         function closeAddAccountModal() {
             document.getElementById('addCredentialsModal').classList.remove('show');
             document.getElementById('addSessionModal').classList.remove('show');
@@ -2436,15 +2663,15 @@
         async function addMercuryAccount() {
             const sessionCookie = document.getElementById('newSession').value.trim();
             const proxyUrl = document.getElementById('accountProxySelect').value;
-            
+
             if (!sessionCookie) {
                 showToast('请输入 _SESSION cookie', 'error');
                 return;
             }
-            
+
             document.getElementById('addAccountBtn').disabled = true;
             document.getElementById('addAccountBtn').textContent = '添加中...';
-            
+
             try {
                 const response = await fetch('/api/mercury-accounts', {
                     method: 'POST',
@@ -2473,16 +2700,16 @@
             const mercuryPassword = document.getElementById('loginMercuryPassword').value.trim();
             const totpSecret = document.getElementById('loginTotpSecret').value.trim();
             const proxyUrl = document.getElementById('loginProxySelect').value;
-            
+
             if (!email) { showToast('请输入邮箱地址', 'error'); return; }
             if (!emailPassword) { showToast('请输入邮箱密码', 'error'); return; }
             if (!mercuryPassword) { showToast('请输入 Mercury 密码', 'error'); return; }
             if (!totpSecret) { showToast('请输入 2FA 密钥', 'error'); return; }
-            
+
             const btn = document.getElementById('addAccountByLoginBtn');
             btn.disabled = true;
             btn.textContent = '登录中...';
-            
+
             try {
                 const response = await fetch('/api/mercury-accounts/login', {
                     method: 'POST',
@@ -2513,7 +2740,7 @@
 
         async function switchMercuryAccount(userId) {
             if (!await showConfirm('确定要切换到这个账户吗？切换后需要刷新页面。', '切换账户')) return;
-            
+
             try {
                 const response = await fetch(`/api/mercury-accounts/${userId}/switch`, {
                     method: 'POST',
@@ -2559,7 +2786,7 @@
 
         async function deleteMercuryAccount(userId) {
             if (!await showConfirm('确定要删除这个 Mercury 账户吗？', '删除账户')) return;
-            
+
             try {
                 const response = await fetch(`/api/mercury-accounts/${userId}`, {
                     method: 'DELETE',
@@ -2582,16 +2809,16 @@
             const typeName = cardType === 'credit' ? '信用卡' : '借记卡';
             const timeDesc = currentTimeFilter > 0 ? `（${currentTimeFilter}分钟前创建的）` : '所有';
             if (!await showConfirm(`确定要清空该账户在 Mercury 后台的${timeDesc}${typeName}吗？此操作不可恢复！`, `清空${typeName}`)) return;
-            
+
             // 找到账户信息
             const acc = allMercuryAccounts.find(a => a.user_id === userId);
             const accName = acc?.name || '账户';
-            
+
             // 禁用按钮
             const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
             const btns = container?.querySelectorAll('.btn-warning');
             btns?.forEach(b => b.disabled = true);
-            
+
             // 显示进度条
             document.getElementById('clearCreditBtn').disabled = true;
             document.getElementById('clearDebitBtn').disabled = true;
@@ -2600,17 +2827,17 @@
             document.getElementById('clearCardsProgressFill').style.width = '0%';
             document.getElementById('clearCardsProgressText').textContent = '连接中...';
             document.getElementById('clearCardsProgressMessage').textContent = accName;
-            
+
             // 使用流式接口（带时间过滤参数）
             let streamUrl = `/api/mercury-accounts/${userId}/clear-cards-stream?card_type=${cardType}&token=${accessToken}`;
             if (currentTimeFilter > 0) {
                 streamUrl += `&minutes_ago=${currentTimeFilter}`;
             }
             clearCardEventSource = new EventSource(streamUrl);
-            
-            clearCardEventSource.onmessage = function(event) {
+
+            clearCardEventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
-                
+
                 if (data.type === 'error') {
                     clearCardEventSource.close();
                     clearCardEventSource = null;
@@ -2630,13 +2857,13 @@
                     clearCardEventSource = null;
                     document.getElementById('clearCardsProgressFill').style.width = '100%';
                     document.getElementById('clearCardsProgressText').textContent = `${data.deleted} / ${data.total}`;
-                    
+
                     setTimeout(() => {
                         document.getElementById('clearCardsProgress').style.display = 'none';
                         document.getElementById('clearCreditBtn').disabled = false;
                         document.getElementById('clearDebitBtn').disabled = false;
                         btns?.forEach(b => b.disabled = false);
-                        
+
                         if (data.deleted > 0 || data.total === 0) {
                             showToast(`已删除 ${data.deleted} 张${typeName}`, 'success');
                         }
@@ -2647,8 +2874,8 @@
                     }, 500);
                 }
             };
-            
-            clearCardEventSource.onerror = function() {
+
+            clearCardEventSource.onerror = function () {
                 clearCardEventSource.close();
                 clearCardEventSource = null;
                 document.getElementById('clearCardsProgress').style.display = 'none';
@@ -2664,7 +2891,7 @@
             const cards = allCardsCache[userId] || [];
             const now = new Date();
             const thresholdTime = currentTimeFilter > 0 ? new Date(now.getTime() - currentTimeFilter * 60 * 1000) : null;
-            
+
             let creditCount = 0, debitCount = 0;
             for (const card of cards) {
                 // 时间过滤
@@ -2672,11 +2899,11 @@
                     const createdAt = new Date(card.createdAtDateStr);
                     if (createdAt > thresholdTime) continue;
                 }
-                
+
                 if (card.card_type === 'credit') creditCount++;
                 else if (card.card_type === 'debit') debitCount++;
             }
-            
+
             const container = document.querySelector(`.account-cards-actions[data-user-id="${userId}"]`);
             if (container) {
                 container.querySelector('.credit-count').textContent = creditCount;
@@ -2738,7 +2965,7 @@
             const userId = document.getElementById('proxyUserId').value;
             const selectValue = document.getElementById('proxySelect').value;
             const proxy = selectValue === '__clear__' ? '' : selectValue;
-            
+
             try {
                 const response = await fetch(`/api/mercury-accounts/${userId}/proxy`, {
                     method: 'POST',
@@ -2764,23 +2991,36 @@
                 document.getElementById('confirmMessage').textContent = message;
                 modal.style.display = 'flex';
                 modal.classList.add('show');
-                
+
                 const okBtn = document.getElementById('confirmOkBtn');
                 const cancelBtn = document.getElementById('confirmCancelBtn');
-                
+
                 const cleanup = () => {
                     modal.classList.remove('show');
                     setTimeout(() => modal.style.display = 'none', 200);
                     okBtn.removeEventListener('click', onOk);
                     cancelBtn.removeEventListener('click', onCancel);
                 };
-                
+
                 const onOk = () => { cleanup(); resolve(true); };
                 const onCancel = () => { cleanup(); resolve(false); };
-                
+
                 okBtn.addEventListener('click', onOk);
                 cancelBtn.addEventListener('click', onCancel);
             });
+        }
+
+        function showAlert(message) {
+            const modal = document.getElementById('alertModal');
+            document.getElementById('alertMessage').textContent = message;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 200);
         }
 
         function showToast(message, type = 'info') {
@@ -2791,6 +3031,14 @@
         }
 
         // ==================== 公告设置 ====================
+        function updateAnnouncementSizeLabel() {
+            const slider = document.getElementById('announcementSizeSlider');
+            const label = document.getElementById('announcementSizeLabel');
+            if (slider && label) {
+                label.textContent = slider.value + '%';
+            }
+        }
+
         async function loadAnnouncement() {
             try {
                 const response = await fetch('/api/settings/announcement', { headers: getAuthHeaders() });
@@ -2798,6 +3046,11 @@
                     const data = await response.json();
                     if (data.success) {
                         document.getElementById('announcementContent').value = data.content || '';
+                        const slider = document.getElementById('announcementSizeSlider');
+                        if (slider && data.announcement_size) {
+                            slider.value = data.announcement_size;
+                            updateAnnouncementSizeLabel();
+                        }
                         updateAnnouncementPreview();
                     }
                 }
@@ -2808,15 +3061,97 @@
 
         async function saveAnnouncement() {
             const content = document.getElementById('announcementContent').value;
+            const slider = document.getElementById('announcementSizeSlider');
+            const announcement_size = slider ? parseInt(slider.value) : 100;
             try {
                 const response = await fetch('/api/settings/announcement', {
                     method: 'POST',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content })
+                    body: JSON.stringify({ content, announcement_size })
                 });
                 const data = await response.json();
                 if (data.success) {
                     showToast('公告已保存', 'success');
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('保存失败', 'error');
+            }
+        }
+
+        // ==================== 维护模式设置 ====================
+        async function loadMaintenanceMode() {
+            try {
+                const response = await fetch('/api/settings/maintenance', { headers: getAuthHeaders() });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const toggle = document.getElementById('maintenanceToggle');
+                        if (toggle) {
+                            toggle.checked = data.maintenance_mode || false;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load maintenance mode:', e);
+            }
+        }
+
+        async function toggleMaintenance() {
+            const toggle = document.getElementById('maintenanceToggle');
+            const maintenance_mode = toggle.checked;
+
+            try {
+                const response = await fetch('/api/settings/maintenance', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maintenance_mode })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || '设置失败', 'error');
+                    toggle.checked = !maintenance_mode; // 恢复状态
+                }
+            } catch (e) {
+                showToast('设置失败', 'error');
+                toggle.checked = !maintenance_mode; // 恢复状态
+            }
+        }
+
+        async function loadBatchSettings() {
+            try {
+                const response = await fetch('/api/settings/batch', { headers: getAuthHeaders() });
+                const data = await response.json();
+                if (data.success) {
+                    const countInput = document.getElementById('maxBatchCountInput');
+                    const intervalInput = document.getElementById('batchIntervalInput');
+                    if (countInput) {
+                        countInput.value = data.max_batch_count;
+                    }
+                    if (intervalInput) {
+                        intervalInput.value = data.batch_interval;
+                    }
+                }
+            } catch (e) {
+                console.error('加载批量设置失败:', e);
+            }
+        }
+
+        async function saveBatchSettings() {
+            const maxBatchCount = parseInt(document.getElementById('maxBatchCountInput').value) || 5;
+            const batchInterval = parseInt(document.getElementById('batchIntervalInput').value) || 5;
+            try {
+                const response = await fetch('/api/settings/batch', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ max_batch_count: maxBatchCount, batch_interval: batchInterval })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('设置已保存', 'success');
                 } else {
                     showToast(data.error || '保存失败', 'error');
                 }
@@ -2851,7 +3186,7 @@
             }
         }
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const picker = document.getElementById('emojiPicker');
             if (picker && picker.style.display !== 'none') {
                 if (!e.target.closest('#emojiPicker') && !e.target.closest('[onclick*="toggleEmojiPicker"]')) {
@@ -2868,7 +3203,7 @@
             try {
                 // 先加载默认代理设置
                 await loadDefaultProxy();
-                
+
                 const response = await fetch('/api/proxies', { headers: getAuthHeaders() });
                 if (response.status === 401) { await checkAuth(); return refreshProxies(); }
                 const data = await response.json();
@@ -2884,7 +3219,7 @@
 
         // 默认代理 ID (从服务端获取)
         let defaultProxyId = '';
-        
+
         async function loadDefaultProxy() {
             try {
                 const response = await fetch('/api/proxies/default', { headers: getAuthHeaders() });
@@ -2897,7 +3232,7 @@
                 console.error('获取默认代理失败:', error);
             }
         }
-        
+
         async function setDefaultProxy(proxyId) {
             const newProxyId = (defaultProxyId === proxyId) ? '' : proxyId;
             try {
@@ -2920,7 +3255,7 @@
                 showToast('请求失败', 'error');
             }
         }
-        
+
         function renderProxies(proxies) {
             const container = document.getElementById('proxiesContainer');
             const badge = document.getElementById('proxyCount');
@@ -2982,20 +3317,20 @@
             // 获取默认代理的 URL
             const defaultProxy = allProxies.find(p => p.id === defaultProxyId);
             const defaultProxyUrl = defaultProxy ? defaultProxy.url : '';
-            
+
             // 构建代理选项，默认代理放在第一位
             let sortedProxies = [...allProxies];
             if (defaultProxy) {
                 sortedProxies = [defaultProxy, ...allProxies.filter(p => p.id !== defaultProxyId)];
             }
-            
-            const proxyOptions = '<option value="">不使用代理</option>' + 
+
+            const proxyOptions = '<option value="">不使用代理</option>' +
                 sortedProxies.map(p => {
                     const isDefault = p.id === defaultProxyId;
                     const label = isDefault ? `${getProxyOptionText(p)} ★` : getProxyOptionText(p);
                     return `<option value="${p.url}">${label}</option>`;
                 }).join('');
-            
+
             // 更新添加账户时的代理选择器 (Session Cookie 模式)
             const accountSelect = document.getElementById('accountProxySelect');
             if (accountSelect) {
@@ -3005,7 +3340,7 @@
                     accountSelect.value = defaultProxyUrl;
                 }
             }
-            
+
             // 更新添加账户时的代理选择器 (邮箱登录模式)
             const loginSelect = document.getElementById('loginProxySelect');
             if (loginSelect) {
@@ -3083,11 +3418,11 @@
         async function testProxyLatency(proxyId) {
             const latencyEl = document.getElementById(`latency-${proxyId}`);
             const btn = document.querySelector(`.proxy-item[data-id="${proxyId}"] .btn-test`);
-            
+
             latencyEl.textContent = '测试中...';
             latencyEl.className = 'proxy-latency testing';
             if (btn) btn.disabled = true;
-            
+
             try {
                 const response = await fetch(`/api/proxies/${proxyId}/test`, {
                     method: 'POST',
@@ -3095,10 +3430,10 @@
                 });
                 if (response.status === 401) { await checkAuth(); return testProxyLatency(proxyId); }
                 const data = await response.json();
-                
+
                 // 保存到缓存
                 proxyLatencyCache[proxyId] = data;
-                
+
                 if (data.success) {
                     const latency = data.latency;
                     latencyEl.textContent = `${latency}ms`;
@@ -3126,18 +3461,18 @@
             if (proxyLatencyEventSource) {
                 proxyLatencyEventSource.close();
             }
-            
+
             const token = localStorage.getItem('access_token');
             proxyLatencyEventSource = new EventSource(`/api/proxies/latency-stream?token=${token}`);
-            
-            proxyLatencyEventSource.onmessage = function(event) {
+
+            proxyLatencyEventSource.onmessage = function (event) {
                 try {
                     const data = JSON.parse(event.data);
                     updateProxyLatencyDisplay(data);
-                } catch (e) {}
+                } catch (e) { }
             };
-            
-            proxyLatencyEventSource.onerror = function() {
+
+            proxyLatencyEventSource.onerror = function () {
                 // 断开后5秒重连
                 setTimeout(() => {
                     if (isAdmin) subscribeProxyLatency();
@@ -3149,13 +3484,13 @@
             for (const [proxyId, result] of Object.entries(data)) {
                 // 保存到本地缓存
                 proxyLatencyCache[proxyId] = result;
-                
+
                 // 处理本地延迟
-                const latencyEl = proxyId === '__local__' 
+                const latencyEl = proxyId === '__local__'
                     ? document.getElementById('localLatency')
                     : document.getElementById(`latency-${proxyId}`);
                 if (!latencyEl) continue;
-                
+
                 if (result.success) {
                     const latency = result.latency;
                     latencyEl.textContent = `${latency}ms`;
@@ -3179,27 +3514,33 @@
         async function init() {
             const authed = await checkAuth();
             if (!authed) return;
-            
+
             // 显示用户信息
             document.getElementById('currentUser').textContent = currentUsername || '用户';
-            
+
             // 显示用户管理、代理管理和后台账户标签（仅管理员）
             if (isAdmin) {
                 document.getElementById('usersTab').style.display = 'flex';
                 document.getElementById('proxiesTab').style.display = 'flex';
                 document.getElementById('accountsTab').style.display = 'flex';
                 document.getElementById('settingsTab').style.display = 'flex';
-                
+
                 // 订阅代理延迟更新
                 subscribeProxyLatency();
-                
+
                 // 加载公告设置
                 loadAnnouncement();
+
+                // 加载维护模式设置
+                loadMaintenanceMode();
+
+                // 加载批量兑换设置
+                loadBatchSettings();
             }
-            
+
             refreshCards();
             refreshKeys();
-            
+
             // 每10分钟自动刷新token
             setInterval(autoRefresh, 10 * 60 * 1000);
             setInterval(refreshCards, 30000);
@@ -3207,13 +3548,13 @@
         }
 
         init();
-        
+
         // 移动端滑动切换 Tab
-        (function() {
+        (function () {
             let touchStartX = 0;
             let touchEndX = 0;
             const minSwipeDistance = 50;
-            
+
             function getVisibleTabs() {
                 return tabOrder.filter((tab) => {
                     if (tab === 'users' || tab === 'accounts' || tab === 'proxies' || tab === 'settings') {
@@ -3222,14 +3563,14 @@
                     return true;
                 });
             }
-            
+
             function handleSwipe() {
                 const visibleTabs = getVisibleTabs();
                 const currentIndex = visibleTabs.indexOf(currentTab);
                 const swipeDistance = touchStartX - touchEndX;
-                
+
                 if (Math.abs(swipeDistance) < minSwipeDistance) return;
-                
+
                 let newIndex, direction;
                 if (swipeDistance > 0) {
                     // 向左滑 -> 下一个
@@ -3240,25 +3581,25 @@
                     newIndex = Math.max(currentIndex - 1, 0);
                     direction = 'right';
                 }
-                
+
                 if (newIndex !== currentIndex) {
                     switchTab(visibleTabs[newIndex], direction);
                 }
             }
-            
+
             const mainContent = document.querySelector('.main-content');
             if (mainContent) {
                 mainContent.addEventListener('touchstart', (e) => {
                     touchStartX = e.changedTouches[0].screenX;
                 }, { passive: true });
-                
+
                 mainContent.addEventListener('touchend', (e) => {
                     touchEndX = e.changedTouches[0].screenX;
                     handleSwipe();
                 }, { passive: true });
             }
         })();
-        
+
         // 注册 Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
@@ -3267,4 +3608,5 @@
         }
     </script>
 </body>
+
 </html>
