@@ -5,6 +5,9 @@
 
 cd "$(dirname "$0")"
 
+# 激活虚拟环境
+source niko/bin/activate
+
 echo "启动 Mercury 服务..."
 
 # 启动 Web Server (端口 7999)

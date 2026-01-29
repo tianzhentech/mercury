@@ -681,6 +681,118 @@ def api_get_public_batch_settings():
     })
 
 
+# GitHub 私有仓库配置
+GITHUB_TOKEN = "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"
+GITHUB_REPO = "tianzhentech/niko"
+
+
+@app.route('/api/check-update', methods=['GET'])
+@require_admin
+def api_check_update():
+    """检查远程仓库是否有新版本"""
+    import requests as req
+    try:
+        current_version = get_version()
+
+        # 从 GitHub API 获取最新的 tags
+        url = f"https://api.github.com/repos/{GITHUB_REPO}/tags"
+        headers = {
+            "Authorization": f"token {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        resp = req.get(url, headers=headers, timeout=10)
+
+        if resp.status_code != 200:
+            return jsonify({"success": False, "error": f"GitHub API 请求失败: {resp.status_code}"})
+
+        tags = resp.json()
+        if not tags:
+            return jsonify({"success": True, "has_update": False, "current_version": current_version})
+
+        # 获取最新 tag
+        latest_tag = tags[0]["name"]
+        latest_version = latest_tag
+
+        # 比较版本号（都去掉 v 前缀再比较）
+        current_normalized = current_version.lstrip("v")
+        latest_normalized = latest_version.lstrip("v")
+        has_update = latest_normalized != current_normalized
+
+        return jsonify({
+            "success": True,
+            "has_update": has_update,
+            "current_version": current_version,
+            "latest_version": latest_version
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route('/api/version', methods=['GET'])
+def api_get_version():
+    """获取当前版本号"""
+    return jsonify({"success": True, "version": get_version()})
+
+
+@app.route('/api/perform-update', methods=['GET'])
+def api_perform_update():
+    """执行更新 - SSE 流式返回更新进度"""
+    import subprocess
+
+    token = request.args.get('token')
+    if not token:
+        return jsonify({"error": "未授权"}), 401
+
+    payload = verify_access_token(token)
+    if not payload or not payload.get('is_admin'):
+        return jsonify({"error": "需要管理员权限"}), 403
+
+    def generate():
+        try:
+            # 发送开始拉取代码的消息
+            yield f"data: {json.dumps({'status': 'pulling', 'message': '正在从 GitHub 拉取最新代码...'})}\n\n"
+
+            # 执行 git pull
+            script_dir = os.path.dirname(__file__)
+            result = subprocess.run(
+                ['git', 'pull', 'origin', 'main'],
+                cwd=script_dir,
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            if result.returncode != 0:
+                yield f"data: {json.dumps({'status': 'error', 'message': f'Git pull 失败: {result.stderr}'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'status': 'pulling', 'message': result.stdout.strip() or '代码已更新'})}\n\n"
+
+            # 发送重启服务的消息
+            yield f"data: {json.dumps({'status': 'restarting', 'message': '正在重启服务...'})}\n\n"
+
+            # 异步执行重启命令（使用 nohup 确保命令在连接断开后继续执行）
+            subprocess.Popen(
+                ['sudo', 'systemctl', 'restart', 'niko'],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True
+            )
+
+            yield f"data: {json.dumps({'status': 'done', 'message': '更新完成'})}\n\n"
+
+        except subprocess.TimeoutExpired:
+            yield f"data: {json.dumps({'status': 'error', 'message': 'Git pull 超时'})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'status': 'error', 'message': str(e)})}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+    })
+
+
 @app.route('/api/proxies/latency-stream', methods=['GET'])
 def api_proxy_latency_stream():
     """代理延迟 SSE 推送"""
