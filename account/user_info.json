@@ -82,6 +82,447 @@
                     "account_status": "active"
                 }
             ]
+        },
+        {
+            "user": {
+                "id": "82adf7ea-fc6c-11f0-b782-6fd7da8b130b",
+                "email": "vgxudfjne815@outlook.com",
+                "first_name": "01",
+                "last_name": "01",
+                "phone_number": "+12164956682",
+                "status": "active",
+                "created_at": "2026-01-28T17:12:22.750861Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 N WATER AVE LOT 43",
+                    "address2": "",
+                    "city": "GALLATIN",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "82b6f930-fc6c-11f0-b782-47ac86620033"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "34138c70-fc6d-11f0-8fa3-973690bcd5b6",
+                "email": "nofnxb38530@outlook.com",
+                "first_name": "02",
+                "last_name": "02",
+                "phone_number": "+15822503540",
+                "status": "active",
+                "created_at": "2026-01-28T17:17:20.372453Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "341909b6-fc6d-11f0-8fa3-bbb77c61540b"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "bbb94e08-fc6d-11f0-924e-cfaf4b38e45c",
+                "email": "xqxwmby2010@outlook.com",
+                "first_name": "03",
+                "last_name": "03",
+                "phone_number": "+12272123573",
+                "status": "active",
+                "created_at": "2026-01-28T17:21:07.948383Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "bbbe28a6-fc6d-11f0-924e-eff0ad679440"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "61b87770-fc6e-11f0-a647-3b555af9d298",
+                "email": "pmvoudrv24102@outlook.com",
+                "first_name": "04",
+                "last_name": "04",
+                "phone_number": "+19253662923",
+                "status": "active",
+                "created_at": "2026-01-28T17:25:46.450154Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "61bb498c-fc6e-11f0-a647-d34eb2ee2296"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "dc7aa3d4-fc6e-11f0-bd7a-abcfa949dab1",
+                "email": "ofhtjhvjtf17@outlook.com",
+                "first_name": "05",
+                "last_name": "05",
+                "phone_number": "+16074790212",
+                "status": "active",
+                "created_at": "2026-01-28T17:29:12.402455Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "dc7df098-fc6e-11f0-bd7a-134615b6ae63"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "6c043ccc-fc6f-11f0-8262-b7d566d79570",
+                "email": "eodatgudfv49624@outlook.com",
+                "first_name": "06",
+                "last_name": "06",
+                "phone_number": "+18565696772",
+                "status": "active",
+                "created_at": "2026-01-28T17:33:13.2205Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "6c07c1a8-fc6f-11f0-8262-2743b7f9dc05"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "db497958-fc6f-11f0-b56a-2709fc7f8cb9",
+                "email": "ffkylchpi22@outlook.com",
+                "first_name": "07",
+                "last_name": "07",
+                "phone_number": "+16074790376",
+                "status": "active",
+                "created_at": "2026-01-28T17:36:19.901101Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "540 North Water Avenue LOT 43",
+                    "address2": "",
+                    "city": "Gallatin",
+                    "region": "TN",
+                    "postal_code": "37066",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
+                "name": "YEGISH LLC",
+                "legal_business_name": "YEGISH LLC",
+                "callsign": "yegish-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "db4d2d3c-fc6f-11f0-b56a-3f7af9794d4b"
+            },
+            "credit_account": {
+                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-23T21:17:19.537105Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "520691213896467",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "275018594975036",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
         }
     ]
 }

@@ -428,10 +428,12 @@
                             </select>
                             <div class="org-card-actions" id="orgCardActions" style="display: none;">
                                 <button class="btn-warning" id="clearCreditBtn" onclick="clearOrgCards('credit')">
-                                    清空信用卡 <span class="card-count" id="orgCreditCount">-</span>
+                                    清空信用卡 <span class="card-count" id="orgCreditCount"><span
+                                            class="card-count-spinner"></span></span>
                                 </button>
                                 <button class="btn-warning debit" id="clearDebitBtn" onclick="clearOrgCards('debit')">
-                                    清空借记卡 <span class="card-count" id="orgDebitCount">-</span>
+                                    清空借记卡 <span class="card-count" id="orgDebitCount"><span
+                                            class="card-count-spinner"></span></span>
                                 </button>
                             </div>
                         </div>
@@ -735,14 +737,18 @@
                     </section>
 
                     <section class="control-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div style="display: flex; align-items: center; gap: 16px;">
                                 <h3 style="margin: 0;">版本信息</h3>
-                                <span style="color: var(--text-secondary); font-size: 14px;">当前版本: <span id="currentVersion" style="font-weight: 500; color: var(--text-primary);">{{ version }}</span></span>
+                                <span style="color: var(--text-secondary); font-size: 14px;">当前版本: <span
+                                        id="currentVersion" style="font-weight: 500; color: var(--text-primary);">{{
+                                        version }}</span></span>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="checkUpdate()" id="checkUpdateBtn">检查更新</button>
-                                <button onclick="performUpdate()" id="updateNowBtn" style="display: none; background: var(--success-color);">立即更新</button>
+                                <button onclick="performUpdate()" id="updateNowBtn"
+                                    style="display: none; background: var(--success-color);">立即更新</button>
                             </div>
                         </div>
                     </section>
@@ -760,7 +766,8 @@
             <div class="modal-body" style="text-align: center; padding: 30px;">
                 <div class="update-spinner" style="margin-bottom: 20px;">
                     <svg width="50" height="50" viewBox="0 0 50 50" style="animation: spin 1s linear infinite;">
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="80, 200" stroke-linecap="round"/>
+                        <circle cx="25" cy="25" r="20" fill="none" stroke="var(--primary)" stroke-width="4"
+                            stroke-dasharray="80, 200" stroke-linecap="round" />
                     </svg>
                 </div>
                 <p id="updateMessage" style="font-size: 16px; margin-bottom: 10px;">正在更新...</p>
@@ -770,15 +777,36 @@
     </div>
     <style>
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
+
+        /* 卡片数量加载动画 */
+        .card-count-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
+
         #updateModal .modal-content {
             pointer-events: auto;
         }
+
         #updateModal {
             pointer-events: none;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
         }
     </style>
 
@@ -2375,8 +2403,7 @@
             // 始终显示组织卡片操作按钮，加载卡片数量
             document.getElementById('orgCardActions').style.display = 'flex';
 
-            // 清空缓存并重新获取所有卡片数据
-            allCardsCache = {};
+            // 重新获取所有卡片数据（函数内部会清空缓存并重置 UI）
             loadAllCardsAndCount();
         }
 
@@ -2431,29 +2458,48 @@
             document.getElementById('orgDebitCount').textContent = totalDebit;
         }
 
-        // 加载所有卡片数据并缓存
+        // 加载所有卡片数据并缓存（优化版：每个组织只请求一次）
         async function loadAllCardsAndCount() {
             const orgAccounts = currentOrgFilter
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
 
-            document.getElementById('orgCreditCount').textContent = '...';
-            document.getElementById('orgDebitCount').textContent = '...';
+            document.getElementById('orgCreditCount').innerHTML = '<span class="card-count-spinner"></span>';
+            document.getElementById('orgDebitCount').innerHTML = '<span class="card-count-spinner"></span>';
 
-            for (const acc of orgAccounts) {
-                try {
-                    const response = await fetch(`/api/mercury-accounts/${acc.user_id}/cards`, { headers: getAuthHeaders() });
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success) {
-                            allCardsCache[acc.user_id] = data.cards || [];
-                        }
+            // 清空缓存并重置所有子账户的 UI 为 spinner
+            allCardsCache = {};
+            document.querySelectorAll('.account-cards-actions[data-user-id]').forEach(container => {
+                const creditEl = container.querySelector('.credit-count');
+                const debitEl = container.querySelector('.debit-count');
+                if (creditEl) creditEl.innerHTML = '<span class="card-count-spinner"></span>';
+                if (debitEl) debitEl.innerHTML = '<span class="card-count-spinner"></span>';
+            });
+
+            try {
+                // 使用批量 API，每个组织只请求一次
+                const response = await fetch('/api/mercury-accounts/cards-batch', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ organization: currentOrgFilter || '' })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.cards_by_user) {
+                        // 更新缓存
+                        allCardsCache = data.cards_by_user;
+                        console.log(`[批量获取] 成功获取卡片数据，组织数: ${Object.keys(allCardsCache).length}`);
                     }
-                } catch (e) { console.error(e); }
+                }
+            } catch (e) {
+                console.error('批量获取卡片失败:', e);
             }
 
             // 更新数量显示
             updateCardCountsFromCache();
+            // 更新每个子账户的卡片数量
+            updateAllAccountCardCountsUI();
         }
 
         // 保留旧的函数用于其他地方调用（如SSE更新）
@@ -2668,10 +2714,10 @@
                     <div class="account-actions-row">
                         <div class="account-cards-actions" data-user-id="${acc.user_id}">
                             <button class="btn-warning" onclick="clearMercuryCards('${acc.user_id}', 'credit')">
-                                清空信用卡 <span class="card-count credit-count">-</span>
+                                清空信用卡 <span class="card-count credit-count"><span class="card-count-spinner"></span></span>
                             </button>
                             <button class="btn-warning debit" onclick="clearMercuryCards('${acc.user_id}', 'debit')">
-                                清空借记卡 <span class="card-count debit-count">-</span>
+                                清空借记卡 <span class="card-count debit-count"><span class="card-count-spinner"></span></span>
                             </button>
                         </div>
                         <div class="account-actions">
@@ -3248,7 +3294,7 @@
             const token = localStorage.getItem('access_token');
             const eventSource = new EventSource(`/api/perform-update?token=${token}`);
 
-            eventSource.onmessage = function(event) {
+            eventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 if (data.status === 'pulling') {
                     message.textContent = '正在拉取代码...';
@@ -3273,7 +3319,7 @@
                 }
             };
 
-            eventSource.onerror = function() {
+            eventSource.onerror = function () {
                 // 连接断开可能是服务重启导致的，尝试刷新页面
                 message.textContent = '服务重启中...';
                 detail.textContent = '正在等待服务恢复...';

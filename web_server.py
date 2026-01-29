@@ -862,6 +862,107 @@ def api_get_mercury_cards(user_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route('/api/mercury-accounts/cards-batch', methods=['POST'])
+@require_admin
+def api_get_mercury_cards_batch():
+    """
+    批量获取组织下所有账户的卡片
+    同一组织只请求一次 Mercury API，然后根据持卡人姓名分配给各个账户
+    
+    请求体:
+    {
+        "organization": "组织名称"  // 可选，不传则获取全部
+    }
+    
+    返回:
+    {
+        "success": true,
+        "cards_by_user": {
+            "user_id_1": [cards...],
+            "user_id_2": [cards...]
+        }
+    }
+    """
+    from account.accounts import load_accounts, list_mercury_cards
+    
+    try:
+        data = request.json or {}
+        org_filter = data.get("organization", "")
+        
+        # 加载所有账户
+        accounts_data = load_accounts()
+        accounts = accounts_data.get("accounts", [])
+        
+        # 按组织筛选
+        if org_filter:
+            accounts = [acc for acc in accounts if acc.get("organization") == org_filter]
+        
+        if not accounts:
+            return jsonify({"success": True, "cards_by_user": {}})
+        
+        # 按组织分组
+        org_groups = {}
+        for acc in accounts:
+            org_name = acc.get("organization", "unknown")
+            if org_name not in org_groups:
+                org_groups[org_name] = []
+            org_groups[org_name].append(acc)
+        
+        # 结果字典
+        cards_by_user = {}
+        
+        # 每个组织只请求一次
+        for org_name, org_accounts in org_groups.items():
+            # 找到第一个有 session 的账户
+            active_account = None
+            for acc in org_accounts:
+                if acc.get("account_status") == "active" and acc.get("_SESSION"):
+                    active_account = acc
+                    break
+            
+            if not active_account:
+                for acc in org_accounts:
+                    if acc.get("_SESSION"):
+                        active_account = acc
+                        break
+            
+            if not active_account:
+                # 该组织没有可用账户，所有账户返回空列表
+                for acc in org_accounts:
+                    cards_by_user[acc["user_id"]] = []
+                continue
+            
+            # 请求该组织的所有卡片（不过滤持卡人）
+            success, all_cards = list_mercury_cards(active_account, cardholder_name_filter=None)
+            
+            if not success:
+                # 请求失败，所有账户返回空列表
+                for acc in org_accounts:
+                    cards_by_user[acc["user_id"]] = []
+                continue
+            
+            # 建立持卡人姓名到 user_id 的映射
+            name_to_user_id = {}
+            for acc in org_accounts:
+                name = acc.get("name", "")
+                if name:
+                    name_to_user_id[name] = acc["user_id"]
+                # 初始化空列表
+                cards_by_user[acc["user_id"]] = []
+            
+            # 根据持卡人姓名分配卡片
+            for card in all_cards:
+                cardholder_name = card.get("cardholder_name", "")
+                user_id = name_to_user_id.get(cardholder_name)
+                if user_id and user_id in cards_by_user:
+                    cards_by_user[user_id].append(card)
+        
+        return jsonify({"success": True, "cards_by_user": cards_by_user})
+    
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route('/api/mercury-accounts/status-stream', methods=['GET'])
 @require_admin
 def api_mercury_accounts_status_stream():

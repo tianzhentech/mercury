@@ -1296,6 +1296,8 @@ def refresh_all_accounts():
     用于定时任务
     同时获取卡片数量并通过 SSE 推送，如果信用卡+借记卡>=100，则标记账户为暂停状态
     
+    优化：按组织分组获取卡片数量，每个组织只请求一次 API
+    
     Returns:
         dict: {"success": int, "failed": int, "paused": int, "total": int}
     """
@@ -1306,23 +1308,64 @@ def refresh_all_accounts():
     failed_count = 0
     paused_count = 0
     
+    # 第一步：刷新所有账户的 session
+    refreshed_accounts = []
     for acc in accounts:
         try:
             result = refresh_account(acc["user_id"])
             if result.get("success"):
                 success_count += 1
-                
-                # 获取卡片数量（会自动通过 SSE 推送并处理状态更新）
-                card_counts = get_mercury_card_counts(acc["user_id"])
-                if card_counts.get("success"):
-                    total_cards = card_counts.get("total", 0)
-                    if total_cards >= 100:
-                        paused_count += 1
+                # 重新加载账户信息（包含更新后的 session）
+                refreshed_acc = get_account_by_user_id(acc["user_id"])
+                if refreshed_acc:
+                    refreshed_accounts.append(refreshed_acc)
             else:
                 failed_count += 1
         except Exception as e:
             print(f"❌ 刷新账户 {acc.get('email', 'unknown')} 失败: {e}")
             failed_count += 1
+    
+    # 第二步：按组织分组账户
+    org_groups = {}
+    for acc in refreshed_accounts:
+        org_name = acc.get("organization", "unknown")
+        if org_name not in org_groups:
+            org_groups[org_name] = []
+        org_groups[org_name].append(acc)
+    
+    print(f"📊 开始批量获取卡片数量，共 {len(org_groups)} 个组织")
+    
+    # 第三步：按组织批量获取卡片数量
+    for org_name, org_accounts in org_groups.items():
+        try:
+            # 批量获取该组织的所有卡片数量
+            card_results = get_org_card_counts_batch(org_name, org_accounts, minutes_ago=0)
+            
+            # 处理每个账户的结果
+            for acc in org_accounts:
+                user_id = acc["user_id"]
+                card_info = card_results.get(user_id, {})
+                
+                if card_info.get("success"):
+                    credit_count = card_info.get("credit", 0)
+                    debit_count = card_info.get("debit", 0)
+                    total_cards = card_info.get("total", 0)
+                    
+                    # 广播卡片数量更新
+                    broadcast_card_counts(user_id, credit_count, debit_count, acc.get("email"))
+                    
+                    # 检查卡片数量，>=100 则暂停账户，<100 则恢复活跃
+                    if total_cards >= 100:
+                        update_account_status(user_id, "paused")
+                        paused_count += 1
+                        print(f"⚠️ 账户 {acc.get('email', 'unknown')} 卡片数量已达 {total_cards}，已暂停")
+                    else:
+                        # 只有当前状态是 paused 时才恢复为 active
+                        if acc.get("account_status") == "paused":
+                            update_account_status(user_id, "active")
+                            print(f"✅ 账户 {acc.get('email', 'unknown')} 卡片数量 {total_cards}，已恢复活跃")
+        except Exception as e:
+            print(f"❌ 组织 {org_name} 获取卡片数量失败: {e}")
     
     return {
         "success": success_count,
@@ -1468,6 +1511,85 @@ def get_mercury_card_counts(user_id, minutes_ago=0):
         "debit": debit_count,
         "total": total_cards
     }
+
+
+def get_org_card_counts_batch(organization_name, accounts_list, minutes_ago=0):
+    """
+    批量获取同一组织下所有账户的卡片数量
+    只请求一次 API，然后根据持卡人姓名分配给各个账户
+    
+    Args:
+        organization_name: 组织名称
+        accounts_list: 该组织下的所有账户列表
+        minutes_ago: 只统计创建时间超过指定分钟数的卡片
+        
+    Returns:
+        dict: {user_id: {"success": bool, "credit": int, "debit": int, "total": int}}
+    """
+    results = {}
+    
+    # 初始化所有账户的结果为 0
+    for acc in accounts_list:
+        results[acc["user_id"]] = {
+            "success": False,
+            "credit": 0,
+            "debit": 0,
+            "total": 0
+        }
+    
+    # 找到第一个状态为 active 的账户进行请求
+    active_account = None
+    for acc in accounts_list:
+        if acc.get("account_status") == "active" and acc.get("_SESSION"):
+            active_account = acc
+            break
+    
+    # 如果没有 active 账户，尝试使用任何有 session 的账户
+    if not active_account:
+        for acc in accounts_list:
+            if acc.get("_SESSION"):
+                active_account = acc
+                break
+    
+    if not active_account:
+        print(f"⚠️ 组织 {organization_name} 没有可用的账户进行请求")
+        return results
+    
+    # 用该账户请求所有卡片（不过滤持卡人姓名）
+    success, cards = list_mercury_cards(active_account, cardholder_name_filter=None, minutes_ago=minutes_ago)
+    
+    if not success:
+        print(f"❌ 组织 {organization_name} 获取卡片失败: {cards}")
+        return results
+    
+    print(f"✅ 组织 {organization_name} 获取到 {len(cards)} 张卡片（使用账户: {active_account.get('email', 'unknown')}）")
+    
+    # 建立持卡人姓名到账户的映射
+    name_to_account = {}
+    for acc in accounts_list:
+        name = acc.get("name", "")
+        if name:
+            name_to_account[name] = acc["user_id"]
+    
+    # 根据持卡人姓名分配卡片
+    for card in cards:
+        cardholder_name = card.get("cardholder_name", "")
+        card_type = card.get("card_type", "credit")
+        
+        # 查找匹配的账户
+        user_id = name_to_account.get(cardholder_name)
+        if user_id and user_id in results:
+            if card_type == "credit":
+                results[user_id]["credit"] += 1
+            elif card_type == "debit":
+                results[user_id]["debit"] += 1
+    
+    # 计算总数并标记成功
+    for user_id in results:
+        results[user_id]["total"] = results[user_id]["credit"] + results[user_id]["debit"]
+        results[user_id]["success"] = True
+    
+    return results
 
 
 def clear_mercury_cards(user_id, card_type_filter=None):

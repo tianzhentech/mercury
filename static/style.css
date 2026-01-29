@@ -26,7 +26,8 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
@@ -36,7 +37,7 @@ body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
-    background-image: 
+    background-image:
         radial-gradient(ellipse at top, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
         radial-gradient(ellipse at bottom right, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
 }
@@ -500,8 +501,15 @@ button {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .card-actions {
@@ -509,7 +517,8 @@ button {
     gap: 8px;
 }
 
-.btn-copy, .btn-delete {
+.btn-copy,
+.btn-delete {
     padding: 8px 16px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -542,8 +551,8 @@ button {
 
 .btn-warning {
     background: transparent;
-    color: #f59e0b;
-    border: 1px solid #f59e0b;
+    color: #8b5cf6;
+    border: 1px solid #8b5cf6;
     padding: 6px 12px;
     font-size: 0.8rem;
     font-weight: 500;
@@ -556,17 +565,17 @@ button {
 }
 
 .btn-warning:hover {
-    background: #f59e0b;
+    background: #8b5cf6;
     color: white;
 }
 
 .btn-warning.debit {
-    color: #8b5cf6;
-    border-color: #8b5cf6;
+    color: #f59e0b;
+    border-color: #f59e0b;
 }
 
 .btn-warning.debit:hover {
-    background: #8b5cf6;
+    background: #f59e0b;
     color: white;
 }
 
@@ -589,7 +598,6 @@ button {
 
 .org-filter-row select#timeFilter {
     min-width: 120px;
-    border-color: var(--warning);
 }
 
 .org-card-actions {
@@ -1231,47 +1239,49 @@ button {
         opacity: 0;
         transition: transform 0.3s ease, opacity 0.3s ease;
     }
-    
+
     .tab-content.active {
         position: relative;
         transform: translateX(0);
         opacity: 1;
     }
-    
+
     .tab-content.slide-out-left {
         transform: translateX(-100%);
         opacity: 0;
     }
-    
+
     .tab-content.slide-out-right {
         transform: translateX(100%);
         opacity: 0;
     }
-    
+
     .tab-content.slide-in-left {
         animation: slideInLeft 0.3s ease forwards;
     }
-    
+
     .tab-content.slide-in-right {
         animation: slideInRight 0.3s ease forwards;
     }
-    
+
     @keyframes slideInLeft {
         from {
             transform: translateX(-100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
         }
     }
-    
+
     @keyframes slideInRight {
         from {
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -1681,7 +1691,9 @@ button {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .redeemed-card {
@@ -2008,7 +2020,8 @@ button {
 }
 
 /* 允许提卡页面滚动 */
-.withdraw-root, .withdraw-root body {
+.withdraw-root,
+.withdraw-root body {
     height: auto;
     min-height: 100%;
     overflow-y: auto;
@@ -2429,8 +2442,7 @@ select:focus {
     flex: 1;
 }
 
-.withdraw-history {
-}
+.withdraw-history {}
 
 .withdraw-history-list {
     display: flex;
@@ -2474,7 +2486,7 @@ select:focus {
 }
 
 .withdraw-history-count {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 6px;
     padding: 2px 6px;
     font-size: 12px;
@@ -2539,7 +2551,7 @@ select:focus {
     .sidebar {
         width: 200px;
     }
-    
+
     .main-content {
         margin-left: 232px;
         padding: 16px 16px 16px 0;
@@ -2551,7 +2563,7 @@ select:focus {
     .app-layout {
         flex-direction: column;
     }
-    
+
     .sidebar {
         position: fixed;
         top: 0;
@@ -2566,11 +2578,11 @@ select:focus {
         border-radius: 0;
         background: var(--bg-secondary);
     }
-    
+
     .sidebar-header {
         display: none;
     }
-    
+
     .sidebar-nav {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -2579,11 +2591,11 @@ select:focus {
         gap: 6px;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .sidebar-nav::-webkit-scrollbar {
         display: none;
     }
-    
+
     .nav-item {
         padding: 8px 12px;
         white-space: nowrap;
@@ -2591,11 +2603,11 @@ select:focus {
         flex-shrink: 0;
         width: auto;
     }
-    
+
     .nav-item svg {
         display: none;
     }
-    
+
     .nav-item.mobile-logout {
         display: flex;
         margin-left: auto;
@@ -2603,15 +2615,15 @@ select:focus {
         color: var(--danger);
         border-color: rgba(239, 68, 68, 0.3);
     }
-    
+
     .nav-item.mobile-logout:hover {
         background: rgba(239, 68, 68, 0.25);
     }
-    
+
     .sidebar-footer {
         display: none;
     }
-    
+
     .main-content {
         margin: 0;
         margin-top: 50px;
@@ -2620,26 +2632,26 @@ select:focus {
         padding: 10px;
         box-sizing: border-box;
     }
-    
+
     .panel-fixed {
         padding: 8px 0;
     }
-    
+
     .panel-scroll {
         padding: 0;
         padding-bottom: 80px;
     }
-    
+
     .panel-scroll::-webkit-scrollbar {
         width: 3px;
     }
-    
+
     .control-panel {
         padding: 14px 16px;
         margin-bottom: 12px;
         border-radius: 12px;
     }
-    
+
     .control-panel h2 {
         font-size: 1rem;
         margin-bottom: 10px;
@@ -2656,64 +2668,64 @@ select:focus {
         min-width: calc(50% - 5px);
         max-width: calc(50% - 5px);
     }
-    
+
     .form-group:last-child:nth-child(odd) {
         max-width: calc(50% - 5px);
     }
-    
+
     .form-group label {
         font-size: 0.75rem;
         margin-bottom: 4px;
     }
-    
+
     .form-group input,
     .form-group select {
         padding: 8px 10px;
         font-size: 0.85rem;
         border-radius: 8px;
     }
-    
+
     .form-group button {
         padding: 10px 14px;
         font-size: 0.85rem;
     }
-    
+
     .btn-group {
         gap: 6px;
     }
-    
+
     .btn-link {
         width: 36px;
         height: 36px;
         border-radius: 8px;
     }
-    
+
     .btn-link svg {
         width: 12px;
         height: 12px;
     }
-    
+
     /* 列表区域 */
     .list-section {
         padding: 12px 14px;
         border-radius: 10px;
     }
-    
+
     .list-header {
         padding: 10px 12px;
         flex-wrap: wrap;
         gap: 8px;
     }
-    
+
     .list-header h2 {
         font-size: 0.9rem;
         width: 100%;
     }
-    
+
     .list-header h3 {
         font-size: 0.85rem;
     }
-    
+
     .header-actions {
         width: 100%;
         display: flex;
@@ -2721,26 +2733,26 @@ select:focus {
         align-items: center;
         flex-wrap: wrap;
     }
-    
+
     .filter-buttons {
         padding: 2px;
         gap: 2px;
     }
-    
+
     .filter-btn {
         padding: 3px 6px;
         font-size: 0.65rem;
     }
-    
+
     /* 移动端搜索框直接展开 */
     .search-box {
         flex: 1;
     }
-    
+
     .search-box .btn-search {
         display: none;
     }
-    
+
     .search-box input {
         position: relative;
         width: 100% !important;
@@ -2749,35 +2761,39 @@ select:focus {
         height: 30px;
         font-size: 0.8rem;
     }
-    
+
     .search-box .btn-clear {
         opacity: 1;
         right: 6px;
     }
-    
+
     .header-actions .btn-secondary,
     .header-actions .btn-danger {
         padding: 5px 8px;
         font-size: 0.7rem;
         white-space: nowrap;
     }
-    
+
     .list-header .list-actions {
         display: flex;
         gap: 6px;
     }
-    
+
     .list-header .list-actions button {
         padding: 5px 8px;
         font-size: 0.7rem;
     }
 
-    .card-item, .key-item, .user-item {
+    .card-item,
+    .key-item,
+    .user-item {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .card-actions, .key-actions, .user-actions {
+    .card-actions,
+    .key-actions,
+    .user-actions {
         margin-top: 16px;
         justify-content: flex-end;
     }
@@ -2811,7 +2827,7 @@ select:focus {
         margin-left: -4px;
         justify-self: start;
     }
-    
+
     .card-item-compact .card-exp {
         font-size: 0.75rem;
         padding: 2px 4px;
@@ -2821,7 +2837,7 @@ select:focus {
         white-space: nowrap;
         border-radius: 4px;
     }
-    
+
     .card-item-compact .card-cvv {
         font-size: 0.75rem;
         padding: 2px 4px;
@@ -2831,7 +2847,7 @@ select:focus {
         white-space: nowrap;
         border-radius: 4px;
     }
-    
+
     .card-item-compact .card-limit-badge {
         grid-column: 1;
         grid-row: 2;
@@ -2849,7 +2865,7 @@ select:focus {
         grid-row: 2;
         justify-self: start;
     }
-    
+
     .card-item-compact .btn-copy {
         grid-column: 3;
         grid-row: 2;
@@ -2857,7 +2873,7 @@ select:focus {
         font-size: 0.7rem;
         white-space: nowrap;
     }
-    
+
     .card-item-compact .btn-delete {
         grid-column: 4;
         grid-row: 2;
@@ -2865,55 +2881,55 @@ select:focus {
         font-size: 0.7rem;
         white-space: nowrap;
     }
-    
+
     /* 卡密紧凑列表 - 移动端 */
     .key-item-compact {
         flex-wrap: wrap;
         gap: 6px 10px;
         padding: 10px 12px;
     }
-    
+
     .key-item-compact .key-id {
         font-size: 0.75rem;
         width: 100%;
     }
-    
+
     .key-item-compact .key-limit-badge {
         order: 2;
     }
-    
+
     .key-item-compact .key-expire {
         order: 3;
         margin-left: auto;
     }
-    
+
     .key-item-compact .btn-copy,
     .key-item-compact .btn-delete {
         order: 4;
         padding: 4px 8px;
         font-size: 0.7rem;
     }
-    
+
     /* 兑换记录 - 移动端 */
     .record-item {
         flex-wrap: wrap;
         gap: 6px 8px;
         padding: 10px 12px;
     }
-    
+
     .record-item .record-key {
         font-size: 0.7rem;
         width: 100%;
     }
-    
+
     .record-item .record-arrow {
         display: none;
     }
-    
+
     .record-item .card-pan {
         font-size: 0.8rem;
     }
-    
+
     .record-item .record-expire {
         font-size: 0.7rem;
     }
@@ -2921,17 +2937,17 @@ select:focus {
     .redeem-form {
         flex-direction: column;
     }
-    
+
     .redeem-page .redeem-form {
         flex-direction: column;
         gap: 12px;
     }
-    
+
     .redeem-page .redeem-input {
         border-radius: 12px;
         padding: 14px 16px;
     }
-    
+
     .redeem-page #redeemBtn {
         border-radius: 12px;
         margin-left: 0;
@@ -2942,7 +2958,7 @@ select:focus {
     .login-card {
         padding: 32px 20px;
     }
-    
+
     .login-header h1 {
         font-size: 2rem;
     }
@@ -2952,11 +2968,11 @@ select:focus {
         align-items: stretch;
         padding: 14px;
     }
-    
+
     .account-email {
         font-size: 0.95rem;
     }
-    
+
     .account-info {
         gap: 12px;
     }
@@ -2965,44 +2981,44 @@ select:focus {
         margin-top: 12px;
         justify-content: flex-start;
     }
-    
+
     .account-actions button {
         padding: 6px 12px;
         font-size: 0.8rem;
     }
-    
+
     /* 列表头部 - 移动端 */
     .list-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
-    
+
     .list-header h3 {
         font-size: 0.95rem;
     }
-    
+
     .list-header .list-actions {
         width: 100%;
         display: flex;
         gap: 8px;
     }
-    
+
     .list-header .list-actions button {
         flex: 1;
         padding: 8px 10px;
         font-size: 0.8rem;
     }
-    
+
     /* 用户管理 - 移动端 */
     .user-item {
         padding: 14px;
     }
-    
+
     .user-item .user-name {
         font-size: 0.95rem;
     }
-    
+
     /* 弹窗 - 移动端 */
     .modal-content {
         width: 90%;
@@ -3010,24 +3026,24 @@ select:focus {
         margin: 20px;
         padding: 20px;
     }
-    
+
     .modal-content h3 {
         font-size: 1.1rem;
     }
-    
+
     .modal-confirm .modal-content {
         padding: 24px 20px;
     }
-    
+
     .withdraw-card {
         padding: 18px;
     }
-    
+
     .withdraw-header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .withdraw-key {
         flex-direction: column;
         align-items: flex-start;
@@ -3039,104 +3055,104 @@ select:focus {
     .main-content {
         padding: 8px;
     }
-    
+
     .nav-item {
         padding: 6px 10px;
         font-size: 0.7rem;
     }
-    
+
     .control-panel {
         padding: 12px;
         margin-bottom: 10px;
     }
-    
+
     .control-panel h2 {
         font-size: 0.9rem;
         margin-bottom: 8px;
     }
-    
+
     .form-row {
         gap: 6px 8px;
     }
-    
+
     .form-group {
         flex: 1 1 calc(50% - 4px);
         min-width: calc(50% - 4px);
         max-width: calc(50% - 4px);
     }
-    
+
     .form-group label {
         font-size: 0.7rem;
     }
-    
+
     .form-group input,
     .form-group select {
         padding: 6px 8px;
         font-size: 0.8rem;
     }
-    
+
     .form-group button {
         padding: 8px 12px;
         font-size: 0.8rem;
     }
-    
+
     .card-item-compact .card-pan {
         font-size: 0.8rem;
         letter-spacing: 0;
     }
-    
+
     .key-item-compact .key-id {
         font-size: 0.7rem;
     }
-    
+
     .login-card {
         padding: 24px 16px;
     }
-    
+
     .login-header h1 {
         font-size: 1.75rem;
     }
-    
+
     .login-header p {
         font-size: 0.85rem;
     }
-    
+
     .login-btn {
         padding: 14px 20px;
     }
-    
+
     /* 兑换页面 */
     .redeem-header {
         padding: 28px 20px 20px;
     }
-    
+
     .redeem-header h1 {
         font-size: 1.4rem;
     }
-    
+
     .redeem-body {
         padding: 20px;
     }
-    
+
     .redeem-page .redeem-input {
         padding: 14px 16px;
         font-size: 0.9rem;
     }
-    
+
     .redeem-page #redeemBtn {
         padding: 14px;
         font-size: 1rem;
     }
-    
+
     .result-pan {
         font-size: 1rem;
     }
-    
+
     .result-row {
         flex-direction: column;
         gap: 12px;
     }
-    
+
     .result-item {
         width: 100%;
     }
