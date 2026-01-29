@@ -24,5 +24,6 @@ id/id.db-wal
 
 # 敏感配置
 account/accounts.json
+account/proxies.json
 account/user_info.json
 settings.json
