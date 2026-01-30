@@ -1461,7 +1461,7 @@ button {
     order: 7;
 }
 
-/* 兑换记录样式 */
+/* 开卡记录样式 */
 .record-item {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -1499,6 +1499,18 @@ button {
 .record-item .record-key:hover {
     background: rgba(99, 102, 241, 0.15);
     color: var(--accent-light);
+}
+
+/* 直接创建的卡片显示用户名，用不同颜色区分 */
+.record-item .record-key.direct-creation {
+    color: #06b6d4;
+    font-weight: 600;
+    cursor: default;
+}
+
+.record-item .record-key.direct-creation:hover {
+    background: rgba(6, 182, 212, 0.15);
+    color: #22d3ee;
 }
 
 .record-item .record-arrow {
@@ -2442,8 +2454,6 @@ select:focus {
     flex: 1;
 }
 
-.withdraw-history {}
-
 .withdraw-history-list {
     display: flex;
     flex-direction: column;
@@ -2910,7 +2920,7 @@ select:focus {
         font-size: 0.7rem;
     }
 
-    /* 兑换记录 - 移动端 */
+    /* 开卡记录 - 移动端 */
     .record-item {
         flex-wrap: wrap;
         gap: 6px 8px;
@@ -3442,4 +3452,301 @@ select:focus {
 
 .page-size-select:focus {
     border-color: var(--accent);
+}
+
+/* ==================== 数据分析样式 ==================== */
+
+/* 禁用分析面板的滚动 */
+.panel-scroll:has(.analytics-grid) {
+    overflow: hidden;
+    padding: 0;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 16px;
+    padding: 0;
+    height: calc(100vh - 120px);
+    overflow: hidden;
+}
+
+.analytics-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.2s ease;
+}
+
+.analytics-card:hover {
+    border-color: var(--border-light);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.analytics-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.analytics-card-header svg {
+    color: var(--accent-light);
+}
+
+.analytics-card-value {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.analytics-card-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+/* 今日开卡卡片 */
+.analytics-card.today-stats {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+/* 用户统计卡片 */
+.analytics-card.user-stats {
+    grid-column: 1;
+    grid-row: 2;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-stats-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.user-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: nowrap;
+}
+
+.user-stat-item.user-stat-clickable {
+    cursor: pointer;
+    margin: 4px 0;
+    padding: 12px 12px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.user-stat-item.user-stat-clickable:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.user-stat-item.user-stat-clickable.selected {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--accent);
+}
+
+.user-stat-item:last-child {
+    border-bottom: none;
+}
+
+.user-stat-rank {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.user-stat-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 50px;
+}
+
+.user-stat-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-light);
+    min-width: 40px;
+}
+
+.user-stat-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.user-stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.user-stat-percentage {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* 今日开卡分类统计 */
+.today-stats-breakdown {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.today-stats-breakdown .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.today-stats-breakdown .stat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.today-stats-breakdown .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.today-stats-breakdown .stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 用户统计信用卡/借记卡分解 */
+.user-stat-breakdown {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.user-stat-breakdown .credit-count {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.15);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.user-stat-breakdown .debit-count {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+/* 折线图卡片 */
+.analytics-card.hourly-chart {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container {
+    flex: 1;
+    min-height: 300px;
+    position: relative;
+}
+
+/* 日期选择器样式 */
+#analyticsDate {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#analyticsDate:hover {
+    border-color: var(--accent);
+}
+
+#analyticsDate:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        padding: 12px;
+        min-height: auto;
+    }
+
+    .analytics-card.today-stats {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .analytics-card.hourly-chart {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 300px;
+    }
+
+    .analytics-card.user-stats {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .analytics-card-value {
+        font-size: 2.5rem;
+    }
+
+    .user-stats-list {
+        max-height: 300px;
+    }
+
+    .chart-container {
+        min-height: 250px;
+    }
+
+    .user-stat-bar {
+        display: none;
+    }
 }

@@ -523,6 +523,447 @@
                     "account_status": "active"
                 }
             ]
+        },
+        {
+            "user": {
+                "id": "037a71bc-fd3c-11f0-ad15-375b6d7eee91",
+                "email": "rsvh6d1fguvs@outlook.com",
+                "first_name": "01",
+                "last_name": "01",
+                "phone_number": "+16673162140",
+                "status": "active",
+                "created_at": "2026-01-29T17:57:44.662199Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "037e3d2e-fd3c-11f0-ad15-f3bc669dc306"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "77d7cd8e-fd3c-11f0-b5cd-574729c6e9b9",
+                "email": "rksw3hrazkbb@outlook.com",
+                "first_name": "02",
+                "last_name": "02",
+                "phone_number": "+19796355463",
+                "status": "active",
+                "created_at": "2026-01-29T18:00:59.887964Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "77dc2b68-fd3c-11f0-b5cd-9f83b1b148a2"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "e1f5bf0a-fd3c-11f0-a3e9-37be55b5b2dd",
+                "email": "hlhljzdzvkso@outlook.com",
+                "first_name": "03",
+                "last_name": "03",
+                "phone_number": "+13255308685",
+                "status": "active",
+                "created_at": "2026-01-29T18:03:57.927075Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "e1f8df00-fd3c-11f0-a3e9-5f2031f81f61"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "339eeaf2-fd3d-11f0-8cc1-d38fccc2cc9a",
+                "email": "jnfv8f23tjqm@outlook.com",
+                "first_name": "04",
+                "last_name": "04",
+                "phone_number": "+18565696955",
+                "status": "active",
+                "created_at": "2026-01-29T18:06:14.928454Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "33a231c6-fd3d-11f0-8cc1-cf1c36023b81"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "78ff0cda-fd3d-11f0-ace0-fbf96eb49df9",
+                "email": "yatu39anaw0p@outlook.com",
+                "first_name": "05",
+                "last_name": "05",
+                "phone_number": "+12723401015",
+                "status": "active",
+                "created_at": "2026-01-29T18:08:11.30034Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "79028c98-fd3d-11f0-ace0-834272007174"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "c03d4cce-fd3d-11f0-b0b6-dfd94e52b192",
+                "email": "kxwvso5sfrom@outlook.com",
+                "first_name": "06",
+                "last_name": "06",
+                "phone_number": "+14195531179",
+                "status": "active",
+                "created_at": "2026-01-29T18:10:10.846593Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "c040d916-fd3d-11f0-b0b6-eb2b768057cc"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
+        },
+        {
+            "user": {
+                "id": "13768d42-fd3e-11f0-8f91-dfae79f6ea32",
+                "email": "nfblvm32pzu4@outlook.com",
+                "first_name": "07",
+                "last_name": "07",
+                "phone_number": "+16809771743",
+                "status": "active",
+                "created_at": "2026-01-29T18:12:30.475406Z",
+                "has_verified_email": true,
+                "legal_address": {
+                    "address1": "3025 North 6th Street",
+                    "address2": "",
+                    "city": "Milwaukee",
+                    "region": "WI",
+                    "postal_code": "53212",
+                    "country": "US"
+                }
+            },
+            "organization": {
+                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
+                "name": "DIFFURA LLC",
+                "legal_business_name": "DIFFURA LLC",
+                "callsign": "diffura-llc",
+                "is_closed": false,
+                "company_structure": "LLC"
+            },
+            "user_role": {
+                "role": "administrator",
+                "role_name": "Admin",
+                "is_admin": true,
+                "org_user_id": "137a6412-fd3e-11f0-8f91-bf61c7338cf0"
+            },
+            "credit_account": {
+                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
+                "available_balance": 0.0,
+                "credit_limit": 0.0,
+                "account_status": "active",
+                "created_at": "2026-01-25T14:06:34.040666Z"
+            },
+            "depository_accounts": [
+                {
+                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "834007763784458",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "141827323356810",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ]
         }
     ]
 }

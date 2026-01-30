@@ -29,7 +29,7 @@ from account.accounts import (
     start_proxy_latency_checker, has_active_accounts, get_all_active_accounts,
     get_default_proxy_id, set_default_proxy_id
 )
-from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token, allocate_existing_ids_for_withdraw
+from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token, allocate_existing_ids_for_withdraw, get_analytics_data, record_direct_card_creation
 from user.login import login, refresh_access_token, verify_access_token
 from user.user import create_user, delete_user, update_user, get_all_users, is_admin, init_default_admin
 
@@ -1168,6 +1168,19 @@ def create_cards_stream():
                 data["cards"].append(card_info)
                 save_cards(data)
             
+            # 记录到分析统计
+            record_direct_card_creation(
+                card_id=card_id,
+                card_type=card_type,
+                card_limit=card_limit,
+                created_by=current_user,
+                account_email=account_email,
+                account_user_id=account["user_id"],
+                card_details=card_details,
+                expire_minutes=expire_minutes,
+                expire_time=expire_time.isoformat()
+            )
+            
             created_count += 1
             print(f"[创建卡片] 卡片 {card_id} 创建成功 (账户: {account_email})")
             
@@ -1476,7 +1489,7 @@ def delete_unused_keys():
 @app.route('/api/keys/records', methods=['GET'])
 @require_auth
 def get_key_records():
-    """获取兑换记录"""
+    """获取开卡记录"""
     try:
         current_user = request.user.get('username')
         records = get_redeem_records(username=current_user)
@@ -1488,7 +1501,7 @@ def get_key_records():
 @app.route('/api/keys/records/<key_id>', methods=['DELETE'])
 @require_auth
 def delete_key_record(key_id):
-    """删除单条兑换记录"""
+    """删除单条开卡记录"""
     try:
         current_user = request.user.get('username')
         success, error = delete_record(key_id, username=current_user)
@@ -1503,11 +1516,25 @@ def delete_key_record(key_id):
 @app.route('/api/keys/records', methods=['DELETE'])
 @require_auth
 def delete_all_key_records():
-    """删除所有兑换记录"""
+    """删除所有开卡记录"""
     try:
         current_user = request.user.get('username')
         count = delete_all_records(username=current_user)
         return jsonify({"success": True, "deleted": count})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/analytics', methods=['GET'])
+@require_auth
+def api_get_analytics():
+    """获取开卡分析数据（支持日期范围）"""
+    try:
+        start_date = request.args.get('start_date')  # 可选，格式 YYYY-MM-DD
+        end_date = request.args.get('end_date')  # 可选，格式 YYYY-MM-DD
+        username = request.args.get('username')  # 可选，筛选特定用户的小时统计
+        data = get_analytics_data(start_date=start_date, end_date=end_date, username=username)
+        return jsonify({"success": True, **data})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

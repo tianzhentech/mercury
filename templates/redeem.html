@@ -46,7 +46,7 @@
             </div>
 
             <div class="footer">
-                NikoCard · v{{ version }}
+                NikoCard · {{ version }}
             </div>
         </div>
 
@@ -174,7 +174,13 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             z-index: 1000;
-            animation: slideIn 0.3s ease;
+            --announcement-scale: 1;
+            animation: slideIn 0.3s ease forwards;
+            transform-origin: top right;
+        }
+
+        .announcement-popup.scaled {
+            animation: slideInScaled 0.3s ease forwards;
         }
 
         @keyframes slideIn {
@@ -186,6 +192,18 @@
             to {
                 opacity: 1;
                 transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInScaled {
+            from {
+                opacity: 0;
+                transform: translateX(20px) scale(var(--announcement-scale));
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(var(--announcement-scale));
             }
         }
 
@@ -1160,11 +1178,12 @@
                     const announcementPopup = document.getElementById('announcementPopup');
                     const announcementText = document.getElementById('announcementText');
                     announcementText.innerHTML = marked.parse(data.content, { breaks: true });
-                    // 应用公告大小设置（整体缩放）
+                    // 应用公告大小设置（整体缩放）- 在显示之前设置
                     if (data.size && data.size !== 100) {
                         const scale = data.size / 100;
-                        announcementPopup.style.transform = `scale(${scale})`;
-                        announcementPopup.style.transformOrigin = 'top right';
+                        // 设置CSS变量供动画使用
+                        announcementPopup.style.setProperty('--announcement-scale', scale);
+                        announcementPopup.classList.add('scaled');
                     }
                     if (data.time) {
                         document.getElementById('announcementTime').textContent = '发布于 ' + data.time;

@@ -14,6 +14,7 @@
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -51,7 +52,14 @@
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
-                    兑换记录
+                    开卡记录
+                </button>
+                <button class="nav-item" onclick="switchTab('analytics')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 9l-5 5-4-4-3 3"></path>
+                    </svg>
+                    数据分析
                 </button>
                 <button class="nav-item" onclick="switchTab('users')" id="usersTab" style="display: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -312,20 +320,109 @@
                 </div>
             </div>
 
-            <!-- 兑换记录面板 -->
+            <!-- 开卡记录面板 -->
             <div id="recordsPanel" class="tab-content">
                 <div class="panel-fixed">
                     <div class="list-header">
-                        <h2>兑换记录 <span class="badge" id="recordCount">0</span></h2>
+                        <h2>开卡记录 <span class="badge" id="recordCount">0</span></h2>
                         <div class="header-actions">
                             <button class="btn-secondary" onclick="copyAllRecords()">复制所有</button>
-                            <button class="btn-danger" onclick="deleteAllRecords()">删除所有</button>
                         </div>
                     </div>
                 </div>
                 <div class="panel-scroll">
                     <div id="recordsContainer">
-                        <div class="empty-state">暂无兑换记录</div>
+                        <div class="empty-state">暂无开卡记录</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据分析面板 -->
+            <div id="analyticsPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <div class="list-header">
+                        <h2>数据分析</h2>
+                        <div class="header-actions">
+                            <div class="analytics-time-filter">
+                                <button class="filter-btn active" data-filter="today"
+                                    onclick="setAnalyticsFilter('today')">当天</button>
+                                <button class="filter-btn" data-filter="7days"
+                                    onclick="setAnalyticsFilter('7days')">7天</button>
+                                <button class="filter-btn" data-filter="all"
+                                    onclick="setAnalyticsFilter('all')">所有时间</button>
+                                <button class="filter-btn" data-filter="custom"
+                                    onclick="setAnalyticsFilter('custom')">自定义</button>
+                            </div>
+                            <div class="custom-date-range" id="customDateRange" style="display: none;">
+                                <input type="date" id="analyticsStartDate">
+                                <span>至</span>
+                                <input type="date" id="analyticsEndDate">
+                                <button class="btn-primary btn-sm" onclick="applyCustomDateRange()">应用</button>
+                            </div>
+                            <button class="btn-secondary" onclick="refreshAnalytics()">刷新</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-scroll">
+                    <div class="analytics-grid">
+                        <!-- 今日开卡统计卡片 -->
+                        <div class="analytics-card today-stats clickable-card" onclick="selectAnalyticsUser(null)"
+                            title="点击查看详情">
+                            <div class="analytics-card-header">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                                    <path d="M2 10h20"></path>
+                                </svg>
+                                <span>开卡数量</span>
+                            </div>
+                            <div class="analytics-card-value" id="todayCardCount">0</div>
+                            <div class="analytics-card-label" id="analyticsDateLabel">-</div>
+                            <div class="today-stats-breakdown">
+                                <div class="stat-item credit">
+                                    <span class="stat-dot" style="background: #8b5cf6"></span>
+                                    <span class="stat-label">信用卡</span>
+                                    <span class="stat-value" id="todayCreditCount">0</span>
+                                </div>
+                                <div class="stat-item debit">
+                                    <span class="stat-dot" style="background: #f59e0b"></span>
+                                    <span class="stat-label">借记卡</span>
+                                    <span class="stat-value" id="todayDebitCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 用户统计表格 -->
+                        <div class="analytics-card user-stats">
+                            <div class="analytics-card-header">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span>用户开卡排行</span>
+                            </div>
+                            <div class="user-stats-list" id="userStatsList">
+                                <div class="empty-state">暂无数据</div>
+                            </div>
+                        </div>
+
+                        <!-- 按小时折线图 -->
+                        <div class="analytics-card hourly-chart">
+                            <div class="analytics-card-header">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 3v18h18"></path>
+                                    <path d="M18 9l-5 5-4-4-3 3"></path>
+                                </svg>
+                                <span>开卡趋势 (按小时)</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="hourlyChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -808,6 +905,75 @@
             pointer-events: none;
             background: rgba(0, 0, 0, 0.7);
         }
+
+        /* Analytics Time Filter */
+        .analytics-time-filter {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .analytics-time-filter .filter-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .analytics-time-filter .filter-btn:hover {
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .analytics-time-filter .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .custom-date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 8px;
+        }
+
+        .custom-date-range input[type="date"] {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .custom-date-range span {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-time-filter {
+                flex-wrap: wrap;
+            }
+
+            .custom-date-range {
+                flex-wrap: wrap;
+                margin-left: 0;
+                margin-top: 8px;
+            }
+        }
     </style>
 
     <!-- 修改密码弹窗 -->
@@ -1101,7 +1267,7 @@
 
         // 标签页切换
         let currentTab = 'cards';
-        const tabOrder = ['cards', 'keys', 'records', 'users', 'proxies', 'accounts', 'settings'];
+        const tabOrder = ['cards', 'keys', 'records', 'analytics', 'users', 'proxies', 'accounts', 'settings'];
 
         // 代理延迟 SSE
         let proxyLatencyEventSource = null;
@@ -1156,6 +1322,7 @@
 
             // 刷新数据
             if (tab === 'records') refreshRecords();
+            else if (tab === 'analytics') { initAnalyticsDate(); refreshAnalytics(); }
             else if (tab === 'users') refreshUsers();
             else if (tab === 'proxies') refreshProxies();
             else if (tab === 'accounts') {
@@ -2050,7 +2217,7 @@
             } catch (error) { showToast('请求失败', 'error'); }
         }
 
-        // ==================== 兑换记录 ====================
+        // ==================== 开卡记录 ====================
 
         async function refreshRecords() {
             try {
@@ -2058,7 +2225,7 @@
                 if (response.status === 401) { await checkAuth(); return refreshRecords(); }
                 const data = await response.json();
                 renderRecords(data.records || []);
-            } catch (error) { console.error('获取兑换记录失败:', error); }
+            } catch (error) { console.error('获取开卡记录失败:', error); }
         }
 
         function renderRecords(records) {
@@ -2066,7 +2233,7 @@
             document.getElementById('recordCount').textContent = records.length;
 
             if (!records.length) {
-                container.innerHTML = '<div class="empty-state">暂无兑换记录</div>';
+                container.innerHTML = '<div class="empty-state">暂无开卡记录</div>';
                 return;
             }
 
@@ -2081,9 +2248,17 @@
                 const expireDisplay = expireTime ? expireTime.toLocaleString() : '未知';
                 const statusClass = isDestroyed ? 'destroyed' : (isExpired ? 'expired' : '');
                 const statusText = isDestroyed ? '已销毁' : (isExpired ? '已过期' : expireDisplay);
+
+                // 对于直接创建的卡片，显示用户名而不是卡密
+                const isDirectCreation = r.is_direct_creation;
+                const keyDisplay = isDirectCreation ? r.created_by : r.key_id;
+                const keyTitle = isDirectCreation ? '用户: ' + r.created_by : '卡密: ' + r.key_id;
+                const keyClass = isDirectCreation ? 'record-key direct-creation' : 'record-key';
+                const keyCopyValue = isDirectCreation ? '' : r.key_id;
+
                 return `
                 <div class="record-item ${statusClass}" data-full="${fullInfo}" data-key-id="${r.key_id}">
-                    <span class="record-key" data-copy="${r.key_id}">${r.key_id}</span>
+                    <span class="${keyClass}" data-copy="${keyCopyValue}" title="${keyTitle}">${keyDisplay}</span>
                     <span class="record-arrow">→</span>
                     <span class="record-pan" data-copy="${card.pan}" title="点击复制卡号">${formatPan(card.pan)}</span>
                     <span class="record-exp" data-copy="${expShort}">${card.exp_month}/${card.exp_year}</span>
@@ -2117,7 +2292,7 @@
         }
 
         async function deleteRecord(keyId) {
-            if (!await showConfirm('确定要删除这条兑换记录吗？', '删除记录')) return;
+            if (!await showConfirm('确定要删除这条开卡记录吗？', '删除记录')) return;
             try {
                 const response = await fetch(`/api/keys/records/${keyId}`, { method: 'DELETE', headers: getAuthHeaders() });
                 if (response.status === 401) { await checkAuth(); return deleteRecord(keyId); }
@@ -2127,7 +2302,7 @@
         }
 
         async function deleteAllRecords() {
-            if (!await showConfirm('确定要删除所有兑换记录吗？', '删除全部记录')) return;
+            if (!await showConfirm('确定要删除所有开卡记录吗？', '删除全部记录')) return;
             try {
                 const response = await fetch('/api/keys/records', { method: 'DELETE', headers: getAuthHeaders() });
                 if (response.status === 401) { await checkAuth(); return deleteAllRecords(); }
@@ -2149,6 +2324,319 @@
                 }).join('\n');
                 copyToClipboard(text).then(() => showToast(`已复制 ${records.length} 条记录`, 'success'));
             } catch (error) { showToast('获取记录失败', 'error'); }
+        }
+
+        // ==================== 数据分析 ====================
+
+        let hourlyChart = null;
+        let selectedAnalyticsUser = null;  // 当前选中的用户
+        let currentAnalyticsFilter = 'today';  // 当前筛选模式: today, 7days, all, custom
+
+        function setAnalyticsFilter(filter) {
+            currentAnalyticsFilter = filter;
+
+            // 更新按钮状态
+            document.querySelectorAll('.analytics-time-filter .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+
+            // 显示/隐藏自定义日期范围
+            const customRange = document.getElementById('customDateRange');
+            if (filter === 'custom') {
+                customRange.style.display = 'flex';
+                // 设置默认日期范围
+                const today = new Date().toISOString().split('T')[0];
+                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                document.getElementById('analyticsStartDate').value = weekAgo;
+                document.getElementById('analyticsEndDate').value = today;
+            } else {
+                customRange.style.display = 'none';
+                refreshAnalytics();
+            }
+        }
+
+        function applyCustomDateRange() {
+            const startDate = document.getElementById('analyticsStartDate').value;
+            const endDate = document.getElementById('analyticsEndDate').value;
+
+            if (!startDate || !endDate) {
+                showToast('请选择日期范围', 'error');
+                return;
+            }
+
+            if (startDate > endDate) {
+                showToast('开始日期不能晚于结束日期', 'error');
+                return;
+            }
+
+            refreshAnalytics();
+        }
+
+        function getAnalyticsDateParams() {
+            const today = new Date().toISOString().split('T')[0];
+
+            switch (currentAnalyticsFilter) {
+                case 'today':
+                    return { start_date: today, end_date: today };
+                case '7days':
+                    const weekAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    return { start_date: weekAgo, end_date: today };
+                case 'all':
+                    return { start_date: '', end_date: '' };  // 空表示所有时间
+                case 'custom':
+                    return {
+                        start_date: document.getElementById('analyticsStartDate').value,
+                        end_date: document.getElementById('analyticsEndDate').value
+                    };
+                default:
+                    return { start_date: today, end_date: today };
+            }
+        }
+
+        async function refreshAnalytics() {
+            const dateParams = getAnalyticsDateParams();
+
+            try {
+                let url = `/api/analytics?start_date=${dateParams.start_date}&end_date=${dateParams.end_date}`;
+                if (selectedAnalyticsUser) {
+                    url += `&username=${encodeURIComponent(selectedAnalyticsUser)}`;
+                }
+                const response = await fetch(url, { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshAnalytics(); }
+                const data = await response.json();
+
+                if (data.success) {
+                    renderAnalytics(data);
+                } else {
+                    showToast(data.error || '获取数据失败', 'error');
+                }
+            } catch (error) {
+                console.error('获取分析数据失败:', error);
+                showToast('请求失败', 'error');
+            }
+        }
+
+        function selectAnalyticsUser(username) {
+            if (selectedAnalyticsUser === username) {
+                selectedAnalyticsUser = null;  // 再次点击取消选择
+            } else {
+                selectedAnalyticsUser = username;
+            }
+            refreshAnalytics();
+        }
+
+        function renderAnalytics(data) {
+            // 更新今日开卡数量
+            document.getElementById('todayCardCount').textContent = data.today_total || 0;
+
+            // 更新日期标签 - 显示日期范围或单日
+            let dateLabel = '-';
+            if (data.start_date && data.end_date) {
+                if (data.start_date === data.end_date) {
+                    dateLabel = data.start_date;
+                } else {
+                    dateLabel = `${data.start_date} 至 ${data.end_date}`;
+                }
+            } else if (data.start_date) {
+                dateLabel = `${data.start_date} 起`;
+            } else if (data.end_date) {
+                dateLabel = `至 ${data.end_date}`;
+            } else {
+                dateLabel = '所有时间';
+            }
+            document.getElementById('analyticsDateLabel').textContent = dateLabel;
+
+            document.getElementById('todayCreditCount').textContent = data.today_credit || 0;
+            document.getElementById('todayDebitCount').textContent = data.today_debit || 0;
+
+            // 渲染用户统计列表
+            renderUserStats(data.user_stats || []);
+
+            // 渲染折线图（根据chart_type决定是按小时还是按天）
+            renderChart(data.chart_credit || [], data.chart_debit || [], data.chart_type || 'hourly', data);
+        }
+
+        function renderUserStats(userStats) {
+            const container = document.getElementById('userStatsList');
+
+            if (!userStats.length) {
+                container.innerHTML = '<div class="empty-state">暂无数据</div>';
+                return;
+            }
+
+            // 计算总数
+            const totalAll = userStats.reduce((sum, u) => sum + u.total, 0);
+
+            let html = '';
+
+            html += userStats.map((user, index) => {
+                const percentage = totalAll > 0 ? ((user.total / totalAll) * 100).toFixed(1) : 0;
+                const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316'];
+                const color = colors[index % colors.length];
+                const isSelected = selectedAnalyticsUser === user.username;
+
+                return `
+                    <div class="user-stat-item user-stat-clickable${isSelected ? ' selected' : ''}" 
+                         onclick="selectAnalyticsUser('${user.username}')">
+                        <span class="user-stat-rank" style="background: ${color}">${index + 1}</span>
+                        <span class="user-stat-name">${user.username}</span>
+                        <span class="user-stat-count">${user.total}</span>
+                        <span class="user-stat-breakdown">
+                            <span class="credit-count" title="信用卡">${user.credit}</span>
+                            <span class="debit-count" title="借记卡">${user.debit}</span>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function renderChart(chartCredit, chartDebit, chartType, data) {
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+
+            // 销毁旧图表
+            if (hourlyChart) {
+                hourlyChart.destroy();
+            }
+
+            // 使用API返回的标签和数据
+            const labels = chartCredit.map(item => item.label);
+            const creditCounts = chartCredit.map(item => item.count);
+            const debitCounts = chartDebit.map(item => item.count);
+            // 计算总数
+            const totalCounts = creditCounts.map((count, i) => count + debitCounts[i]);
+
+            // 更新图表标题
+            const chartHeader = document.querySelector('.analytics-card.hourly-chart .analytics-card-header span');
+            if (chartHeader) {
+                let title = chartType === 'hourly' ? '开卡趋势 (按小时)' : '开卡趋势 (按天)';
+                if (data && data.selected_user) {
+                    title = `开卡趋势 - ${data.selected_user}`;
+                }
+                chartHeader.textContent = title;
+            }
+
+            hourlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '信用卡',
+                            data: creditCounts,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: '借记卡',
+                            data: debitCounts,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#f59e0b',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: '全部',
+                            data: totalCounts,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#22c55e',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            hidden: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#888',
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.dataset.label}: ${context.parsed.y} 张`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#888',
+                                font: { size: 10 },
+                                maxTicksLimit: chartType === 'hourly' ? 12 : 10,
+                                autoSkip: true,
+                                maxRotation: chartType === 'daily' ? 45 : 0,
+                                callback: function (value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    // 对于日期，只显示月-日
+                                    if (chartType === 'daily' && label && label.includes('-')) {
+                                        const parts = label.split('-');
+                                        return parts.length >= 3 ? `${parts[1]}/${parts[2]}` : label;
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#888',
+                                font: { size: 10 },
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initAnalyticsDate() {
+            // 初始化已移到 setAnalyticsFilter
         }
 
         // ==================== 用户管理 ====================

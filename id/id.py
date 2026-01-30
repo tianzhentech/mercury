@@ -316,6 +316,72 @@ def generate_ids(count, expire_minutes, card_limit=1, card_type="credit", create
     return generated
 
 
+def record_direct_card_creation(card_id, card_type, card_limit, created_by, account_email=None, account_user_id=None, card_details=None, expire_minutes=60, expire_time=None):
+    """
+    记录通过"创建卡片"模块直接创建的卡片到数据库，用于分析统计
+    
+    Args:
+        card_id: Mercury 卡片 ID
+        card_type: 卡片类型 ("credit" 或 "debit")
+        card_limit: 卡片余额
+        created_by: 创建者用户名
+        account_email: 使用的账户邮箱
+        account_user_id: 使用的账户 user_id
+        card_details: 卡片详情 (pan, cvv, exp_month, exp_year)
+        expire_minutes: 过期时间（分钟）
+        expire_time: 过期时间（ISO 格式字符串）
+        
+    Returns:
+        tuple: (成功, 生成的卡密ID或错误信息)
+    """
+    _init_db()
+    now_iso = _utc_now_iso()
+    
+    # 生成一个特殊的卡密ID来标识直接创建的卡片
+    raw_uuid = str(uuid.uuid4())
+    prefix = '5236' if card_type == 'credit' else '5481'
+    typed_uuid = prefix + raw_uuid[4:]
+    
+    # 构建 redeemed_card 信息
+    redeemed_card = {
+        "card_id": card_id,
+        "card_type": card_type,
+        "account_email": account_email,
+        "account_user_id": account_user_id
+    }
+    if card_details:
+        redeemed_card.update({
+            "pan": card_details.get("pan", ""),
+            "cvv": card_details.get("cvv", ""),
+            "exp_month": card_details.get("exp_month", ""),
+            "exp_year": card_details.get("exp_year", "")
+        })
+    # 添加过期时间
+    if expire_time:
+        redeemed_card["expire_time"] = expire_time
+    
+    try:
+        with _get_cursor() as cursor:
+            cursor.execute('''
+                INSERT INTO ids 
+                (id, expire_minutes, card_limit, card_type, created_time, used, used_time, created_by, redeemed_card, hidden, hidden_note)
+                VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, 1, ?)
+            ''', (
+                typed_uuid,
+                expire_minutes,
+                card_limit,
+                card_type,
+                now_iso,
+                now_iso,  # used_time = created_time，表示立即使用
+                created_by,
+                json.dumps(redeemed_card, ensure_ascii=False),
+                "直接创建"  # 标记为直接创建的卡片
+            ))
+        return True, typed_uuid
+    except Exception as e:
+        return False, str(e)
+
+
 def validate_id(card_id):
     """
     验证卡密是否有效
@@ -775,13 +841,13 @@ def get_hidden_ids_by_token(token):
 
 def get_redeem_records(username=None):
     """
-    获取兑换记录（已使用的卡密）
+    获取开卡记录（已使用的卡密）
     
     Args:
         username: 当前用户名（用于过滤）
         
     Returns:
-        list: 兑换记录列表
+        list: 开卡记录列表
     """
     _init_db()
     with _get_cursor() as cursor:
@@ -809,6 +875,23 @@ def get_redeem_records(username=None):
             
             used_time = _normalize_iso_to_utc(row["used_time"])
             expire_time = _normalize_iso_to_utc(card.get("expire_time")) if isinstance(card, dict) else None
+            
+            # 对于直接创建的卡片，如果没有 expire_time，从 used_time + expire_minutes 计算过期时间
+            hidden_note = row["hidden_note"] if "hidden_note" in row.keys() else None
+            if not expire_time and row["used_time"] and row["expire_minutes"]:
+                try:
+                    # 使用原始 used_time 来计算
+                    raw_used_time = row["used_time"]
+                    if raw_used_time.endswith('Z'):
+                        raw_used_time = raw_used_time[:-1] + '+00:00'
+                    used_dt = datetime.fromisoformat(raw_used_time)
+                    if used_dt.tzinfo is None:
+                        used_dt = used_dt.replace(tzinfo=timezone.utc)
+                    expire_dt = used_dt + timedelta(minutes=row["expire_minutes"])
+                    expire_time = expire_dt.isoformat()
+                except Exception as e:
+                    pass
+            
             if isinstance(card, dict) and expire_time:
                 card = dict(card)
                 card["expire_time"] = expire_time
@@ -823,7 +906,8 @@ def get_redeem_records(username=None):
                 "expire_time": expire_time,
                 "card": card,
                 "destroyed": bool(row["destroyed"]) if row["destroyed"] is not None else False,
-                "destroyed_time": row["destroyed_time"] if "destroyed_time" in row.keys() else None
+                "destroyed_time": row["destroyed_time"] if "destroyed_time" in row.keys() else None,
+                "is_direct_creation": hidden_note == "直接创建"
             })
         
         return records
@@ -831,7 +915,7 @@ def get_redeem_records(username=None):
 
 def delete_record(key_id, username=None):
     """
-    删除单条兑换记录（清除卡片信息）
+    删除单条开卡记录（清除卡片信息）
     
     Args:
         key_id: 卡密 ID
@@ -860,7 +944,7 @@ def delete_record(key_id, username=None):
 
 def delete_all_records(username=None):
     """
-    删除用户的所有兑换记录
+    删除用户的所有开卡记录
     
     Args:
         username: 当前用户名
@@ -920,6 +1004,277 @@ def get_stats():
             "unused": unused,
             "used": used,
             "redeemed": redeemed
+        }
+
+
+def get_analytics_data(start_date=None, end_date=None, username=None):
+    """
+    获取开卡分析数据（支持日期范围）
+    
+    Args:
+        start_date: 开始日期字符串 (YYYY-MM-DD)，默认为今天
+        end_date: 结束日期字符串 (YYYY-MM-DD)，默认为今天
+        username: 可选，筛选特定用户的小时统计
+        
+    Returns:
+        dict: {
+            "today_total": 期间开卡总数,
+            "today_credit": 期间信用卡数量,
+            "today_debit": 期间借记卡数量,
+            "user_stats": [{"username": str, "total": int, "credit": int, "debit": int}, ...],
+            "hourly_credit": [{"hour": 0-23, "count": int}, ...],
+            "hourly_debit": [{"hour": 0-23, "count": int}, ...],
+            "start_date": 开始日期,
+            "end_date": 结束日期
+        }
+    """
+    _init_db()
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # 首先检查是否为"所有时间"查询（空字符串表示所有时间）
+    is_all_time = (start_date == '' and end_date == '') or (start_date is None and end_date is None)
+    
+    if is_all_time:
+        # 所有时间查询，保持为空字符串
+        start_date = ''
+        end_date = ''
+    elif not start_date and not end_date:
+        # 两个都没传（None），默认为今天
+        start_date = today
+        end_date = today
+    elif start_date and not end_date:
+        end_date = start_date
+    elif end_date and not start_date:
+        start_date = end_date
+    
+    with _get_cursor() as cursor:
+        # 构建日期条件
+        if is_all_time:
+            date_condition = "1=1"  # 所有时间
+            date_params = []
+        elif start_date == end_date:
+            date_condition = "DATE(used_time, 'localtime') = ?"
+            date_params = [start_date]
+        else:
+            date_condition = "DATE(used_time, 'localtime') BETWEEN ? AND ?"
+            date_params = [start_date, end_date]
+        
+        # 期间开卡总数 (基于 used_time)
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM ids 
+            WHERE used = 1 
+            AND redeemed_card IS NOT NULL
+            AND {date_condition}
+        """, date_params)
+        today_total = cursor.fetchone()[0]
+        
+        # 期间信用卡数量
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM ids 
+            WHERE used = 1 
+            AND redeemed_card IS NOT NULL
+            AND card_type = 'credit'
+            AND {date_condition}
+        """, date_params)
+        today_credit = cursor.fetchone()[0]
+        
+        # 期间借记卡数量
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM ids 
+            WHERE used = 1 
+            AND redeemed_card IS NOT NULL
+            AND card_type = 'debit'
+            AND {date_condition}
+        """, date_params)
+        today_debit = cursor.fetchone()[0]
+        
+        # 每个用户期间的开卡数量 (分信用卡/借记卡)
+        cursor.execute(f"""
+            SELECT 
+                created_by,
+                COUNT(*) as total,
+                SUM(CASE WHEN card_type = 'credit' THEN 1 ELSE 0 END) as credit,
+                SUM(CASE WHEN card_type = 'debit' THEN 1 ELSE 0 END) as debit
+            FROM ids 
+            WHERE used = 1 
+            AND redeemed_card IS NOT NULL
+            AND {date_condition}
+            GROUP BY created_by
+            ORDER BY total DESC
+        """, date_params)
+        user_stats = [{
+            "username": row[0] or "未知", 
+            "total": row[1],
+            "credit": row[2] or 0,
+            "debit": row[3] or 0
+        } for row in cursor.fetchall()]
+        
+        # 判断是否为单日查询
+        is_single_day = start_date == end_date and start_date != ''
+        
+        if is_single_day:
+            # 单日查询：按小时统计
+            chart_type = "hourly"
+            
+            # 按小时统计信用卡
+            hourly_credit = {h: 0 for h in range(24)}
+            if username:
+                cursor.execute(f"""
+                    SELECT CAST(strftime('%H', used_time, 'localtime') AS INTEGER) as hour, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'credit'
+                    AND {date_condition}
+                    AND created_by = ?
+                    GROUP BY hour
+                    ORDER BY hour
+                """, date_params + [username])
+            else:
+                cursor.execute(f"""
+                    SELECT CAST(strftime('%H', used_time, 'localtime') AS INTEGER) as hour, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'credit'
+                    AND {date_condition}
+                    GROUP BY hour
+                    ORDER BY hour
+                """, date_params)
+            
+            for row in cursor.fetchall():
+                hour = row[0]
+                if hour is not None:
+                    hourly_credit[hour] = row[1]
+            
+            # 按小时统计借记卡
+            hourly_debit = {h: 0 for h in range(24)}
+            if username:
+                cursor.execute(f"""
+                    SELECT CAST(strftime('%H', used_time, 'localtime') AS INTEGER) as hour, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'debit'
+                    AND {date_condition}
+                    AND created_by = ?
+                    GROUP BY hour
+                    ORDER BY hour
+                """, date_params + [username])
+            else:
+                cursor.execute(f"""
+                    SELECT CAST(strftime('%H', used_time, 'localtime') AS INTEGER) as hour, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'debit'
+                    AND {date_condition}
+                    GROUP BY hour
+                    ORDER BY hour
+                """, date_params)
+            
+            for row in cursor.fetchall():
+                hour = row[0]
+                if hour is not None:
+                    hourly_debit[hour] = row[1]
+            
+            chart_credit = [{"label": f"{h:02d}:00", "count": hourly_credit[h]} for h in range(24)]
+            chart_debit = [{"label": f"{h:02d}:00", "count": hourly_debit[h]} for h in range(24)]
+        else:
+            # 多日查询：按天统计
+            chart_type = "daily"
+            
+            # 按天统计信用卡
+            if username:
+                cursor.execute(f"""
+                    SELECT DATE(used_time, 'localtime') as day, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'credit'
+                    AND {date_condition}
+                    AND created_by = ?
+                    GROUP BY day
+                    ORDER BY day
+                """, date_params + [username])
+            else:
+                cursor.execute(f"""
+                    SELECT DATE(used_time, 'localtime') as day, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'credit'
+                    AND {date_condition}
+                    GROUP BY day
+                    ORDER BY day
+                """, date_params)
+            
+            daily_credit = {row[0]: row[1] for row in cursor.fetchall()}
+            
+            # 按天统计借记卡
+            if username:
+                cursor.execute(f"""
+                    SELECT DATE(used_time, 'localtime') as day, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'debit'
+                    AND {date_condition}
+                    AND created_by = ?
+                    GROUP BY day
+                    ORDER BY day
+                """, date_params + [username])
+            else:
+                cursor.execute(f"""
+                    SELECT DATE(used_time, 'localtime') as day, COUNT(*) as count 
+                    FROM ids 
+                    WHERE used = 1 
+                    AND redeemed_card IS NOT NULL
+                    AND card_type = 'debit'
+                    AND {date_condition}
+                    GROUP BY day
+                    ORDER BY day
+                """, date_params)
+            
+            daily_debit = {row[0]: row[1] for row in cursor.fetchall()}
+            
+            # 合并所有日期
+            all_days = sorted(set(list(daily_credit.keys()) + list(daily_debit.keys())))
+            
+            # 填充缺失的日期
+            if all_days:
+                from datetime import timedelta
+                if start_date and end_date:
+                    # 有指定日期范围，从开始到结束填充
+                    start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+                    end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+                else:
+                    # 所有时间：从最早记录到今天
+                    start_dt = datetime.strptime(all_days[0], "%Y-%m-%d")
+                    end_dt = datetime.strptime(today, "%Y-%m-%d")
+                
+                current_dt = start_dt
+                filled_days = []
+                while current_dt <= end_dt:
+                    filled_days.append(current_dt.strftime("%Y-%m-%d"))
+                    current_dt += timedelta(days=1)
+                all_days = filled_days
+            
+            chart_credit = [{"label": day, "count": daily_credit.get(day, 0)} for day in all_days]
+            chart_debit = [{"label": day, "count": daily_debit.get(day, 0)} for day in all_days]
+        
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+            "today_total": today_total,
+            "today_credit": today_credit,
+            "today_debit": today_debit,
+            "user_stats": user_stats,
+            "chart_type": chart_type,
+            "chart_credit": chart_credit,
+            "chart_debit": chart_debit,
+            "selected_user": username
         }
 
 
