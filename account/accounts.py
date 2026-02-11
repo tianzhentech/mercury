@@ -485,8 +485,11 @@ def get_user_info_by_session(session_cookie, proxy=None):
     if proxy and proxy.strip():
         proxies = {"http": proxy.strip(), "https": proxy.strip()}
     
+    # 使用 Session 来管理连接，确保连接被正确关闭
+    session = None
     try:
-        response = requests.get(url, headers=request_headers, timeout=15, proxies=proxies, impersonate="chrome")
+        session = requests.Session()
+        response = session.get(url, headers=request_headers, timeout=15, proxies=proxies, impersonate="chrome")
         
         # 从响应头中获取新的 _SESSION
         new_session = session_cookie  # 默认使用原始的
@@ -513,6 +516,41 @@ def get_user_info_by_session(session_cookie, proxy=None):
         user_id = user_details.get("id")
         if not user_id:
             return False, "无法获取用户 ID (可能Session已失效)", None
+        
+        # 检测账户是否被限制/封禁
+        org_context = org_specifics.get("orgContext", "")
+        
+        # 检查 linkedUsers 中的 orgUserStatus
+        linked_users = user_details.get("linkedUsers") or []
+        org_user_status = ""
+        for linked_user in linked_users:
+            if linked_user.get("userId") == user_id:
+                org_user_status = linked_user.get("orgUserStatus", "")
+                break
+        
+        # 判断是否被限制
+        is_restricted = False
+        restriction_reason = ""
+        
+        # 检查组织上下文是否被锁定
+        if "Locked" in org_context or org_context == "businessLocked":
+            is_restricted = True
+            restriction_reason = f"组织状态: {org_context}"
+        
+        # 检查用户组织状态是否被锁定
+        if "Locked" in org_user_status or org_user_status == "orgLockedWithRemediation":
+            is_restricted = True
+            restriction_reason = f"用户状态: {org_user_status}"
+        
+        # 检查 capabilities 中的 card 权限
+        user_org_data = org_data.get("userOrgData") or {}
+        capabilities = user_org_data.get("capabilities") or {}
+        card_capabilities = capabilities.get("card") or {}
+        if card_capabilities.get("issue") == "deny" and card_capabilities.get("read") == "deny":
+            # 如果已经因为其他原因被标记为限制，则保留原因
+            if not is_restricted:
+                is_restricted = True
+                restriction_reason = "无开卡权限"
         
         # 构建用户信息
         # 提取法定地址，将 address2 合并到 address1
@@ -585,6 +623,14 @@ def get_user_info_by_session(session_cookie, proxy=None):
                 "account_status": account.get("accountStatus"),
             })
         
+        # 添加限制状态到 user_info
+        user_info["restriction"] = {
+            "is_restricted": is_restricted,
+            "reason": restriction_reason,
+            "org_context": org_context,
+            "org_user_status": org_user_status,
+        }
+        
         return True, user_info, new_session
         
     except Exception as e:
@@ -592,6 +638,13 @@ def get_user_info_by_session(session_cookie, proxy=None):
         # import traceback
         # traceback.print_exc() 
         return False, f"请求异常: {str(e)}", None
+    finally:
+        # 确保 Session 被关闭，释放底层连接
+        if session:
+            try:
+                session.close()
+            except:
+                pass
 
 
 
@@ -618,6 +671,11 @@ def add_account(session_cookie, proxy=None):
     user_info = result
     user_id = user_info["user"]["id"]
     
+    # 检查账户是否被限制/封禁
+    restriction = user_info.get("restriction", {})
+    is_restricted = restriction.get("is_restricted", False)
+    restriction_reason = restriction.get("reason", "")
+    
     # 使用响应中返回的新 session（如果有）
     final_session = new_session if new_session else session_cookie
     
@@ -634,10 +692,34 @@ def add_account(session_cookie, proxy=None):
             existing_account = acc
             break
     
+    # 如果账户被限制且是新添加的账户，拒绝添加
+    if is_restricted and existing_index is None:
+        email = user_info["user"]["email"]
+        print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
+        return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
+    
     # 构建账户摘要信息
     depository_account_id = None
     if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
         depository_account_id = user_info["depository_accounts"][0].get("id")
+    
+    # 根据限制状态设置 account_status
+    if is_restricted:
+        account_status = "restricted"
+        organization_name = user_info["organization"]["name"]
+        print(f"⚠️ 账户 {user_info['user']['email']} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
+        # 将同组织下的所有账户都标记为 restricted
+        mark_organization_restricted(organization_name, restriction_reason)
+        # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+        accounts_data = load_accounts()
+        # 重新查找 existing_index
+        for i, acc in enumerate(accounts_data.get("accounts", [])):
+            if acc["user_id"] == user_id:
+                existing_index = i
+                existing_account = acc
+                break
+    else:
+        account_status = "active"
     
     account_summary = {
         "user_id": user_id,
@@ -649,7 +731,8 @@ def add_account(session_cookie, proxy=None):
         "credit_limit": user_info["credit_account"]["credit_limit"],
         "available_balance": user_info["credit_account"]["available_balance"],
         "status": user_info["user"]["status"],
-        "account_status": "active",  # 成功获取信息，标记为活跃
+        "account_status": account_status,
+        "restriction_reason": restriction_reason if is_restricted else "",
         "legal_address": user_info["user"].get("legal_address", {}),
         "proxy": proxy if proxy is not None else (existing_account.get("proxy", "") if existing_account else ""),
         "_SESSION": final_session,
@@ -755,6 +838,11 @@ def add_account_by_credentials(email: str, mercury_password: str, totp_secret: s
     user_info = result
     user_id = user_info["user"]["id"]
     
+    # 检查账户是否被限制/封禁
+    restriction = user_info.get("restriction", {})
+    is_restricted = restriction.get("is_restricted", False)
+    restriction_reason = restriction.get("reason", "")
+    
     # 使用响应中返回的新 session（如果有）
     final_session = new_session if new_session else session_cookie
     
@@ -771,10 +859,33 @@ def add_account_by_credentials(email: str, mercury_password: str, totp_secret: s
             existing_proxy = acc.get("proxy", "")
             break
     
+    # 如果账户被限制且是新添加的账户，拒绝添加
+    if is_restricted and existing_index is None:
+        print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
+        return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
+    
     # 构建账户摘要信息
     depository_account_id = None
     if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
         depository_account_id = user_info["depository_accounts"][0].get("id")
+    
+    # 根据限制状态设置 account_status
+    if is_restricted:
+        account_status = "restricted"
+        organization_name = user_info["organization"]["name"]
+        print(f"⚠️ 账户 {email} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
+        # 将同组织下的所有账户都标记为 restricted
+        mark_organization_restricted(organization_name, restriction_reason)
+        # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+        accounts_data = load_accounts()
+        # 重新查找 existing_index
+        for i, acc in enumerate(accounts_data.get("accounts", [])):
+            if acc["user_id"] == user_id:
+                existing_index = i
+                existing_account = acc
+                break
+    else:
+        account_status = "active"
     
     account_summary = {
         "user_id": user_id,
@@ -786,7 +897,8 @@ def add_account_by_credentials(email: str, mercury_password: str, totp_secret: s
         "credit_limit": user_info["credit_account"]["credit_limit"],
         "available_balance": user_info["credit_account"]["available_balance"],
         "status": user_info["user"]["status"],
-        "account_status": "active",
+        "account_status": account_status,
+        "restriction_reason": restriction_reason if is_restricted else "",
         "legal_address": user_info["user"].get("legal_address", {}),
         "proxy": proxy if proxy is not None else (existing_proxy or ""),
         "_SESSION": final_session,
@@ -1058,6 +1170,11 @@ def refresh_account(user_id):
     )
     
     if login_result.get("success"):
+        # 检查是否被标记为 restricted
+        new_account = get_account_by_user_id(user_id)
+        if new_account and new_account.get("account_status") == "restricted":
+            print(f"⛔ 账户 {email} 被 Mercury 限制，跳过后续操作")
+            return {"success": False, "error": "账户被 Mercury 限制", "restricted": True}
         print(f"✅ 账户 {email} 重新登录成功")
         return login_result
     else:
@@ -1240,6 +1357,37 @@ def update_account_status(user_id, status):
     broadcast_status_update(user_id, status, email)
 
 
+def mark_organization_restricted(organization_name, restriction_reason="组织被 Mercury 限制"):
+    """
+    将指定组织下的所有账户标记为 restricted
+    
+    Mercury 限制账户时通常是整个组织被限制，所以当检测到一个账户被限制时，
+    应该将同一组织下的所有账户都标记为 restricted
+    
+    Args:
+        organization_name: 组织名称
+        restriction_reason: 限制原因
+    
+    Returns:
+        int: 被标记的账户数量
+    """
+    marked_count = 0
+    with _file_lock:
+        accounts_data = load_accounts()
+        for acc in accounts_data.get("accounts", []):
+            if acc.get("organization") == organization_name and acc.get("account_status") != "restricted":
+                acc["account_status"] = "restricted"
+                acc["restriction_reason"] = restriction_reason
+                acc["updated_at"] = datetime.now().isoformat()
+                marked_count += 1
+                # 广播状态更新
+                broadcast_status_update(acc["user_id"], "restricted", acc.get("email"))
+                print(f"⚠️ 组织 {organization_name} 被限制，账户 {acc.get('email')} 已标记为 restricted")
+        if marked_count > 0:
+            save_accounts(accounts_data)
+    
+    return marked_count
+
 def mercury_request(account, method, url, headers=None, json_data=None, timeout=15):
     """
     发送 Mercury API 请求
@@ -1271,17 +1419,27 @@ def mercury_request(account, method, url, headers=None, json_data=None, timeout=
     if proxy:
         proxies = {"http": proxy, "https": proxy}
     
+    # 使用 Session 来管理连接，确保连接被正确复用和关闭
+    session = None
     try:
+        session = requests.Session()
         if method.upper() == 'GET':
-            response = requests.get(url, headers=headers, timeout=timeout, proxies=proxies, impersonate="chrome")
+            response = session.get(url, headers=headers, timeout=timeout, proxies=proxies, impersonate="chrome")
         else:
-            response = requests.post(url, headers=headers, json=json_data or {}, timeout=timeout, proxies=proxies, impersonate="chrome")
+            response = session.post(url, headers=headers, json=json_data or {}, timeout=timeout, proxies=proxies, impersonate="chrome")
         
         return response
         
     except Exception as e:
         print(f"❌ 请求失败: {e}")
         return None
+    finally:
+        # 确保 Session 被关闭，释放底层连接
+        if session:
+            try:
+                session.close()
+            except:
+                pass
 
 
 def get_account_count():
@@ -1308,9 +1466,15 @@ def refresh_all_accounts():
     failed_count = 0
     paused_count = 0
     
-    # 第一步：刷新所有账户的 session
+    # 第一步：刷新所有账户的 session（跳过 restricted 账户）
     refreshed_accounts = []
+    skipped_count = 0
     for acc in accounts:
+        # 跳过被 Mercury 限制的账户
+        if acc.get("account_status") == "restricted":
+            skipped_count += 1
+            continue
+        
         try:
             result = refresh_account(acc["user_id"])
             if result.get("success"):

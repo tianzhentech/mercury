@@ -27,3 +27,4 @@ account/accounts.json
 account/proxies.json
 account/user_info.json
 settings.json
+.locks/

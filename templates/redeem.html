@@ -29,7 +29,7 @@
             </div>
 
             <div class="input-section">
-                <textarea id="redeemKeyInput" placeholder="请输入卡密（每行一个）..."></textarea>
+                <textarea id="redeemKeyInput" placeholder="请输入卡密或卡号（每行一个）..."></textarea>
                 <p class="input-hint" id="inputHint">支持批量兑换，每行输入一个卡密</p>
                 <button class="submit-btn" id="redeemBtn" onclick="redeemOrQuery()">兑换 / 查询</button>
 
@@ -129,10 +129,18 @@
                 <div id="transactionsSection" class="info-card full-height bottom-row" style="display: none;">
                     <div class="info-card-header">
                         <span class="info-card-title">消费记录</span>
+                        <span id="transactionCount" class="transaction-count"></span>
                     </div>
-                    <div class="transactions-placeholder">
-                        <div class="placeholder-icon">📋</div>
-                        <div class="placeholder-text">暂无消费记录</div>
+                    <div id="transactionsContent" class="transactions-content">
+                        <div class="transactions-placeholder" id="transactionsPlaceholder">
+                            <div class="placeholder-icon">📋</div>
+                            <div class="placeholder-text">暂无消费记录</div>
+                        </div>
+                        <div class="transactions-loading" id="transactionsLoading" style="display: none;">
+                            <div class="spinner"></div>
+                            <span>加载消费记录...</span>
+                        </div>
+                        <div class="transactions-list" id="transactionsList" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -353,6 +361,9 @@
         let maxBatchCount = 5;
         let batchInterval = 5;
 
+        // 消费记录查询开关（从服务器加载）
+        let transactionQueryEnabled = true;
+
         async function loadBatchSettings() {
             try {
                 const response = await fetch('/api/batch-settings');
@@ -364,7 +375,7 @@
                     const input = document.getElementById('redeemKeyInput');
                     const hint = document.getElementById('inputHint');
                     if (input && !input.placeholder.includes('维护')) {
-                        input.placeholder = `请输入卡密（每行一个，最多${maxBatchCount}个）...`;
+                        input.placeholder = `请输入卡密或卡号（每行一个，最多${maxBatchCount}个）...`;
                     }
                     if (hint) {
                         hint.textContent = `支持批量兑换，每行输入一个卡密，每个间隔${batchInterval}秒处理`;
@@ -372,6 +383,18 @@
                 }
             } catch (e) {
                 console.error('加载批量设置失败:', e);
+            }
+        }
+
+        async function loadTransactionQuerySetting() {
+            try {
+                const response = await fetch('/api/transaction-query-status');
+                const data = await response.json();
+                if (data.success) {
+                    transactionQueryEnabled = data.enabled !== false;
+                }
+            } catch (e) {
+                console.error('加载消费记录查询设置失败:', e);
             }
         }
 
@@ -446,7 +469,7 @@
         async function redeemOrQuery() {
             const input = document.getElementById('redeemKeyInput').value.trim();
             if (!input) {
-                showToast('请输入卡密', 'error');
+                showToast('请输入卡密或卡号', 'error');
                 return;
             }
 
@@ -682,7 +705,9 @@
                 const queryData = await queryResponse.json();
 
                 if (queryData.success) {
-                    return { success: true, isQuery: true, index, keyId, data: queryData };
+                    // 使用服务器返回的 key_id（当通过卡号查询时，需要真正的卡密 ID 查询消费记录）
+                    const actualKeyId = queryData.key_id || keyId;
+                    return { success: true, isQuery: true, index, keyId: actualKeyId, data: queryData };
                 }
 
                 if (queryData.error === '卡密未使用') {
@@ -928,9 +953,176 @@
 
             document.getElementById('copyAddressBtn').onclick = () => copyText(fullAddress);
 
-            // 显示上方区域和下方消费记录
+            // 显示上方区域
             document.getElementById('topRowSection').style.display = 'flex';
-            document.getElementById('transactionsSection').style.display = 'flex';
+
+            // 根据设置决定是否显示消费记录区域
+            if (transactionQueryEnabled) {
+                document.getElementById('transactionsSection').style.display = 'flex';
+
+                // 获取并显示消费记录（仅 Mercury 卡）
+                if (!isAirwallex) {
+                    // 获取当前卡片的 isQuery 状态
+                    const currentResult = allResults[currentCardIndex];
+                    if (currentResult && currentResult.isQuery === false) {
+                        // 新兑换的卡片，直接显示暂无消费记录（跳过加载）
+                        showTransactionsPlaceholder('暂无消费记录');
+                    } else {
+                        // 查询已有的卡片，加载消费记录
+                        loadTransactions(allResults[currentCardIndex]?.keyId);
+                    }
+                } else {
+                    // Airwallex 卡暂不支持消费记录
+                    showTransactionsPlaceholder('Airwallex 卡暂不支持消费记录查询');
+                }
+            } else {
+                // 消费记录查询功能已关闭，隐藏该区域
+                document.getElementById('transactionsSection').style.display = 'none';
+            }
+        }
+
+        // 显示消费记录占位信息
+        function showTransactionsPlaceholder(text = '暂无消费记录') {
+            document.getElementById('transactionsPlaceholder').style.display = 'flex';
+            document.getElementById('transactionsPlaceholder').querySelector('.placeholder-text').textContent = text;
+            document.getElementById('transactionsLoading').style.display = 'none';
+            document.getElementById('transactionsList').style.display = 'none';
+            document.getElementById('transactionCount').textContent = '';
+        }
+
+        // 加载消费记录
+        async function loadTransactions(keyId) {
+            if (!keyId) {
+                showTransactionsPlaceholder();
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('transactionsPlaceholder').style.display = 'none';
+            document.getElementById('transactionsLoading').style.display = 'flex';
+            document.getElementById('transactionsList').style.display = 'none';
+            document.getElementById('transactionCount').textContent = '';
+
+            try {
+                const response = await fetch('/api/keys/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key_id: keyId })
+                });
+                const data = await response.json();
+
+                if (data.success && data.transactions && data.transactions.length > 0) {
+                    renderTransactions(data.transactions);
+                } else {
+                    showTransactionsPlaceholder(data.error || '暂无消费记录');
+                }
+            } catch (e) {
+                console.error('加载消费记录失败:', e);
+                showTransactionsPlaceholder('加载失败');
+            }
+        }
+
+        // 渲染消费记录列表
+        function renderTransactions(transactions) {
+            document.getElementById('transactionsPlaceholder').style.display = 'none';
+            document.getElementById('transactionsLoading').style.display = 'none';
+            document.getElementById('transactionsList').style.display = 'block';
+            document.getElementById('transactionCount').textContent = `共 ${transactions.length} 条`;
+
+            const list = document.getElementById('transactionsList');
+            list.innerHTML = transactions.map(tx => {
+                const amount = tx.amount || 0;
+                const amountClass = amount < 0 ? 'negative' : 'positive';
+                const amountText = amount < 0 ? `-$${Math.abs(amount).toFixed(2)}` : `+$${amount.toFixed(2)}`;
+                const statusClass = getStatusClass(tx.status);
+                const statusText = getStatusText(tx.status);
+                const time = tx.created_at ? new Date(tx.created_at).toLocaleString() : '-';
+                const merchant = tx.bank_description || tx.merchant_name || tx.payment_method || '-';
+                const category = tx.category || '';
+                const location = tx.counterparty_location || '';
+                const failReason = tx.reason_for_failure || '';
+                const logoUrl = tx.merchant_logo || '';
+
+                // 原始货币信息
+                let merchantInfo = '';
+                if (tx.merchant_amount && tx.merchant_currency && tx.merchant_currency !== 'USD') {
+                    merchantInfo = `<span class="merchant-amount">${tx.merchant_currency} ${tx.merchant_amount}</span>`;
+                }
+
+                // 商家图标
+                let logoHtml = '';
+                if (logoUrl) {
+                    logoHtml = `<img src="${escapeHtml(logoUrl)}" class="merchant-logo" alt="" onerror="this.style.display='none'">`;
+                } else {
+                    logoHtml = `<div class="merchant-logo-placeholder">💳</div>`;
+                }
+
+                return `
+                    <div class="transaction-item ${statusClass}">
+                        <div class="transaction-main">
+                            ${logoHtml}
+                            <div class="transaction-info">
+                                <span class="transaction-merchant">${escapeHtml(merchant)}</span>
+                                ${location ? `<span class="transaction-location">${escapeHtml(location)}</span>` : ''}
+                            </div>
+                            <div class="transaction-amount ${amountClass}">
+                                ${amountText}
+                                ${merchantInfo}
+                            </div>
+                        </div>
+                        <div class="transaction-meta">
+                            <span class="transaction-time">${time}</span>
+                            ${category ? `<span class="transaction-category">${escapeHtml(category)}</span>` : ''}
+                            <span class="transaction-status ${statusClass}">${statusText}</span>
+                        </div>
+                        ${failReason ? `<div class="transaction-error">${escapeHtml(failReason)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            switch (status) {
+                case 'sent':
+                case 'approved':
+                case 'completed':
+                    return 'status-success';
+                case 'pending':
+                case 'pendingApproval':
+                    return 'status-pending';
+                case 'alertFailed':
+                case 'failed':
+                case 'cancelled':
+                case 'declined':
+                    return 'status-failed';
+                default:
+                    return '';
+            }
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'sent': '已完成',
+                'approved': '已批准',
+                'completed': '已完成',
+                'pending': '待处理',
+                'pendingApproval': '待批准',
+                'alertFailed': '失败',
+                'failed': '失败',
+                'cancelled': '已取消',
+                'declined': '已拒绝'
+            };
+            return statusMap[status] || status || '-';
         }
 
         function showErrorResult(result) {
@@ -1201,6 +1393,7 @@
 
         loadAnnouncement();
         loadBatchSettings();
+        loadTransactionQuerySetting();
 
         // 注册 Service Worker
         if ('serviceWorker' in navigator) {

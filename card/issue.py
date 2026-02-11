@@ -52,7 +52,7 @@ def issue_card(account, transaction_limit=1000, card_type="credit"):
     response = mercury_request(account, 'POST', url, headers=headers, json_data=payload)
     
     if response is None:
-        return None
+        return None, "网络请求失败"
 
     if response.status_code == 200:
         response_data = response.json()

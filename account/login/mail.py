@@ -11,6 +11,35 @@ from urllib.parse import urljoin, unquote
 BASE_URL = "https://ms.lqqq.cc"
 
 
+def delete_all_emails(email: str, password: str, timeout: int = 30) -> dict:
+    """
+    删除邮箱中的所有邮件
+    
+    Args:
+        email: 邮箱地址
+        password: 邮箱密码
+        timeout: 请求超时时间（秒）
+        
+    Returns:
+        dict: {"success": True} 或 {"success": False, "error": "..."}
+    """
+    try:
+        # 使用完整邮箱地址
+        delete_url = f"{BASE_URL}/delete/{email}----{password}?all=true"
+        response = requests.get(delete_url, timeout=timeout, impersonate="chrome")
+        
+        if response.status_code == 200:
+            print(f"  [邮箱] 已清空邮箱 {email}")
+            return {"success": True}
+        else:
+            print(f"  [邮箱] 清空邮箱失败: HTTP {response.status_code}")
+            return {"success": False, "error": f"删除邮件失败: HTTP {response.status_code}"}
+            
+    except Exception as e:
+        print(f"  [邮箱] 清空邮箱异常: {e}")
+        return {"success": False, "error": f"删除邮件异常: {e}"}
+
+
 def get_device_verification_link(email: str, password: str, timeout: int = 120) -> dict:
     """
     从邮箱获取最新的设备验证链接

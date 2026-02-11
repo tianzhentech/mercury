@@ -4,5 +4,6 @@
   "max_batch_count": 16,
   "batch_interval": 8,
   "maintenance_mode": false,
-  "announcement_size": 121
+  "announcement_size": 121,
+  "transaction_query_enabled": true,
 }

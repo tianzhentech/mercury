@@ -2,28 +2,28 @@
     "accounts": [
         {
             "user": {
-                "id": "b5b55a26-f310-11f0-9a20-3f2b781ae39c",
-                "email": "lzwpurbot4746@outlook.com",
-                "first_name": "06",
-                "last_name": "06",
-                "phone_number": "+12272091674",
+                "id": "6ae8626a-ed1e-11f0-8e47-27e001ba3355",
+                "email": "AnaPayne9105@outlook.com",
+                "first_name": "jamarius",
+                "last_name": "fortson",
+                "phone_number": "+14047700405",
                 "status": "active",
-                "created_at": "2026-01-16T19:22:34.201883Z",
+                "created_at": "2026-01-09T05:45:34.68055Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "55 South Forest Street",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Denver",
-                    "region": "CO",
-                    "postal_code": "80246",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "9f843390-b282-11f0-a306-5365fb03af64",
-                "name": "Biberson Technologies LLC",
-                "legal_business_name": "Biberson Technologies LLC",
-                "callsign": "biberson-technologies-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -31,82 +31,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "b5b873be-f310-11f0-9a20-13a7566aac8a"
+                "org_user_id": "853e9242-ed1e-11f0-97a6-7badf098d50c"
             },
             "credit_account": {
-                "account_id": "30c64844-b4f8-11f0-b189-e728a8b4b0f1",
-                "available_balance": 3.5,
-                "credit_limit": 3.84,
-                "account_status": "active",
-                "created_at": "2025-10-29T18:50:51.072243Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "30aec7c8-b4f8-11f0-b189-33c0608195e6",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "202595333232",
-                    "routing_number": "091311229",
-                    "available_balance": 0.13,
-                    "current_balance": 0.13,
-                    "account_status": "active"
-                },
-                {
-                    "id": "6fc448f4-cf9a-11f0-ba65-77ffd735f9db",
-                    "name": "Checking",
-                    "nickname": "ROGERS WILLAM",
-                    "account_number": "202521745452",
-                    "routing_number": "091311229",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "01772f14-d7c0-11f0-aae4-87927010a503",
-                    "name": "Checking",
-                    "nickname": "sp",
-                    "account_number": "202542103094",
-                    "routing_number": "091311229",
-                    "available_balance": 3.71,
-                    "current_balance": 3.71,
-                    "account_status": "active"
-                },
-                {
-                    "id": "30b37070-b4f8-11f0-b189-03a930be04bd",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "202593346142",
-                    "routing_number": "091311229",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "82adf7ea-fc6c-11f0-b782-6fd7da8b130b",
-                "email": "vgxudfjne815@outlook.com",
-                "first_name": "01",
-                "last_name": "01",
-                "phone_number": "+12164956682",
+                "id": "f031a980-005c-11f1-a0fa-7bd371969f41",
+                "email": "RobertArcher1252@outlook.com",
+                "first_name": "Robert",
+                "last_name": "Archer",
+                "phone_number": "+12293455670",
                 "status": "active",
-                "created_at": "2026-01-28T17:12:22.750861Z",
+                "created_at": "2026-02-02T17:30:59.189Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 N WATER AVE LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "GALLATIN",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -114,62 +79,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "82b6f930-fc6c-11f0-b782-47ac86620033"
+                "org_user_id": "f03535b4-005c-11f1-a0fa-fba94fb56f00"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "34138c70-fc6d-11f0-8fa3-973690bcd5b6",
-                "email": "nofnxb38530@outlook.com",
-                "first_name": "02",
-                "last_name": "02",
-                "phone_number": "+15822503540",
+                "id": "55e260c0-005e-11f1-b53e-e7e3bdac4c7d",
+                "email": "TracyFowler7144@outlook.com",
+                "first_name": "Tracy",
+                "last_name": "Fowler",
+                "phone_number": "+13023663741",
                 "status": "active",
-                "created_at": "2026-01-28T17:17:20.372453Z",
+                "created_at": "2026-02-02T17:40:59.294615Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -177,62 +127,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "341909b6-fc6d-11f0-8fa3-bbb77c61540b"
+                "org_user_id": "55e72f1a-005e-11f1-b53e-5345781d36ee"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "bbb94e08-fc6d-11f0-924e-cfaf4b38e45c",
-                "email": "xqxwmby2010@outlook.com",
-                "first_name": "03",
-                "last_name": "03",
-                "phone_number": "+12272123573",
+                "id": "c0760374-005e-11f1-89c9-cf515ef0342c",
+                "email": "KevinMorgan6942@outlook.com",
+                "first_name": "Kevin",
+                "last_name": "Morgan",
+                "phone_number": "+16394030396",
                 "status": "active",
-                "created_at": "2026-01-28T17:21:07.948383Z",
+                "created_at": "2026-02-02T17:43:58.101968Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -240,62 +175,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "bbbe28a6-fc6d-11f0-924e-eff0ad679440"
+                "org_user_id": "c079c95a-005e-11f1-89c9-2b655c7a8b6f"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "61b87770-fc6e-11f0-a647-3b555af9d298",
-                "email": "pmvoudrv24102@outlook.com",
-                "first_name": "04",
-                "last_name": "04",
-                "phone_number": "+19253662923",
+                "id": "3a4b2ad0-005f-11f1-b9e7-e756c4a599ea",
+                "email": "AprilWilson5675@outlook.com",
+                "first_name": "April",
+                "last_name": "Wilson",
+                "phone_number": "+15813351145",
                 "status": "active",
-                "created_at": "2026-01-28T17:25:46.450154Z",
+                "created_at": "2026-02-02T17:47:22.500992Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -303,62 +223,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "61bb498c-fc6e-11f0-a647-d34eb2ee2296"
+                "org_user_id": "3a4e5138-005f-11f1-b9e7-13bad3fe634a"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "dc7aa3d4-fc6e-11f0-bd7a-abcfa949dab1",
-                "email": "ofhtjhvjtf17@outlook.com",
-                "first_name": "05",
-                "last_name": "05",
-                "phone_number": "+16074790212",
+                "id": "20c252ae-0060-11f1-9661-633d80df27fc",
+                "email": "DustinZamora5702@outlook.com",
+                "first_name": "Dustin",
+                "last_name": "Zamora",
+                "phone_number": "+16834446869",
                 "status": "active",
-                "created_at": "2026-01-28T17:29:12.402455Z",
+                "created_at": "2026-02-02T17:53:49.157353Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -366,62 +271,47 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "dc7df098-fc6e-11f0-bd7a-134615b6ae63"
+                "org_user_id": "20c5d51e-0060-11f1-9661-1bc9d0f94cea"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         },
         {
             "user": {
-                "id": "6c043ccc-fc6f-11f0-8262-b7d566d79570",
-                "email": "eodatgudfv49624@outlook.com",
-                "first_name": "06",
-                "last_name": "06",
-                "phone_number": "+18565696772",
+                "id": "c4782d6a-0060-11f1-a01a-8b7ce0692634",
+                "email": "RachaelEsparza1011@outlook.com",
+                "first_name": "Rachael",
+                "last_name": "Esparza",
+                "phone_number": "+17539003872",
                 "status": "active",
-                "created_at": "2026-01-28T17:33:13.2205Z",
+                "created_at": "2026-02-02T17:58:23.818331Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
+                    "address1": "44 Elberton Street",
                     "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
+                    "city": "Toccoa",
+                    "region": "GA",
+                    "postal_code": "30577",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
+                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
+                "name": "shop dress up LLC",
+                "legal_business_name": "shop dress up LLC",
+                "callsign": "shop-dress-up-llc",
                 "is_closed": false,
                 "company_structure": "LLC"
             },
@@ -429,541 +319,22 @@
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "6c07c1a8-fc6f-11f0-8262-2743b7f9dc05"
+                "org_user_id": "c47bdb18-0060-11f1-a01a-93992fcc5523"
             },
             "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
+                "account_id": null,
+                "available_balance": null,
+                "credit_limit": null,
+                "account_status": null,
+                "created_at": null
             },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "db497958-fc6f-11f0-b56a-2709fc7f8cb9",
-                "email": "ffkylchpi22@outlook.com",
-                "first_name": "07",
-                "last_name": "07",
-                "phone_number": "+16074790376",
-                "status": "active",
-                "created_at": "2026-01-28T17:36:19.901101Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "540 North Water Avenue LOT 43",
-                    "address2": "",
-                    "city": "Gallatin",
-                    "region": "TN",
-                    "postal_code": "37066",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "f29ea3de-f635-11f0-91dc-978a09a0ce7c",
-                "name": "YEGISH LLC",
-                "legal_business_name": "YEGISH LLC",
-                "callsign": "yegish-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "db4d2d3c-fc6f-11f0-b56a-3f7af9794d4b"
-            },
-            "credit_account": {
-                "account_id": "e6b72da8-f8a0-11f0-aa76-377bfce79edc",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-23T21:17:19.537105Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "edc292f2-f6db-11f0-a7ba-dbc7a65aa045",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "520691213896467",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "edeb0ea8-f6db-11f0-a7ba-db1803e78c62",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "275018594975036",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "037a71bc-fd3c-11f0-ad15-375b6d7eee91",
-                "email": "rsvh6d1fguvs@outlook.com",
-                "first_name": "01",
-                "last_name": "01",
-                "phone_number": "+16673162140",
-                "status": "active",
-                "created_at": "2026-01-29T17:57:44.662199Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "037e3d2e-fd3c-11f0-ad15-f3bc669dc306"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "77d7cd8e-fd3c-11f0-b5cd-574729c6e9b9",
-                "email": "rksw3hrazkbb@outlook.com",
-                "first_name": "02",
-                "last_name": "02",
-                "phone_number": "+19796355463",
-                "status": "active",
-                "created_at": "2026-01-29T18:00:59.887964Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "77dc2b68-fd3c-11f0-b5cd-9f83b1b148a2"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "e1f5bf0a-fd3c-11f0-a3e9-37be55b5b2dd",
-                "email": "hlhljzdzvkso@outlook.com",
-                "first_name": "03",
-                "last_name": "03",
-                "phone_number": "+13255308685",
-                "status": "active",
-                "created_at": "2026-01-29T18:03:57.927075Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "e1f8df00-fd3c-11f0-a3e9-5f2031f81f61"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "339eeaf2-fd3d-11f0-8cc1-d38fccc2cc9a",
-                "email": "jnfv8f23tjqm@outlook.com",
-                "first_name": "04",
-                "last_name": "04",
-                "phone_number": "+18565696955",
-                "status": "active",
-                "created_at": "2026-01-29T18:06:14.928454Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "33a231c6-fd3d-11f0-8cc1-cf1c36023b81"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "78ff0cda-fd3d-11f0-ace0-fbf96eb49df9",
-                "email": "yatu39anaw0p@outlook.com",
-                "first_name": "05",
-                "last_name": "05",
-                "phone_number": "+12723401015",
-                "status": "active",
-                "created_at": "2026-01-29T18:08:11.30034Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "79028c98-fd3d-11f0-ace0-834272007174"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "c03d4cce-fd3d-11f0-b0b6-dfd94e52b192",
-                "email": "kxwvso5sfrom@outlook.com",
-                "first_name": "06",
-                "last_name": "06",
-                "phone_number": "+14195531179",
-                "status": "active",
-                "created_at": "2026-01-29T18:10:10.846593Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "c040d916-fd3d-11f0-b0b6-eb2b768057cc"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
-        },
-        {
-            "user": {
-                "id": "13768d42-fd3e-11f0-8f91-dfae79f6ea32",
-                "email": "nfblvm32pzu4@outlook.com",
-                "first_name": "07",
-                "last_name": "07",
-                "phone_number": "+16809771743",
-                "status": "active",
-                "created_at": "2026-01-29T18:12:30.475406Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "3025 North 6th Street",
-                    "address2": "",
-                    "city": "Milwaukee",
-                    "region": "WI",
-                    "postal_code": "53212",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "824d9afe-f7b6-11f0-9778-7f35fa035bd1",
-                "name": "DIFFURA LLC",
-                "legal_business_name": "DIFFURA LLC",
-                "callsign": "diffura-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "137a6412-fd3e-11f0-8f91-bf61c7338cf0"
-            },
-            "credit_account": {
-                "account_id": "0e68229c-f9f7-11f0-8a8d-e73ffa6c5ba1",
-                "available_balance": 0.0,
-                "credit_limit": 0.0,
-                "account_status": "active",
-                "created_at": "2026-01-25T14:06:34.040666Z"
-            },
-            "depository_accounts": [
-                {
-                    "id": "a21fe85a-f7bb-11f0-9fd5-0368be76a02d",
-                    "name": "Checking",
-                    "nickname": null,
-                    "account_number": "834007763784458",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                },
-                {
-                    "id": "a24d28ce-f7bb-11f0-9fd5-978cdb6e31e1",
-                    "name": "Savings",
-                    "nickname": null,
-                    "account_number": "141827323356810",
-                    "routing_number": "121145433",
-                    "available_balance": 0.0,
-                    "current_balance": 0.0,
-                    "account_status": "active"
-                }
-            ]
+            "depository_accounts": [],
+            "restriction": {
+                "is_restricted": true,
+                "reason": "用户状态: orgLockedWithRemediation",
+                "org_context": "businessLocked",
+                "org_user_status": "orgLockedWithRemediation"
+            }
         }
     ]
 }

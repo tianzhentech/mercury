@@ -335,6 +335,7 @@
                         <div class="empty-state">暂无开卡记录</div>
                     </div>
                 </div>
+                <div class="panel-pagination" id="recordsPaginationContainer"></div>
             </div>
 
             <!-- 数据分析面板 -->
@@ -835,6 +836,64 @@
 
                     <section class="control-panel">
                         <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 style="margin: 0;">消费记录查询</h3>
+                            <label class="toggle-switch" title="开启后用户可以在兑换页面查询消费记录">
+                                <input type="checkbox" id="transactionQueryToggle" onchange="toggleTransactionQuery()">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">开启</span>
+                            </label>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
+                            开启后，用户可以通过卡密或卡号查询消费记录；关闭后，将隐藏消费记录查询功能</p>
+                    </section>
+
+                    <section class="control-panel">
+                        <h3>数据库配置</h3>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                            配置 PostgreSQL 数据库连接信息，保存后立即生效</p>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label for="dbHost">主机地址</label>
+                                <input type="text" id="dbHost" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label for="dbPort">端口</label>
+                                <input type="number" id="dbPort" min="1" max="65535" value="5432">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="dbName">数据库名</label>
+                                <input type="text" id="dbName" placeholder="mercury">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dbUser">用户名</label>
+                                <input type="text" id="dbUser" placeholder="mercury">
+                            </div>
+                            <div class="form-group">
+                                <label for="dbPassword">密码</label>
+                                <input type="password" id="dbPassword" placeholder="••••••••">
+                            </div>
+                            <div class="form-group">
+                                <label for="dbPoolMin">连接池最小</label>
+                                <input type="number" id="dbPoolMin" min="1" max="50" value="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="dbPoolMax">连接池最大</label>
+                                <input type="number" id="dbPoolMax" min="1" max="100" value="20">
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
+                            <button onclick="saveDbConfig()">保存配置</button>
+                            <button class="btn-secondary" onclick="testDbConnection()">测试连接</button>
+                            <span id="dbConnectionStatus" style="font-size: 13px;"></span>
+                        </div>
+                    </section>
+
+                    <section class="control-panel">
+                        <div
                             style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div style="display: flex; align-items: center; gap: 16px;">
                                 <h3 style="margin: 0;">版本信息</h3>
@@ -1189,6 +1248,10 @@
         let totalKeysPages = 1;
         let totalKeysCount = 0;
         let keysPageSize = 100;
+        let currentRecordsPage = 1;
+        let totalRecordsPages = 1;
+        let totalRecordsCount = 0;
+        let recordsPageSize = 100;
         let searchTimeout = null;
         let accessToken = localStorage.getItem('access_token');
         let refreshToken = localStorage.getItem('refresh_token');
@@ -1554,11 +1617,11 @@
                     document.getElementById('createProgress').style.display = 'none';
                     document.getElementById('createBtn').disabled = false;
                     showToast(data.message, 'error');
-                } else if (data.type === 'waiting') {
-                    document.getElementById('createProgressMessage').textContent = data.message;
+                } else if (data.type === 'progress') {
                     const percent = data.total > 0 ? (data.current / data.total * 100) : 0;
                     document.getElementById('createProgressFill').style.width = percent + '%';
                     document.getElementById('createProgressText').textContent = `${data.current} / ${data.total}`;
+                    document.getElementById('createProgressMessage').textContent = data.message || '处理中...';
 
                     // 检查是否包含 429 错误信息
                     if (data.status === 'failed' && (data.message.includes('429') || data.message.includes('服务器繁忙') || data.message.includes('操作过于频繁'))) {
@@ -1569,9 +1632,12 @@
                         showAlert('当前服务器繁忙，请五分钟后再试');
                         return;
                     }
-
-                    document.getElementById('createProgressMessage').textContent = data.type === 'card_created' ? `卡片 ...${data.card.pan.slice(-4)} 创建成功` : data.message;
-                    if (data.type === 'card_created') refreshCards();
+                } else if (data.type === 'card_created') {
+                    const percent = data.total > 0 ? (data.current / data.total * 100) : 0;
+                    document.getElementById('createProgressFill').style.width = percent + '%';
+                    document.getElementById('createProgressText').textContent = `${data.current} / ${data.total}`;
+                    document.getElementById('createProgressMessage').textContent = `卡片 ...${data.card.pan.slice(-4)} 创建成功`;
+                    refreshCards();
                 } else if (data.type === 'complete') {
                     createEventSource.close();
                     createEventSource = null;
@@ -2219,21 +2285,25 @@
 
         // ==================== 开卡记录 ====================
 
-        async function refreshRecords() {
+        async function refreshRecords(page = 1) {
             try {
-                const response = await fetch('/api/keys/records', { headers: getAuthHeaders() });
-                if (response.status === 401) { await checkAuth(); return refreshRecords(); }
+                const response = await fetch(`/api/keys/records?page=${page}&page_size=${recordsPageSize}`, { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshRecords(page); }
                 const data = await response.json();
+                currentRecordsPage = data.page || 1;
+                totalRecordsPages = data.total_pages || 1;
+                totalRecordsCount = data.total || 0;
                 renderRecords(data.records || []);
             } catch (error) { console.error('获取开卡记录失败:', error); }
         }
 
         function renderRecords(records) {
             const container = document.getElementById('recordsContainer');
-            document.getElementById('recordCount').textContent = records.length;
+            document.getElementById('recordCount').textContent = totalRecordsCount;
 
             if (!records.length) {
                 container.innerHTML = '<div class="empty-state">暂无开卡记录</div>';
+                document.getElementById('recordsPaginationContainer').innerHTML = '';
                 return;
             }
 
@@ -2271,6 +2341,9 @@
                 </div>
             `}).join('');
 
+            // 渲染分页
+            document.getElementById('recordsPaginationContainer').innerHTML = renderRecordsPagination();
+
             // 绑定点击复制事件
             container.querySelectorAll('[data-copy]').forEach(el => {
                 el.addEventListener('click', function () {
@@ -2289,6 +2362,41 @@
                     deleteRecord(item.dataset.keyId);
                 });
             });
+        }
+
+        function renderRecordsPagination() {
+            if (totalRecordsPages <= 1) return '';
+
+            let pages = [];
+            const maxVisible = 5;
+            let start = Math.max(1, currentRecordsPage - Math.floor(maxVisible / 2));
+            let end = Math.min(totalRecordsPages, start + maxVisible - 1);
+            if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+            for (let i = start; i <= end; i++) pages.push(i);
+
+            return `
+                <div class="pagination">
+                    <select class="page-size-select" onchange="changeRecordsPageSize(this.value)">
+                        ${[100, 200, 500, 1000, 2000, 5000].map(size => `<option value="${size}" ${recordsPageSize === size ? 'selected' : ''}>${size}/页</option>`).join('')}
+                    </select>
+                    <button class="page-btn" onclick="goToRecordsPage(1)" ${currentRecordsPage === 1 ? 'disabled' : ''}>«</button>
+                    <button class="page-btn" onclick="goToRecordsPage(${currentRecordsPage - 1})" ${currentRecordsPage === 1 ? 'disabled' : ''}>‹</button>
+                    ${pages.map(p => `<button class="page-btn ${p === currentRecordsPage ? 'active' : ''}" onclick="goToRecordsPage(${p})">${p}</button>`).join('')}
+                    <button class="page-btn" onclick="goToRecordsPage(${currentRecordsPage + 1})" ${currentRecordsPage === totalRecordsPages ? 'disabled' : ''}>›</button>
+                    <button class="page-btn" onclick="goToRecordsPage(${totalRecordsPages})" ${currentRecordsPage === totalRecordsPages ? 'disabled' : ''}>»</button>
+                </div>
+            `;
+        }
+
+        function goToRecordsPage(page) {
+            if (page < 1 || page > totalRecordsPages) return;
+            refreshRecords(page);
+        }
+
+        function changeRecordsPageSize(size) {
+            recordsPageSize = parseInt(size);
+            refreshRecords(1);
         }
 
         async function deleteRecord(keyId) {
@@ -2373,23 +2481,34 @@
         }
 
         function getAnalyticsDateParams() {
-            const today = new Date().toISOString().split('T')[0];
+            // 使用用户本地日期（而非UTC）
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const today = `${year}-${month}-${day}`;
+
+            // 获取用户时区偏移量（分钟），正值表示在UTC以西，负值表示在UTC以东
+            // 例如：UTC+8 的 getTimezoneOffset() 返回 -480
+            const tzOffset = now.getTimezoneOffset();
 
             switch (currentAnalyticsFilter) {
                 case 'today':
-                    return { start_date: today, end_date: today };
+                    return { start_date: today, end_date: today, tz_offset: tzOffset };
                 case '7days':
-                    const weekAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    return { start_date: weekAgo, end_date: today };
+                    const weekAgoDate = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+                    const weekAgo = `${weekAgoDate.getFullYear()}-${String(weekAgoDate.getMonth() + 1).padStart(2, '0')}-${String(weekAgoDate.getDate()).padStart(2, '0')}`;
+                    return { start_date: weekAgo, end_date: today, tz_offset: tzOffset };
                 case 'all':
-                    return { start_date: '', end_date: '' };  // 空表示所有时间
+                    return { start_date: '', end_date: '', tz_offset: tzOffset };  // 空表示所有时间
                 case 'custom':
                     return {
                         start_date: document.getElementById('analyticsStartDate').value,
-                        end_date: document.getElementById('analyticsEndDate').value
+                        end_date: document.getElementById('analyticsEndDate').value,
+                        tz_offset: tzOffset
                     };
                 default:
-                    return { start_date: today, end_date: today };
+                    return { start_date: today, end_date: today, tz_offset: tzOffset };
             }
         }
 
@@ -2397,7 +2516,7 @@
             const dateParams = getAnalyticsDateParams();
 
             try {
-                let url = `/api/analytics?start_date=${dateParams.start_date}&end_date=${dateParams.end_date}`;
+                let url = `/api/analytics?start_date=${dateParams.start_date}&end_date=${dateParams.end_date}&tz_offset=${dateParams.tz_offset}`;
                 if (selectedAnalyticsUser) {
                     url += `&username=${encodeURIComponent(selectedAnalyticsUser)}`;
                 }
@@ -2815,6 +2934,9 @@
                 } else if (status === 'paused') {
                     statusText = 'paused';
                     statusClass = 'status-paused';
+                } else if (status === 'restricted') {
+                    statusText = 'restricted';
+                    statusClass = 'status-restricted';
                 } else {
                     statusText = 'inactive';
                     statusClass = 'status-inactive';
@@ -2952,16 +3074,33 @@
                 ? allMercuryAccounts.filter(a => a.organization === currentOrgFilter)
                 : allMercuryAccounts;
 
-            document.getElementById('orgCreditCount').innerHTML = '<span class="card-count-spinner"></span>';
-            document.getElementById('orgDebitCount').innerHTML = '<span class="card-count-spinner"></span>';
+            // 检查是否所有账户都是 restricted
+            const allRestricted = orgAccounts.length > 0 && orgAccounts.every(a => a.account_status === 'restricted');
+            if (allRestricted) {
+                document.getElementById('orgCreditCount').textContent = '0';
+                document.getElementById('orgDebitCount').textContent = '0';
+            } else {
+                document.getElementById('orgCreditCount').innerHTML = '<span class="card-count-spinner"></span>';
+                document.getElementById('orgDebitCount').innerHTML = '<span class="card-count-spinner"></span>';
+            }
 
-            // 清空缓存并重置所有子账户的 UI 为 spinner
+            // 清空缓存并重置所有子账户的 UI
             allCardsCache = {};
             document.querySelectorAll('.account-cards-actions[data-user-id]').forEach(container => {
+                const userId = container.dataset.userId;
+                const account = allMercuryAccounts.find(a => a.user_id === userId);
                 const creditEl = container.querySelector('.credit-count');
                 const debitEl = container.querySelector('.debit-count');
-                if (creditEl) creditEl.innerHTML = '<span class="card-count-spinner"></span>';
-                if (debitEl) debitEl.innerHTML = '<span class="card-count-spinner"></span>';
+
+                // 对 restricted 账户直接显示 "0"，不需要加载
+                if (account && account.account_status === 'restricted') {
+                    if (creditEl) creditEl.textContent = '0';
+                    if (debitEl) debitEl.textContent = '0';
+                    allCardsCache[userId] = []; // 直接设置为空缓存
+                } else {
+                    if (creditEl) creditEl.innerHTML = '<span class="card-count-spinner"></span>';
+                    if (debitEl) debitEl.innerHTML = '<span class="card-count-spinner"></span>';
+                }
             });
 
             try {
@@ -3167,6 +3306,9 @@
                 } else if (accountStatus === 'paused') {
                     statusText = 'paused';
                     statusClass = 'status-paused';
+                } else if (accountStatus === 'restricted') {
+                    statusText = 'restricted';
+                    statusClass = 'status-restricted';
                 } else {
                     statusText = 'inactive';
                     statusClass = 'status-inactive';
@@ -3740,6 +3882,133 @@
             }
         }
 
+        // ==================== 数据库配置 ====================
+        async function loadDbConfig() {
+            try {
+                const response = await fetch('/api/settings/db-config', { headers: getAuthHeaders() });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.db_config) {
+                        const config = data.db_config;
+                        document.getElementById('dbHost').value = config.host || 'localhost';
+                        document.getElementById('dbPort').value = config.port || 5432;
+                        document.getElementById('dbName').value = config.database || 'mercury';
+                        document.getElementById('dbUser').value = config.user || 'mercury';
+                        document.getElementById('dbPassword').value = config.password || '';
+                        document.getElementById('dbPoolMin').value = config.pool_min || 2;
+                        document.getElementById('dbPoolMax').value = config.pool_max || 20;
+                    }
+                }
+            } catch (e) {
+                console.error('加载数据库配置失败:', e);
+            }
+        }
+
+        async function saveDbConfig() {
+            const config = {
+                host: document.getElementById('dbHost').value || 'localhost',
+                port: parseInt(document.getElementById('dbPort').value) || 5432,
+                database: document.getElementById('dbName').value || 'mercury',
+                user: document.getElementById('dbUser').value || 'mercury',
+                password: document.getElementById('dbPassword').value || '',
+                pool_min: parseInt(document.getElementById('dbPoolMin').value) || 2,
+                pool_max: parseInt(document.getElementById('dbPoolMax').value) || 20
+            };
+
+            try {
+                const response = await fetch('/api/settings/db-config', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || '配置已保存', 'success');
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('保存失败', 'error');
+            }
+        }
+
+        async function testDbConnection() {
+            const statusEl = document.getElementById('dbConnectionStatus');
+            statusEl.textContent = '正在测试...';
+            statusEl.style.color = 'var(--text-secondary)';
+
+            const config = {
+                host: document.getElementById('dbHost').value || 'localhost',
+                port: parseInt(document.getElementById('dbPort').value) || 5432,
+                database: document.getElementById('dbName').value || 'mercury',
+                user: document.getElementById('dbUser').value || 'mercury',
+                password: document.getElementById('dbPassword').value || ''
+            };
+
+            try {
+                const response = await fetch('/api/settings/db-config/test', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    statusEl.textContent = '✓ 连接成功';
+                    statusEl.style.color = 'var(--success-color)';
+                    showToast('数据库连接成功', 'success');
+                } else {
+                    statusEl.textContent = '✗ ' + (data.error || '连接失败');
+                    statusEl.style.color = 'var(--danger-color)';
+                    showToast(data.error || '连接失败', 'error');
+                }
+            } catch (e) {
+                statusEl.textContent = '✗ 连接失败';
+                statusEl.style.color = 'var(--danger-color)';
+                showToast('测试连接失败', 'error');
+            }
+        }
+
+        // ==================== 消费记录查询开关 ====================
+        async function loadTransactionQuerySetting() {
+            try {
+                const response = await fetch('/api/settings/transaction-query', { headers: getAuthHeaders() });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const toggle = document.getElementById('transactionQueryToggle');
+                        if (toggle) {
+                            toggle.checked = data.transaction_query_enabled !== false;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load transaction query setting:', e);
+            }
+        }
+
+        async function toggleTransactionQuery() {
+            const toggle = document.getElementById('transactionQueryToggle');
+            const enabled = toggle.checked;
+
+            try {
+                const response = await fetch('/api/settings/transaction-query', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transaction_query_enabled: enabled })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || '设置失败', 'error');
+                    toggle.checked = !enabled; // 恢复状态
+                }
+            } catch (e) {
+                showToast('设置失败', 'error');
+                toggle.checked = !enabled; // 恢复状态
+            }
+        }
+
         let latestVersionAvailable = null;
 
         async function checkUpdate() {
@@ -4212,6 +4481,12 @@
 
                 // 加载批量兑换设置
                 loadBatchSettings();
+
+                // 加载数据库配置
+                loadDbConfig();
+
+                // 加载消费记录查询设置
+                loadTransactionQuerySetting();
             }
 
             refreshCards();

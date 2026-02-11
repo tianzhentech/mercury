@@ -8,7 +8,7 @@ import time
 import hashlib
 from urllib.parse import unquote
 
-from mail import get_device_verification_link, extract_verification_code
+from mail import get_device_verification_link, extract_verification_code, delete_all_emails
 
 
 def generate_device_fingerprint():
@@ -181,6 +181,9 @@ def mercury_full_login(email: str, mercury_password: str, totp_secret: str,
         
         if response1.status_code != 200:
             print(f"  [DEBUG] 响应内容: {response1.text[:500]}")
+            # 检查是否是 TOTP 验证码重复使用
+            if response1.status_code == 403 and "already used this code" in response1.text:
+                return {"success": False, "error": "操作太频繁，请30秒后重试"}
             return {"success": False, "error": f"第一次登录失败: HTTP {response1.status_code}"}
         
         # 检查响应
@@ -199,12 +202,15 @@ def mercury_full_login(email: str, mercury_password: str, totp_secret: str,
                 }
         
         # 需要设备验证
-        print(f"[2/4] 需要设备验证，获取验证邮件...")
+        print(f"[2/4] 需要设备验证，清空邮箱后获取验证邮件...")
         
         # 获取第一次登录的 session（用于后续请求）
         temp_session = extract_session_from_response(response1)
         if not temp_session:
             return {"success": False, "error": "未获取到临时 session"}
+        
+        # 先清空邮箱中的旧邮件
+        delete_all_emails(email, email_password)
         
         # 等待邮件发送
         time.sleep(3)

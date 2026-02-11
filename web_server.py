@@ -29,7 +29,7 @@ from account.accounts import (
     start_proxy_latency_checker, has_active_accounts, get_all_active_accounts,
     get_default_proxy_id, set_default_proxy_id
 )
-from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token, allocate_existing_ids_for_withdraw, get_analytics_data, record_direct_card_creation
+from id.id import generate_ids, validate_id, use_id, delete_id, get_all_ids, delete_all_ids, delete_ids_batch, delete_unused_ids_by_type, get_redeem_records, delete_record, delete_all_records, query_redeemed, get_hidden_ids_by_token, allocate_existing_ids_for_withdraw, get_analytics_data, record_direct_card_creation, reload_db_config
 from user.login import login, refresh_access_token, verify_access_token
 from user.user import create_user, delete_user, update_user, get_all_users, is_admin, init_default_admin
 
@@ -202,6 +202,58 @@ def check_expired_cards():
             print(f"[后台任务] 检查过期卡片出错: {e}")
         
         time.sleep(30)
+
+
+def auto_refresh_accounts():
+    """后台线程：每10分钟自动刷新所有账户的 session，并检查卡片数量"""
+    from account.accounts import refresh_all_accounts, get_account_count
+    
+    while True:
+        # 等待10分钟
+        time.sleep(600)
+        
+        if get_account_count() == 0:
+            continue
+        
+        print("\n[定时任务] 开始刷新所有 Mercury 账户...")
+        result = refresh_all_accounts()
+        paused = result.get('paused', 0)
+        paused_msg = f"，暂停 {paused}" if paused > 0 else ""
+        print(f"[定时任务] 刷新完成: 成功 {result['success']}/{result['total']}，失败 {result['failed']}{paused_msg}")
+
+
+# 模块级别启动后台线程（确保 Gunicorn 环境也能启动）
+_background_threads_started = False
+
+def start_background_threads():
+    """启动后台线程（确保只启动一次）"""
+    global _background_threads_started
+    if _background_threads_started:
+        return
+    _background_threads_started = True
+    
+    # 初始化卡片文件
+    if not os.path.exists(CARD_FILE):
+        save_cards({"cards": []})
+    
+    # 启动过期检查线程
+    expire_thread = threading.Thread(target=check_expired_cards, daemon=True)
+    expire_thread.start()
+    print("[启动] 后台过期检查线程已启动")
+    
+    # 启动账户自动刷新线程（每10分钟）
+    refresh_thread = threading.Thread(target=auto_refresh_accounts, daemon=True)
+    refresh_thread.start()
+    print("[启动] 账户自动刷新线程已启动（每10分钟）")
+    
+    # 启动代理延迟检查线程（每60秒）
+    start_proxy_latency_checker()
+
+# 使用 Flask 的 before_request 钩子启动后台线程（只执行一次）
+@app.before_request
+def ensure_background_threads():
+    """确保后台线程已启动"""
+    start_background_threads()
 
 
 # ==================== 页面路由 ====================
@@ -607,6 +659,16 @@ def api_get_public_announcement():
     })
 
 
+@app.route('/api/transaction-query-status', methods=['GET'])
+def api_get_transaction_query_status():
+    """获取消费记录查询开关状态（公开API，用于兑换页面）"""
+    settings = load_settings()
+    return jsonify({
+        "success": True, 
+        "enabled": settings.get("transaction_query_enabled", True)
+    })
+
+
 @app.route('/api/settings/maintenance', methods=['GET'])
 @require_admin
 def api_get_maintenance():
@@ -631,6 +693,35 @@ def api_set_maintenance():
         return jsonify({
             "success": True, 
             "message": "维护模式已" + ("开启" if maintenance_mode else "关闭")
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/settings/transaction-query', methods=['GET'])
+@require_admin
+def api_get_transaction_query():
+    """获取消费记录查询开关状态"""
+    settings = load_settings()
+    return jsonify({
+        "success": True, 
+        "transaction_query_enabled": settings.get("transaction_query_enabled", True)
+    })
+
+
+@app.route('/api/settings/transaction-query', methods=['POST'])
+@require_admin
+def api_set_transaction_query():
+    """设置消费记录查询开关"""
+    try:
+        data = request.json
+        enabled = data.get('transaction_query_enabled', True)
+        settings = load_settings()
+        settings['transaction_query_enabled'] = bool(enabled)
+        save_settings(settings)
+        return jsonify({
+            "success": True, 
+            "message": "消费记录查询已" + ("开启" if enabled else "关闭")
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -679,6 +770,106 @@ def api_get_public_batch_settings():
         "max_batch_count": settings.get("max_batch_count", 5),
         "batch_interval": settings.get("batch_interval", 5)
     })
+
+
+@app.route('/api/settings/db-config', methods=['GET'])
+@require_admin
+def api_get_db_config():
+    """获取数据库配置"""
+    settings = load_settings()
+    db_config = settings.get("db_config", {})
+    return jsonify({
+        "success": True,
+        "db_config": {
+            "host": db_config.get("host", "localhost"),
+            "port": db_config.get("port", 5432),
+            "database": db_config.get("database", "mercury"),
+            "user": db_config.get("user", "mercury"),
+            "password": db_config.get("password", ""),
+            "pool_min": db_config.get("pool_min", 2),
+            "pool_max": db_config.get("pool_max", 20)
+        }
+    })
+
+
+@app.route('/api/settings/db-config', methods=['POST'])
+@require_admin
+def api_set_db_config():
+    """设置数据库配置"""
+    try:
+        data = request.json
+        
+        db_config = {
+            "host": data.get("host", "localhost").strip(),
+            "port": int(data.get("port", 5432)),
+            "database": data.get("database", "mercury").strip(),
+            "user": data.get("user", "mercury").strip(),
+            "password": data.get("password", ""),
+            "pool_min": max(1, min(50, int(data.get("pool_min", 2)))),
+            "pool_max": max(1, min(100, int(data.get("pool_max", 20))))
+        }
+        
+        settings = load_settings()
+        settings['db_config'] = db_config
+        save_settings(settings)
+        
+        # 热重载数据库连接池
+        success, message = reload_db_config()
+        if success:
+            return jsonify({"success": True, "message": "数据库配置已保存并生效"})
+        else:
+            return jsonify({"success": True, "message": f"配置已保存，但重载失败: {message}，需重启服务"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/settings/db-config/test', methods=['POST'])
+@require_admin
+def api_test_db_connection():
+    """测试数据库连接"""
+    try:
+        data = request.json
+        
+        host = data.get("host", "localhost").strip()
+        port = int(data.get("port", 5432))
+        database = data.get("database", "mercury").strip()
+        user = data.get("user", "mercury").strip()
+        password = data.get("password", "")
+        
+        import psycopg2
+        
+        # 尝试连接数据库
+        conn = psycopg2.connect(
+            host=host,
+            port=port,
+            database=database,
+            user=user,
+            password=password,
+            connect_timeout=5
+        )
+        
+        # 执行简单查询验证连接
+        cursor = conn.cursor()
+        cursor.execute("SELECT version()")
+        version = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "message": "连接成功",
+            "version": version
+        })
+    except ImportError:
+        return jsonify({
+            "success": False,
+            "error": "未安装 psycopg2 模块，请先运行: pip install psycopg2-binary"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"连接失败: {str(e)}"
+        }), 500
 
 
 # GitHub 私有仓库配置
@@ -843,12 +1034,16 @@ def api_get_mercury_card_counts(user_id):
 @require_admin
 def api_get_mercury_cards(user_id):
     """获取 Mercury 账户的所有卡片（用于前端缓存和本地过滤）"""
-    from account.accounts import get_account_by_user_id, list_mercury_cards
+    from account.accounts import get_account_by_user_id, list_mercury_cards, refresh_account
     
     try:
         account = get_account_by_user_id(user_id)
         if not account:
             return jsonify({"success": False, "error": "账户不存在"}), 404
+        
+        # 如果账户被限制，直接返回空卡片列表，不尝试刷新
+        if account.get("account_status") == "restricted":
+            return jsonify({"success": True, "cards": [], "restricted": True})
         
         # 使用账户姓名作为持卡人过滤条件
         cardholder_name = account.get("name", "")
@@ -856,9 +1051,34 @@ def api_get_mercury_cards(user_id):
         
         if success:
             return jsonify({"success": True, "cards": cards})
+        
+        # 请求失败，可能是 session 过期，尝试刷新账户
+        original_error = cards
+        print(f"[API] 获取卡片失败 (错误: {original_error})，尝试刷新账户 {user_id} 的 session...")
+        refresh_result = refresh_account(user_id)
+        
+        if not refresh_result.get("success"):
+            # 刷新失败，返回原始错误
+            print(f"[API] 账户 {user_id} session 刷新失败: {refresh_result.get('error', '未知错误')}")
+            return jsonify({"success": False, "error": f"Session 已过期且刷新失败: {refresh_result.get('error', original_error)}"}), 400
+        
+        print(f"[API] 账户 {user_id} session 刷新成功，正在重新获取卡片...")
+        
+        # 刷新成功，重新获取账户信息并重试
+        account = get_account_by_user_id(user_id)
+        if not account:
+            return jsonify({"success": False, "error": "刷新后账户不存在"}), 404
+        
+        success, cards = list_mercury_cards(account, cardholder_name_filter=cardholder_name)
+        
+        if success:
+            print(f"[API] 账户 {user_id} 重新获取卡片成功，共 {len(cards)} 张")
+            return jsonify({"success": True, "cards": cards})
         else:
+            print(f"[API] 账户 {user_id} 刷新后仍然获取卡片失败: {cards}")
             return jsonify({"success": False, "error": cards}), 400
     except Exception as e:
+        print(f"[API] 获取卡片异常: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -913,9 +1133,13 @@ def api_get_mercury_cards_batch():
         
         # 每个组织只请求一次
         for org_name, org_accounts in org_groups.items():
-            # 找到第一个有 session 的账户
+            # 找到第一个非 restricted 且有 session 的 active 账户
             active_account = None
             for acc in org_accounts:
+                if acc.get("account_status") == "restricted":
+                    # restricted 账户直接返回空卡片列表
+                    cards_by_user[acc["user_id"]] = []
+                    continue
                 if acc.get("account_status") == "active" and acc.get("_SESSION"):
                     active_account = acc
                     break
@@ -1489,11 +1713,13 @@ def delete_unused_keys():
 @app.route('/api/keys/records', methods=['GET'])
 @require_auth
 def get_key_records():
-    """获取开卡记录"""
+    """获取开卡记录（支持分页）"""
     try:
         current_user = request.user.get('username')
-        records = get_redeem_records(username=current_user)
-        return jsonify({"success": True, "records": records})
+        page = request.args.get('page', type=int)
+        page_size = request.args.get('page_size', 100, type=int)
+        data = get_redeem_records(username=current_user, page=page, page_size=page_size)
+        return jsonify({"success": True, **data})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -1528,12 +1754,13 @@ def delete_all_key_records():
 @app.route('/api/analytics', methods=['GET'])
 @require_auth
 def api_get_analytics():
-    """获取开卡分析数据（支持日期范围）"""
+    """获取开卡分析数据（支持日期范围和时区）"""
     try:
         start_date = request.args.get('start_date')  # 可选，格式 YYYY-MM-DD
         end_date = request.args.get('end_date')  # 可选，格式 YYYY-MM-DD
         username = request.args.get('username')  # 可选，筛选特定用户的小时统计
-        data = get_analytics_data(start_date=start_date, end_date=end_date, username=username)
+        tz_offset = request.args.get('tz_offset', type=int)  # 用户时区偏移（分钟），UTC+8 返回 -480
+        data = get_analytics_data(start_date=start_date, end_date=end_date, username=username, tz_offset=tz_offset)
         return jsonify({"success": True, **data})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -1548,6 +1775,7 @@ def destroy_keys():
     
     try:
         current_user = request.user.get('username')
+        is_admin = request.user.get('is_admin', False)  # 获取管理员状态
         data = request.get_json() or {}
         keys_text = data.get('keys', '').strip()
         
@@ -1606,8 +1834,8 @@ def destroy_keys():
             else:
                 print(f"[销毁卡密] 卡密未兑换或查询失败: {redeemed_info}")
             
-            # 标记卡密为已销毁（而不是删除）
-            mark_success, mark_error = mark_destroyed(key_id, username=current_user)
+            # 标记卡密为已销毁（管理员可销毁任何用户的卡密）
+            mark_success, mark_error = mark_destroyed(key_id, username=current_user, is_admin=is_admin)
             if mark_success:
                 destroyed_keys += 1
                 result["destroyed"] = True
@@ -1747,8 +1975,8 @@ def redeem_key():
         if not valid:
             return jsonify({"success": False, "error": result}), 400
         
-        expire_minutes = result["expire_minutes"]
-        card_limit = result["card_limit"]
+        expire_minutes = int(result["expire_minutes"] or 0)
+        card_limit = int(result["card_limit"] or 0)
         card_type = result.get("card_type", "credit")
         
         # 获取所有活跃账户（已随机打乱）
@@ -1845,85 +2073,112 @@ def redeem_key():
 
 @app.route('/api/keys/query', methods=['POST'])
 def query_key():
-    """查询已兑换卡密的卡片信息 - 无需登录"""
+    """查询已兑换卡密的卡片信息 - 无需登录，支持卡密ID或卡号查询"""
     try:
+        req_data = request.json
+        key_id = req_data.get('key_id', '').strip()
+        
+        if not key_id:
+            return jsonify({"success": False, "error": "请输入卡密或卡号"}), 400
+        
+        # 判断输入类型：如果全是数字（可能包含空格），则视为卡号
+        # 修复：检查原始输入是否只包含数字和空格，避免将卡密误判为卡号
+        clean_input = ''.join(c for c in key_id if c.isdigit())
+        input_without_spaces = key_id.replace(' ', '')
+        is_only_digits = input_without_spaces.isdigit()  # 原始输入去掉空格后必须全是数字
+        is_pan = is_only_digits and len(clean_input) >= 12 and len(clean_input) <= 19
+        
+        if is_pan:
+            # 通过卡号查询
+            from id.id import query_by_pan
+            success, result = query_by_pan(key_id)
+            if not success:
+                return jsonify({"success": False, "error": result}), 400
+            
+            # 获取账户地址
+            legal_address = {}
+            card_data = result.get("card", {})
+            account_user_id = card_data.get("account_user_id")
+            if account_user_id:
+                account = get_account_by_user_id(account_user_id)
+                if account:
+                    legal_address = account.get("legal_address", {})
+            
+            return jsonify({
+                "success": True,
+                "key_id": result.get("key_id"),  # 返回卡密 ID
+                "card": result["card"],
+                "expire_minutes": result["expire_minutes"],
+                "card_limit": result["card_limit"],
+                "used_time": result["used_time"],
+                "destroyed": result.get("destroyed", False),
+                "destroyed_time": result.get("destroyed_time"),
+                "legal_address": legal_address
+            })
+        else:
+            # 通过卡密查询
+            success, result = query_redeemed(key_id)
+            if not success:
+                return jsonify({"success": False, "error": result}), 400
+            
+            # 获取账户地址
+            legal_address = {}
+            card_data = result.get("card", {})
+            account_user_id = card_data.get("account_user_id")
+            if account_user_id:
+                account = get_account_by_user_id(account_user_id)
+                if account:
+                    legal_address = account.get("legal_address", {})
+            
+            return jsonify({
+                "success": True,
+                "key_id": key_id,  # 返回原始卡密 ID
+                "card": result["card"],
+                "expire_minutes": result["expire_minutes"],
+                "card_limit": result["card_limit"],
+                "used_time": result["used_time"],
+                "destroyed": result.get("destroyed", False),
+                "destroyed_time": result.get("destroyed_time"),
+                "legal_address": legal_address
+            })
+    
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/keys/transactions', methods=['POST'])
+def query_key_transactions():
+    """查询卡片消费记录 - 无需登录"""
+    try:
+        # 检查消费记录查询是否开启
+        settings = load_settings()
+        if not settings.get("transaction_query_enabled", True):
+            return jsonify({"success": False, "error": "消费记录查询功能已关闭", "disabled": True})
+        
         req_data = request.json
         key_id = req_data.get('key_id', '').strip()
         
         if not key_id:
             return jsonify({"success": False, "error": "请输入卡密"}), 400
         
-        success, result = query_redeemed(key_id)
-        if not success:
-            return jsonify({"success": False, "error": result}), 400
+        # 导入消费记录查询模块
+        from card.transaction import get_transactions_by_card_key
         
-        # 获取账户地址
-        legal_address = {}
-        card_data = result.get("card", {})
-        account_user_id = card_data.get("account_user_id")
-        if account_user_id:
-            account = get_account_by_user_id(account_user_id)
-            if account:
-                legal_address = account.get("legal_address", {})
-        
-        return jsonify({
-            "success": True,
-            "card": result["card"],
-            "expire_minutes": result["expire_minutes"],
-            "card_limit": result["card_limit"],
-            "used_time": result["used_time"],
-            "destroyed": result.get("destroyed", False),
-            "destroyed_time": result.get("destroyed_time"),
-            "legal_address": legal_address
-        })
+        result = get_transactions_by_card_key(key_id, limit=50)
+        return jsonify(result)
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-def auto_refresh_accounts():
-    """后台线程：每10分钟自动刷新所有账户的 session，并检查卡片数量"""
-    from account.accounts import refresh_all_accounts, get_account_count
-    
-    while True:
-        # 等待10分钟
-        time.sleep(600)
-        
-        if get_account_count() == 0:
-            continue
-        
-        print("\n[定时任务] 开始刷新所有 Mercury 账户...")
-        result = refresh_all_accounts()
-        paused = result.get('paused', 0)
-        paused_msg = f"，暂停 {paused}" if paused > 0 else ""
-        print(f"[定时任务] 刷新完成: 成功 {result['success']}/{result['total']}，失败 {result['failed']}{paused_msg}")
-
-
 if __name__ == '__main__':
     from account.accounts import get_account_count
-    
-    # 初始化卡片文件
-    if not os.path.exists(CARD_FILE):
-        save_cards({"cards": []})
     
     # 初始化默认管理员
     init_default_admin()
     
     # 显示账户信息
     init_account_info()
-    
-    # 启动后台过期检查线程
-    expire_thread = threading.Thread(target=check_expired_cards, daemon=True)
-    expire_thread.start()
-    print("[启动] 后台过期检查线程已启动")
-    
-    # 启动账户自动刷新线程（每10分钟）
-    refresh_thread = threading.Thread(target=auto_refresh_accounts, daemon=True)
-    refresh_thread.start()
-    print("[启动] 账户自动刷新线程已启动（每10分钟）")
-    
-    # 启动代理延迟检查线程（每60秒）
-    start_proxy_latency_checker()
     
     # 启动服务器
     print("=" * 60)

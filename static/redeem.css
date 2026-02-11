@@ -412,9 +412,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 0;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
+}
+
+/* 消费记录标题不需要分割线 */
+#transactionsSection .info-card-header {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 12px;
 }
 
 .info-card-title {
@@ -459,15 +466,15 @@ body {
 
 .info-item.clickable {
     cursor: pointer;
-    padding: 12px 8px;
-    margin: 0 -8px;
-    border-radius: 8px;
-    border-bottom: none;
+    padding: 12px 0;
+    margin: 0;
+    border-radius: 0;
     transition: background 0.2s;
+    border-bottom: 1px solid var(--border);
 }
 
-.info-item.clickable+.info-item {
-    border-top: 1px solid var(--border);
+.info-item.clickable:last-child {
+    border-bottom: none;
 }
 
 .info-item.clickable:hover {
@@ -552,9 +559,206 @@ body {
     font-size: 0.95rem;
 }
 
+/* 消费记录内容区 */
+.transactions-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+    margin-right: -8px;
+}
+
+/* 消费记录加载中 */
+.transactions-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 消费记录数量标签 */
+.transaction-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* 消费记录列表 */
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 单条消费记录 */
+.transaction-item {
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+
+.transaction-item:hover {
+    border-color: var(--border-light);
+    background: var(--bg-card-hover);
+}
+
+.transaction-item.status-failed {
+    border-left: 3px solid var(--danger);
+}
+
+.transaction-item.status-pending {
+    border-left: 3px solid var(--warning);
+}
+
+.transaction-item.status-success {
+    border-left: 3px solid var(--success);
+}
+
+/* 消费记录主行 */
+.transaction-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+/* 商家图标 */
+.merchant-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.merchant-logo-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.transaction-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.transaction-merchant {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.transaction-location {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.transaction-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.transaction-amount.negative {
+    color: var(--text-primary);
+}
+
+.transaction-amount.positive {
+    color: var(--success);
+}
+
+.merchant-amount {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* 消费记录元信息 */
+.transaction-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.transaction-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.transaction-category {
+    font-size: 0.75rem;
+    color: var(--accent-light);
+    background: rgba(99, 102, 241, 0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.transaction-status {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.transaction-status.status-success {
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.transaction-status.status-pending {
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.transaction-status.status-failed {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* 失败原因 */
+.transaction-error {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--danger);
+    line-height: 1.4;
+}
+
 .info-grid-scroll {
     flex: 1;
-    overflow-y: auto;
+    overflow: visible;
 }
 
 /* 空状态 */

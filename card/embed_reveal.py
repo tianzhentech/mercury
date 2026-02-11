@@ -74,9 +74,12 @@ def reveal_card_details(card_id, account, card_type="credit"):
         }
     # ============================
 
+    # 使用 Session 管理连接，确保连接被正确关闭
+    session = None
     try:
-        # Lithic 请求使用 curl_cffi
-        resp_lithic = requests.get(
+        # Lithic 请求使用 curl_cffi Session
+        session = requests.Session()
+        resp_lithic = session.get(
             presigned_url, 
             headers=lithic_headers,
             timeout=15,
@@ -96,6 +99,13 @@ def reveal_card_details(card_id, account, card_type="credit"):
     except Exception as e:
         print(f"❌ 步骤 2 发生异常: {e}")
         return None
+    finally:
+        # 确保 Session 被关闭，释放底层连接
+        if session:
+            try:
+                session.close()
+            except:
+                pass
 
 
 # ==========================================

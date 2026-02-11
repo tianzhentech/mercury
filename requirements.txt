@@ -11,3 +11,10 @@ beautifulsoup4>=4.9.0
 
 # OTP 生成
 pyotp>=2.6.0
+
+# WSGI 服务器 (生产环境)
+gunicorn>=21.0.0
+gevent>=24.0.0
+
+# PostgreSQL 数据库
+psycopg2-binary>=2.9.9
