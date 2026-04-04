@@ -7,10 +7,14 @@ Mercury 多账户管理模块
 import json
 import os
 import random
+import tempfile
 from curl_cffi import requests
 from datetime import datetime
 import threading
 import queue
+from contextlib import contextmanager
+import fcntl
+
 def format_proxy_url(proxy_str):
     """
     将代理格式转换为 requests 支持的标准格式
@@ -152,8 +156,9 @@ def test_proxy_latency(proxy_url):
     except Exception as e:
         error_msg = str(e)
         return {"success": False, "error": error_msg[:50]}
-# 文件写入锁
-_file_lock = threading.Lock()
+# 文件写入锁（线程内 + 进程间）
+_file_lock = threading.RLock()
+_lock_state = threading.local()
 
 # 状态更新事件队列列表（用于 SSE 推送）
 _status_subscribers = []
@@ -171,57 +176,93 @@ ACCOUNTS_FILE = os.path.join(os.path.dirname(__file__), "accounts.json")
 USER_INFO_FILE = os.path.join(os.path.dirname(__file__), "user_info.json")
 COOKIE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cookies.json")
 PROXIES_FILE = os.path.join(os.path.dirname(__file__), "proxies.json")
+STORAGE_LOCK_FILE = os.path.join(os.path.dirname(__file__), ".storage.lock")
+
+
+@contextmanager
+def _storage_lock():
+    """账户存储的进程级锁，防止多 worker 覆盖同一份 JSON 文件。"""
+    depth = getattr(_lock_state, "depth", 0)
+    if depth > 0:
+        _lock_state.depth = depth + 1
+        try:
+            yield
+        finally:
+            _lock_state.depth -= 1
+        return
+
+    with _file_lock:
+        os.makedirs(os.path.dirname(STORAGE_LOCK_FILE), exist_ok=True)
+        lock_handle = open(STORAGE_LOCK_FILE, "a+", encoding="utf-8")
+        try:
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            _lock_state.depth = 1
+            _lock_state.handle = lock_handle
+            yield
+        finally:
+            _lock_state.depth = 0
+            _lock_state.handle = None
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            lock_handle.close()
+
+
+def _load_json_file(file_path, default_data):
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[存储] 加载 {os.path.basename(file_path)} 失败: {e}")
+    return default_data.copy() if isinstance(default_data, dict) else default_data
+
+
+def _atomic_write_json(file_path, data):
+    directory = os.path.dirname(file_path) or "."
+    os.makedirs(directory, exist_ok=True)
+    fd, temp_path = tempfile.mkstemp(
+        prefix=f".{os.path.basename(file_path)}.",
+        suffix=".tmp",
+        dir=directory
+    )
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, file_path)
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
 
 
 def load_accounts():
     """加载所有账户"""
-    if os.path.exists(ACCOUNTS_FILE):
-        try:
-            with open(ACCOUNTS_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return {"accounts": [], "active_user_id": None}
+    return _load_json_file(ACCOUNTS_FILE, {"accounts": [], "active_user_id": None})
 
 
 def save_accounts(data):
     """保存账户数据"""
-    with open(ACCOUNTS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    _atomic_write_json(ACCOUNTS_FILE, data)
 
 
 def load_user_info():
     """加载所有用户详细信息"""
-    if os.path.exists(USER_INFO_FILE):
-        try:
-            with open(USER_INFO_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return {"accounts": []}
+    return _load_json_file(USER_INFO_FILE, {"accounts": []})
 
 
 def save_user_info(data):
     """保存用户详细信息"""
-    with open(USER_INFO_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    _atomic_write_json(USER_INFO_FILE, data)
 
 
 def load_proxies():
     """加载已保存的代理列表"""
-    if os.path.exists(PROXIES_FILE):
-        try:
-            with open(PROXIES_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return {"proxies": []}
+    return _load_json_file(PROXIES_FILE, {"proxies": []})
 
 
 def save_proxies(data):
     """保存代理列表"""
-    with open(PROXIES_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    _atomic_write_json(PROXIES_FILE, data)
 
 
 def get_all_proxies():
@@ -252,7 +293,7 @@ def add_proxy(name, proxy_url):
     
     formatted_proxy = result
     
-    with _file_lock:
+    with _storage_lock():
         data = load_proxies()
         proxies = data.get("proxies", [])
         
@@ -289,7 +330,7 @@ def delete_proxy(proxy_id):
     Returns:
         dict: {"success": bool, "message": str}
     """
-    with _file_lock:
+    with _storage_lock():
         data = load_proxies()
         proxies = data.get("proxies", [])
         
@@ -349,7 +390,7 @@ def set_default_proxy_id(proxy_id):
     Returns:
         dict: {"success": bool, "message": str}
     """
-    with _file_lock:
+    with _storage_lock():
         data = load_proxies()
         
         if proxy_id:
@@ -679,95 +720,96 @@ def add_account(session_cookie, proxy=None):
     # 使用响应中返回的新 session（如果有）
     final_session = new_session if new_session else session_cookie
     
-    # 加载现有账户
-    accounts_data = load_accounts()
-    user_info_data = load_user_info()
-    
-    # 检查是否已存在，并保留现有代理和凭证
-    existing_index = None
-    existing_account = None
-    for i, acc in enumerate(accounts_data["accounts"]):
-        if acc["user_id"] == user_id:
-            existing_index = i
-            existing_account = acc
-            break
-    
-    # 如果账户被限制且是新添加的账户，拒绝添加
-    if is_restricted and existing_index is None:
-        email = user_info["user"]["email"]
-        print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
-        return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
-    
-    # 构建账户摘要信息
-    depository_account_id = None
-    if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
-        depository_account_id = user_info["depository_accounts"][0].get("id")
-    
-    # 根据限制状态设置 account_status
-    if is_restricted:
-        account_status = "restricted"
-        organization_name = user_info["organization"]["name"]
-        print(f"⚠️ 账户 {user_info['user']['email']} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
-        # 将同组织下的所有账户都标记为 restricted
-        mark_organization_restricted(organization_name, restriction_reason)
-        # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+    with _storage_lock():
+        # 加载现有账户
         accounts_data = load_accounts()
-        # 重新查找 existing_index
-        for i, acc in enumerate(accounts_data.get("accounts", [])):
+        user_info_data = load_user_info()
+        
+        # 检查是否已存在，并保留现有代理和凭证
+        existing_index = None
+        existing_account = None
+        for i, acc in enumerate(accounts_data["accounts"]):
             if acc["user_id"] == user_id:
                 existing_index = i
                 existing_account = acc
                 break
-    else:
-        account_status = "active"
-    
-    account_summary = {
-        "user_id": user_id,
-        "email": user_info["user"]["email"],
-        "name": f"{user_info['user']['first_name']} {user_info['user']['last_name']}",
-        "organization": user_info["organization"]["name"],
-        "credit_account_id": user_info["credit_account"]["account_id"],
-        "depository_account_id": depository_account_id,
-        "credit_limit": user_info["credit_account"]["credit_limit"],
-        "available_balance": user_info["credit_account"]["available_balance"],
-        "status": user_info["user"]["status"],
-        "account_status": account_status,
-        "restriction_reason": restriction_reason if is_restricted else "",
-        "legal_address": user_info["user"].get("legal_address", {}),
-        "proxy": proxy if proxy is not None else (existing_account.get("proxy", "") if existing_account else ""),
-        "_SESSION": final_session,
-        "ajs_user_id": user_id,
-        "updated_at": datetime.now().isoformat(),
-    }
-    
-    if existing_index is not None:
-        # 更新现有账户，保留凭证信息
-        if existing_account:
-            # 保留密码和设备信息
-            for key in ["mercury_password", "totp_secret", "email_password", "device_id", "device_fingerprint", "created_at"]:
-                if key in existing_account:
-                    account_summary[key] = existing_account[key]
-        accounts_data["accounts"][existing_index] = account_summary
         
-        # 更新用户详细信息
-        for i, info in enumerate(user_info_data.get("accounts", [])):
-            if info.get("user", {}).get("id") == user_id:
-                user_info_data["accounts"][i] = user_info
-                break
+        # 如果账户被限制且是新添加的账户，拒绝添加
+        if is_restricted and existing_index is None:
+            email = user_info["user"]["email"]
+            print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
+            return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
+        
+        # 构建账户摘要信息
+        depository_account_id = None
+        if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
+            depository_account_id = user_info["depository_accounts"][0].get("id")
+        
+        # 根据限制状态设置 account_status
+        if is_restricted:
+            account_status = "restricted"
+            organization_name = user_info["organization"]["name"]
+            print(f"⚠️ 账户 {user_info['user']['email']} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
+            # 将同组织下的所有账户都标记为 restricted
+            mark_organization_restricted(organization_name, restriction_reason)
+            # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+            accounts_data = load_accounts()
+            # 重新查找 existing_index
+            for i, acc in enumerate(accounts_data.get("accounts", [])):
+                if acc["user_id"] == user_id:
+                    existing_index = i
+                    existing_account = acc
+                    break
         else:
-            user_info_data.setdefault("accounts", []).append(user_info)
+            account_status = "active"
         
-        message = "账户已更新"
-    else:
-        # 添加新账户
-        account_summary["created_at"] = datetime.now().isoformat()
-        accounts_data["accounts"].append(account_summary)
-        user_info_data.setdefault("accounts", []).append(user_info)
-        message = "账户添加成功"
-    
-    # 保存
-    save_accounts(accounts_data)
-    save_user_info(user_info_data)
+        account_summary = {
+            "user_id": user_id,
+            "email": user_info["user"]["email"],
+            "name": f"{user_info['user']['first_name']} {user_info['user']['last_name']}",
+            "organization": user_info["organization"]["name"],
+            "credit_account_id": user_info["credit_account"]["account_id"],
+            "depository_account_id": depository_account_id,
+            "credit_limit": user_info["credit_account"]["credit_limit"],
+            "available_balance": user_info["credit_account"]["available_balance"],
+            "status": user_info["user"]["status"],
+            "account_status": account_status,
+            "restriction_reason": restriction_reason if is_restricted else "",
+            "legal_address": user_info["user"].get("legal_address", {}),
+            "proxy": proxy if proxy is not None else (existing_account.get("proxy", "") if existing_account else ""),
+            "_SESSION": final_session,
+            "ajs_user_id": user_id,
+            "updated_at": datetime.now().isoformat(),
+        }
+        
+        if existing_index is not None:
+            # 更新现有账户，保留凭证信息
+            if existing_account:
+                # 保留密码和设备信息
+                for key in ["mercury_password", "totp_secret", "email_password", "device_id", "device_fingerprint", "created_at"]:
+                    if key in existing_account:
+                        account_summary[key] = existing_account[key]
+            accounts_data["accounts"][existing_index] = account_summary
+            
+            # 更新用户详细信息
+            for i, info in enumerate(user_info_data.get("accounts", [])):
+                if info.get("user", {}).get("id") == user_id:
+                    user_info_data["accounts"][i] = user_info
+                    break
+            else:
+                user_info_data.setdefault("accounts", []).append(user_info)
+            
+            message = "账户已更新"
+        else:
+            # 添加新账户
+            account_summary["created_at"] = datetime.now().isoformat()
+            accounts_data["accounts"].append(account_summary)
+            user_info_data.setdefault("accounts", []).append(user_info)
+            message = "账户添加成功"
+        
+        # 保存
+        save_accounts(accounts_data)
+        save_user_info(user_info_data)
     
     return {
         "success": True,
@@ -846,95 +888,98 @@ def add_account_by_credentials(email: str, mercury_password: str, totp_secret: s
     # 使用响应中返回的新 session（如果有）
     final_session = new_session if new_session else session_cookie
     
-    # 加载现有账户
-    accounts_data = load_accounts()
-    user_info_data = load_user_info()
-    
-    # 检查是否已存在
-    existing_index = None
-    existing_proxy = None
-    for i, acc in enumerate(accounts_data["accounts"]):
-        if acc["user_id"] == user_id:
-            existing_index = i
-            existing_proxy = acc.get("proxy", "")
-            break
-    
-    # 如果账户被限制且是新添加的账户，拒绝添加
-    if is_restricted and existing_index is None:
-        print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
-        return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
-    
-    # 构建账户摘要信息
-    depository_account_id = None
-    if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
-        depository_account_id = user_info["depository_accounts"][0].get("id")
-    
-    # 根据限制状态设置 account_status
-    if is_restricted:
-        account_status = "restricted"
-        organization_name = user_info["organization"]["name"]
-        print(f"⚠️ 账户 {email} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
-        # 将同组织下的所有账户都标记为 restricted
-        mark_organization_restricted(organization_name, restriction_reason)
-        # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+    with _storage_lock():
+        # 加载现有账户
         accounts_data = load_accounts()
-        # 重新查找 existing_index
-        for i, acc in enumerate(accounts_data.get("accounts", [])):
+        user_info_data = load_user_info()
+        
+        # 检查是否已存在
+        existing_index = None
+        existing_proxy = None
+        for i, acc in enumerate(accounts_data["accounts"]):
             if acc["user_id"] == user_id:
                 existing_index = i
-                existing_account = acc
+                existing_proxy = acc.get("proxy", "")
                 break
-    else:
-        account_status = "active"
-    
-    account_summary = {
-        "user_id": user_id,
-        "email": user_info["user"]["email"],
-        "name": f"{user_info['user']['first_name']} {user_info['user']['last_name']}",
-        "organization": user_info["organization"]["name"],
-        "credit_account_id": user_info["credit_account"]["account_id"],
-        "depository_account_id": depository_account_id,
-        "credit_limit": user_info["credit_account"]["credit_limit"],
-        "available_balance": user_info["credit_account"]["available_balance"],
-        "status": user_info["user"]["status"],
-        "account_status": account_status,
-        "restriction_reason": restriction_reason if is_restricted else "",
-        "legal_address": user_info["user"].get("legal_address", {}),
-        "proxy": proxy if proxy is not None else (existing_proxy or ""),
-        "_SESSION": final_session,
-        "ajs_user_id": user_id,
-        "updated_at": datetime.now().isoformat(),
-        # 保存登录凭证和设备信息
-        "mercury_password": mercury_password,
-        "totp_secret": totp_secret,
-        "email_password": email_password,
-        "device_id": device_id,
-        "device_fingerprint": device_fingerprint,
-    }
-    
-    if existing_index is not None:
-        # 更新现有账户
-        accounts_data["accounts"][existing_index] = account_summary
         
-        # 更新用户详细信息
-        for i, info in enumerate(user_info_data.get("accounts", [])):
-            if info.get("user", {}).get("id") == user_id:
-                user_info_data["accounts"][i] = user_info
-                break
+        # 如果账户被限制且是新添加的账户，拒绝添加
+        if is_restricted and existing_index is None:
+            print(f"❌ 账户 {email} 被 Mercury 限制，拒绝添加: {restriction_reason}")
+            return {"success": False, "error": "账户被 Mercury 限制，拒绝添加"}
+        
+        # 构建账户摘要信息
+        depository_account_id = None
+        if user_info.get("depository_accounts") and len(user_info["depository_accounts"]) > 0:
+            depository_account_id = user_info["depository_accounts"][0].get("id")
+        
+        # 根据限制状态设置 account_status
+        if is_restricted:
+            account_status = "restricted"
+            organization_name = user_info["organization"]["name"]
+            print(f"⚠️ 账户 {email} 被 Mercury 限制，标记为 restricted: {restriction_reason}")
+            # 将同组织下的所有账户都标记为 restricted
+            mark_organization_restricted(organization_name, restriction_reason)
+            # 重新加载 accounts_data，避免覆盖 mark_organization_restricted 的修改
+            accounts_data = load_accounts()
+            # 重新查找 existing_index
+            for i, acc in enumerate(accounts_data.get("accounts", [])):
+                if acc["user_id"] == user_id:
+                    existing_index = i
+                    break
         else:
-            user_info_data.setdefault("accounts", []).append(user_info)
+            account_status = "active"
         
-        message = "账户已更新"
-    else:
-        # 添加新账户
-        account_summary["created_at"] = datetime.now().isoformat()
-        accounts_data["accounts"].append(account_summary)
-        user_info_data.setdefault("accounts", []).append(user_info)
-        message = "账户添加成功"
-    
-    # 保存
-    save_accounts(accounts_data)
-    save_user_info(user_info_data)
+        account_summary = {
+            "user_id": user_id,
+            "email": user_info["user"]["email"],
+            "name": f"{user_info['user']['first_name']} {user_info['user']['last_name']}",
+            "organization": user_info["organization"]["name"],
+            "credit_account_id": user_info["credit_account"]["account_id"],
+            "depository_account_id": depository_account_id,
+            "credit_limit": user_info["credit_account"]["credit_limit"],
+            "available_balance": user_info["credit_account"]["available_balance"],
+            "status": user_info["user"]["status"],
+            "account_status": account_status,
+            "restriction_reason": restriction_reason if is_restricted else "",
+            "legal_address": user_info["user"].get("legal_address", {}),
+            "proxy": proxy if proxy is not None else (existing_proxy or ""),
+            "_SESSION": final_session,
+            "ajs_user_id": user_id,
+            "updated_at": datetime.now().isoformat(),
+            # 保存登录凭证和设备信息
+            "mercury_password": mercury_password,
+            "totp_secret": totp_secret,
+            "email_password": email_password,
+            "device_id": device_id,
+            "device_fingerprint": device_fingerprint,
+        }
+        
+        if existing_index is not None:
+            # 更新现有账户
+            existing_account = accounts_data["accounts"][existing_index]
+            if "created_at" in existing_account:
+                account_summary["created_at"] = existing_account["created_at"]
+            accounts_data["accounts"][existing_index] = account_summary
+            
+            # 更新用户详细信息
+            for i, info in enumerate(user_info_data.get("accounts", [])):
+                if info.get("user", {}).get("id") == user_id:
+                    user_info_data["accounts"][i] = user_info
+                    break
+            else:
+                user_info_data.setdefault("accounts", []).append(user_info)
+            
+            message = "账户已更新"
+        else:
+            # 添加新账户
+            account_summary["created_at"] = datetime.now().isoformat()
+            accounts_data["accounts"].append(account_summary)
+            user_info_data.setdefault("accounts", []).append(user_info)
+            message = "账户添加成功"
+        
+        # 保存
+        save_accounts(accounts_data)
+        save_user_info(user_info_data)
     
     return {
         "success": True,
@@ -959,7 +1004,7 @@ def update_account_proxy(user_id, proxy):
 
 def _save_proxy_to_file(user_id, proxy_str):
     """内部函数：保存代理到文件"""
-    with _file_lock:
+    with _storage_lock():
         accounts_data = load_accounts()
         found = False
         
@@ -986,29 +1031,30 @@ def delete_account(user_id):
     Returns:
         dict: {"success": bool, "message": str}
     """
-    accounts_data = load_accounts()
-    user_info_data = load_user_info()
-    
-    # 删除账户摘要
-    original_count = len(accounts_data["accounts"])
-    accounts_data["accounts"] = [acc for acc in accounts_data["accounts"] if acc["user_id"] != user_id]
-    
-    if len(accounts_data["accounts"]) == original_count:
-        return {"success": False, "error": "账户不存在"}
-    
-    # 如果删除的是当前活跃账户，清除 active_user_id
-    if accounts_data.get("active_user_id") == user_id:
-        accounts_data["active_user_id"] = None
-    
-    # 删除用户详细信息
-    user_info_data["accounts"] = [
-        info for info in user_info_data.get("accounts", [])
-        if info.get("user", {}).get("id") != user_id
-    ]
-    
-    # 保存
-    save_accounts(accounts_data)
-    save_user_info(user_info_data)
+    with _storage_lock():
+        accounts_data = load_accounts()
+        user_info_data = load_user_info()
+        
+        # 删除账户摘要
+        original_count = len(accounts_data["accounts"])
+        accounts_data["accounts"] = [acc for acc in accounts_data["accounts"] if acc["user_id"] != user_id]
+        
+        if len(accounts_data["accounts"]) == original_count:
+            return {"success": False, "error": "账户不存在"}
+        
+        # 如果删除的是当前活跃账户，清除 active_user_id
+        if accounts_data.get("active_user_id") == user_id:
+            accounts_data["active_user_id"] = None
+        
+        # 删除用户详细信息
+        user_info_data["accounts"] = [
+            info for info in user_info_data.get("accounts", [])
+            if info.get("user", {}).get("id") != user_id
+        ]
+        
+        # 保存
+        save_accounts(accounts_data)
+        save_user_info(user_info_data)
     
     return {"success": True, "message": "账户已删除"}
 
@@ -1023,21 +1069,22 @@ def switch_account(user_id):
     Returns:
         dict: {"success": bool, "message": str}
     """
-    accounts_data = load_accounts()
-    
-    # 查找账户
-    target_account = None
-    for acc in accounts_data["accounts"]:
-        if acc["user_id"] == user_id:
-            target_account = acc
-            break
-    
-    if not target_account:
-        return {"success": False, "error": "账户不存在"}
-    
-    # 更新活跃账户
-    accounts_data["active_user_id"] = user_id
-    save_accounts(accounts_data)
+    with _storage_lock():
+        accounts_data = load_accounts()
+        
+        # 查找账户
+        target_account = None
+        for acc in accounts_data["accounts"]:
+            if acc["user_id"] == user_id:
+                target_account = acc
+                break
+        
+        if not target_account:
+            return {"success": False, "error": "账户不存在"}
+        
+        # 更新活跃账户
+        accounts_data["active_user_id"] = user_id
+        save_accounts(accounts_data)
     
     # 更新 cookies.json
     cookies = {
@@ -1152,9 +1199,14 @@ def refresh_account(user_id):
     
     if not all([email, mercury_password, totp_secret, email_password]):
         # 没有保存凭证，标记为 inactive
-        accounts_data["accounts"][target_index]["account_status"] = "inactive"
-        accounts_data["accounts"][target_index]["updated_at"] = datetime.now().isoformat()
-        save_accounts(accounts_data)
+        with _storage_lock():
+            accounts_data = load_accounts()
+            for i, acc in enumerate(accounts_data.get("accounts", [])):
+                if acc["user_id"] == user_id:
+                    accounts_data["accounts"][i]["account_status"] = "inactive"
+                    accounts_data["accounts"][i]["updated_at"] = datetime.now().isoformat()
+                    break
+            save_accounts(accounts_data)
         print(f"❌ 账户 {email or 'unknown'} session 失效，无保存凭证，状态更新为 inactive")
         return result
     
@@ -1179,13 +1231,14 @@ def refresh_account(user_id):
         return login_result
     else:
         # 重新登录也失败，标记为 inactive
-        accounts_data = load_accounts()  # 重新加载
-        for i, acc in enumerate(accounts_data["accounts"]):
-            if acc["user_id"] == user_id:
-                accounts_data["accounts"][i]["account_status"] = "inactive"
-                accounts_data["accounts"][i]["updated_at"] = datetime.now().isoformat()
-                break
-        save_accounts(accounts_data)
+        with _storage_lock():
+            accounts_data = load_accounts()  # 重新加载
+            for i, acc in enumerate(accounts_data["accounts"]):
+                if acc["user_id"] == user_id:
+                    accounts_data["accounts"][i]["account_status"] = "inactive"
+                    accounts_data["accounts"][i]["updated_at"] = datetime.now().isoformat()
+                    break
+            save_accounts(accounts_data)
         print(f"❌ 账户 {email} 重新登录失败: {login_result.get('error')}")
         return login_result
 
@@ -1258,7 +1311,7 @@ def update_account_session(user_id, new_session):
         user_id: 用户 ID
         new_session: 新的 _SESSION 值
     """
-    with _file_lock:
+    with _storage_lock():
         accounts_data = load_accounts()
         for acc in accounts_data.get("accounts", []):
             if acc["user_id"] == user_id:
@@ -1343,7 +1396,7 @@ def update_account_status(user_id, status):
         status: 新状态 ("active", "inactive", "paused")
     """
     email = None
-    with _file_lock:
+    with _storage_lock():
         accounts_data = load_accounts()
         for acc in accounts_data.get("accounts", []):
             if acc["user_id"] == user_id:
@@ -1372,7 +1425,7 @@ def mark_organization_restricted(organization_name, restriction_reason="组织�
         int: 被标记的账户数量
     """
     marked_count = 0
-    with _file_lock:
+    with _storage_lock():
         accounts_data = load_accounts()
         for acc in accounts_data.get("accounts", []):
             if acc.get("organization") == organization_name and acc.get("account_status") != "restricted":
@@ -1539,7 +1592,7 @@ def refresh_all_accounts():
     }
 
 
-def list_mercury_cards(account, card_type_filter=None, cardholder_name_filter=None, minutes_ago=0):
+def list_mercury_cards(account, card_type_filter=None, cardholder_name_filter=None, minutes_ago=0, status_filter=None):
     """
     获取账户的所有 Mercury 卡片
     
@@ -1548,6 +1601,7 @@ def list_mercury_cards(account, card_type_filter=None, cardholder_name_filter=No
         card_type_filter: 可选，过滤卡片类型 "credit" 或 "debit"
         cardholder_name_filter: 可选，过滤持卡人姓名
         minutes_ago: 可选，只返回创建时间超过指定分钟数的卡片
+        status_filter: 可选，过滤卡片状态（如 "active"）
         
     Returns:
         tuple: (success, cards_list or error_message)
@@ -1585,10 +1639,14 @@ def list_mercury_cards(account, card_type_filter=None, cardholder_name_filter=No
             card_id = contents.get("id")
             if card_id:
                 card_type = contents.get("cardType", "credit")  # debit or credit
-                status = contents.get("fullStatus", {}).get("tag", "unknown")
+                status = (contents.get("fullStatus", {}).get("tag", "unknown") or "unknown").lower()
                 
                 # 跳过已取消的卡片
                 if status == "cancelled":
+                    continue
+
+                # 按状态过滤
+                if status_filter and status != status_filter.lower():
                     continue
                 
                 # 按类型过滤
@@ -1646,7 +1704,12 @@ def get_mercury_card_counts(user_id, minutes_ago=0):
     
     # 使用账户姓名作为持卡人过滤条件
     cardholder_name = account.get("name", "")
-    success, result = list_mercury_cards(account, cardholder_name_filter=cardholder_name, minutes_ago=minutes_ago)
+    success, result = list_mercury_cards(
+        account,
+        cardholder_name_filter=cardholder_name,
+        minutes_ago=minutes_ago,
+        status_filter="active"
+    )
     if not success:
         return {"success": False, "error": result}
     
@@ -1720,7 +1783,12 @@ def get_org_card_counts_batch(organization_name, accounts_list, minutes_ago=0):
         return results
     
     # 用该账户请求所有卡片（不过滤持卡人姓名）
-    success, cards = list_mercury_cards(active_account, cardholder_name_filter=None, minutes_ago=minutes_ago)
+    success, cards = list_mercury_cards(
+        active_account,
+        cardholder_name_filter=None,
+        minutes_ago=minutes_ago,
+        status_filter="active"
+    )
     
     if not success:
         print(f"❌ 组织 {organization_name} 获取卡片失败: {cards}")
@@ -1780,7 +1848,12 @@ def clear_mercury_cards(user_id, card_type_filter=None):
     cardholder_name = account.get("name", "")
     
     # 获取卡片（按类型和持卡人过滤）
-    success, result = list_mercury_cards(account, card_type_filter=card_type_filter, cardholder_name_filter=cardholder_name)
+    success, result = list_mercury_cards(
+        account,
+        card_type_filter=card_type_filter,
+        cardholder_name_filter=cardholder_name,
+        status_filter="active"
+    )
     if not success:
         return {"success": False, "error": result}
     

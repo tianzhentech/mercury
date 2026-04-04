@@ -63,32 +63,58 @@ def redeem_airwallex_card(code: str) -> Dict[str, Any]:
         if response.status_code != 200:
             return {
                 "success": False,
-                "error": f"API请求失败: HTTP {response.status_code}"
+                "error": f"API请求失败: HTTP {response.status_code}",
+                "retryable": response.status_code >= 500
             }
         
-        data = response.json()
-        
-        # 检查是否有错误信息
-        if "error" in data or "message" in data and "失败" in data.get("message", ""):
+        try:
+            data = response.json()
+        except ValueError:
             return {
                 "success": False,
-                "error": data.get("error") or data.get("message") or "未知错误"
+                "error": "上游返回了无效 JSON",
+                "retryable": True
+            }
+
+        if not isinstance(data, dict):
+            return {
+                "success": False,
+                "error": "上游返回了无效响应格式",
+                "retryable": True
+            }
+
+        message = data.get("message")
+        message_text = message if isinstance(message, str) else str(message or "")
+        error_msg = data.get("error")
+        error_text = error_msg if isinstance(error_msg, str) else str(error_msg or "")
+        
+        # 检查是否有错误信息
+        if error_text or ("失败" in message_text):
+            return {
+                "success": False,
+                "error": error_text or message_text or "未知错误",
+                "retryable": False
             }
         
         # 检查必要字段
-        if "card_number" not in data:
+        card_number = data.get("card_number")
+        if not card_number:
             return {
                 "success": False,
-                "error": data.get("message") or "无效的响应格式"
+                "error": message_text or "无效的响应格式",
+                "retryable": False
             }
         
         # 解析有效期 (格式: "01/29" -> month=01, year=2029)
-        exp_parts = data.get("exp", "01/29").split("/")
+        exp_raw = data.get("exp")
+        exp_parts = str(exp_raw or "01/29").split("/")
         exp_month = exp_parts[0] if len(exp_parts) >= 1 else "01"
         exp_year = "20" + exp_parts[1] if len(exp_parts) >= 2 else "2029"
         
         # 解析账单地址
-        billing = data.get("billing_address", {})
+        billing = data.get("billing_address") or {}
+        if not isinstance(billing, dict):
+            billing = {}
         
         # 转换为统一格式
         result = {
@@ -96,7 +122,7 @@ def redeem_airwallex_card(code: str) -> Dict[str, Any]:
             "card_type": "airwallex",
             "card": {
                 "card_id": data.get("card_id", ""),
-                "pan": data.get("card_number", ""),
+                "pan": card_number,
                 "cvv": data.get("cvc", ""),
                 "exp_month": exp_month,
                 "exp_year": exp_year,
@@ -121,17 +147,20 @@ def redeem_airwallex_card(code: str) -> Dict[str, Any]:
     except requests.exceptions.Timeout:
         return {
             "success": False,
-            "error": "请求超时，请稍后重试"
+            "error": "请求超时，请稍后重试",
+            "retryable": True
         }
     except requests.exceptions.RequestException as e:
         return {
             "success": False,
-            "error": f"网络请求失败: {str(e)}"
+            "error": f"网络请求失败: {str(e)}",
+            "retryable": True
         }
     except Exception as e:
         return {
             "success": False,
-            "error": f"处理失败: {str(e)}"
+            "error": f"处理失败: {str(e)}",
+            "retryable": True
         }
 
 
@@ -141,7 +170,6 @@ def is_mercury_code(code: str) -> bool:
     Mercury 卡密格式：
     - 信用卡：5236 开头的 UUID
     - 借记卡：5481 开头的 UUID
-    - 兼容旧格式：0 或 1 开头的 UUID
 
     Args:
         code: 兑换码
@@ -155,10 +183,8 @@ def is_mercury_code(code: str) -> bool:
     uuid_pattern = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
     if not re.match(uuid_pattern, code):
         return False
-    # Mercury 卡密：5236（信用卡）、5481（借记卡）开头，或 0/1 开头（旧格式兼容）
+    # Mercury 卡密：5236（信用卡）、5481（借记卡）开头
     if code.startswith('5236') or code.startswith('5481'):
-        return True
-    if code[0] in ('0', '1'):
         return True
     return False
 

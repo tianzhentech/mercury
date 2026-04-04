@@ -4,9 +4,10 @@
 """
 
 import os
+import re
 import requests
 from flask import Flask, render_template, request, jsonify, Response
-from airwallex_api import redeem_airwallex_card, is_airwallex_code, is_mercury_code
+from other_api import redeem_airwallex_card
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ app = Flask(__name__)
 MAIN_SERVER = "http://127.0.0.1:7999"
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), "version.txt")
+UUID_PATTERN = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
 
 def get_version():
     """读取版本号"""
@@ -44,30 +46,51 @@ def withdraw_page(token):
 def airwallex_redeem():
     """统一兑换 API - 根据卡密格式路由到不同后端"""
     try:
-        data = request.json
-        code = data.get('code', '').strip()
+        data = request.get_json(silent=True) or {}
+        code = str(data.get('code', '')).strip()
 
         if not code:
             return jsonify({"success": False, "error": "请输入兑换码"})
 
-        # 判断是 Mercury 还是 Airwallex 卡密
-        # Mercury: 5236（信用卡）、5481（借记卡）开头，或 0/1 开头（旧格式兼容）
-        if is_mercury_code(code):
-            # Mercury 卡密，代理到主服务器
-            url = f"{MAIN_SERVER}/api/keys/redeem"
+        if UUID_PATTERN.match(code):
             try:
-                resp = requests.post(url, json={"key_id": code}, timeout=30)
-                return Response(
-                    resp.content,
-                    status=resp.status_code,
-                    headers=dict(resp.headers)
+                query_resp = requests.post(
+                    f"{MAIN_SERVER}/api/keys/query",
+                    json={"key_id": code},
+                    timeout=15
                 )
+                query_data = query_resp.json()
+
+                if query_data.get("success"):
+                    return Response(
+                        query_resp.content,
+                        status=query_resp.status_code,
+                        headers=dict(query_resp.headers)
+                    )
+
+                if query_data.get("error") == "卡密未使用":
+                    redeem_resp = requests.post(
+                        f"{MAIN_SERVER}/api/keys/redeem",
+                        json={"key_id": code},
+                        timeout=30
+                    )
+                    return Response(
+                        redeem_resp.content,
+                        status=redeem_resp.status_code,
+                        headers=dict(redeem_resp.headers)
+                    )
+
+                if query_data.get("error") != "卡密不存在":
+                    return Response(
+                        query_resp.content,
+                        status=query_resp.status_code,
+                        headers=dict(query_resp.headers)
+                    )
             except requests.exceptions.RequestException as e:
                 return jsonify({"success": False, "error": f"无法连接主服务器: {str(e)}"}), 503
-        else:
-            # 其他 UUID 格式，视为 Airwallex 卡密
-            result = redeem_airwallex_card(code)
-            return jsonify(result)
+
+        result = redeem_airwallex_card(code)
+        return jsonify(result)
 
     except Exception as e:
         return jsonify({"success": False, "error": f"处理失败: {str(e)}"})
@@ -124,15 +147,17 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser(description='兑换页面独立服务器')
-    parser.add_argument('--port', type=int, default=8000, help='服务器端口 (默认: 8000)')
+    parser.add_argument('--port', type=int, default=8001, help='服务器端口 (默认: 8001)')
     parser.add_argument('--host', type=str, default='0.0.0.0', help='监听地址 (默认: 0.0.0.0)')
     parser.add_argument('--main-server', type=str, default='http://127.0.0.1:7999', help='主服务器地址')
     args = parser.parse_args()
     
     MAIN_SERVER = args.main_server
+    display_host = '127.0.0.1' if args.host in ('0.0.0.0', '::') else args.host
     
     print(f"🚀 兑换页面服务器启动")
-    print(f"   地址: http://{args.host}:{args.port}")
+    print(f"   监听: {args.host}:{args.port}")
+    print(f"   浏览器打开: http://{display_host}:{args.port}")
     print(f"   主服务器: {MAIN_SERVER}")
     print()
     

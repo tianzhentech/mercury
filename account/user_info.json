@@ -2,36 +2,36 @@
     "accounts": [
         {
             "user": {
-                "id": "6ae8626a-ed1e-11f0-8e47-27e001ba3355",
-                "email": "AnaPayne9105@outlook.com",
-                "first_name": "jamarius",
-                "last_name": "fortson",
-                "phone_number": "+14047700405",
+                "id": "2123c9fc-0c3c-11f1-aab9-07f124fd12ba",
+                "email": "oafizfrvd38c@outlook.com",
+                "first_name": "0",
+                "last_name": "3",
+                "phone_number": "+15722293486",
                 "status": "active",
-                "created_at": "2026-01-09T05:45:34.68055Z",
+                "created_at": "2026-02-17T20:06:21.866433Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "44 Elberton Street",
+                    "address1": "120 Lakeshore Drive",
                     "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
+                    "city": "Mooresville",
+                    "region": "NC",
+                    "postal_code": "28117",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
+                "id": "e57ff070-ff01-11f0-8175-9f1290a99166",
+                "name": "Le Lune Lux Beauty Spa Co",
+                "legal_business_name": "Le Lune Lux Beauty Spa Co",
+                "callsign": "le-lune-lux-beauty-spa-co",
                 "is_closed": false,
-                "company_structure": "LLC"
+                "company_structure": "CCorp"
             },
             "user_role": {
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "853e9242-ed1e-11f0-97a6-7badf098d50c"
+                "org_user_id": "2126fb68-0c3c-11f1-aab9-ff5706ce71d2"
             },
             "credit_account": {
                 "account_id": null,
@@ -40,46 +40,67 @@
                 "account_status": null,
                 "created_at": null
             },
-            "depository_accounts": [],
+            "depository_accounts": [
+                {
+                    "id": "9b4c4e9c-010c-11f1-a0d5-9ff4f8930c78",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "872638530863520",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "9b7326de-010c-11f1-a0d5-b7165d4cde29",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "823772759388675",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                }
+            ],
             "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
+                "is_restricted": false,
+                "reason": "",
+                "org_context": "business",
+                "org_user_status": "normal"
             }
         },
         {
             "user": {
-                "id": "f031a980-005c-11f1-a0fa-7bd371969f41",
-                "email": "RobertArcher1252@outlook.com",
-                "first_name": "Robert",
-                "last_name": "Archer",
-                "phone_number": "+12293455670",
+                "id": "2123c9fc-0c3c-11f1-aab9-07f124fd12ba",
+                "email": "oafizfrvd38c@outlook.com",
+                "first_name": "0",
+                "last_name": "3",
+                "phone_number": "+15722293486",
                 "status": "active",
-                "created_at": "2026-02-02T17:30:59.189Z",
+                "created_at": "2026-02-17T20:06:21.866433Z",
                 "has_verified_email": true,
                 "legal_address": {
-                    "address1": "44 Elberton Street",
+                    "address1": "120 Lakeshore Drive",
                     "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
+                    "city": "Mooresville",
+                    "region": "NC",
+                    "postal_code": "28117",
                     "country": "US"
                 }
             },
             "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
+                "id": "e57ff070-ff01-11f0-8175-9f1290a99166",
+                "name": "Le Lune Lux Beauty Spa Co",
+                "legal_business_name": "Le Lune Lux Beauty Spa Co",
+                "callsign": "le-lune-lux-beauty-spa-co",
                 "is_closed": false,
-                "company_structure": "LLC"
+                "company_structure": "CCorp"
             },
             "user_role": {
                 "role": "administrator",
                 "role_name": "Admin",
                 "is_admin": true,
-                "org_user_id": "f03535b4-005c-11f1-a0fa-fba94fb56f00"
+                "org_user_id": "2126fb68-0c3c-11f1-aab9-ff5706ce71d2"
             },
             "credit_account": {
                 "account_id": null,
@@ -88,252 +109,33 @@
                 "account_status": null,
                 "created_at": null
             },
-            "depository_accounts": [],
-            "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
-            }
-        },
-        {
-            "user": {
-                "id": "55e260c0-005e-11f1-b53e-e7e3bdac4c7d",
-                "email": "TracyFowler7144@outlook.com",
-                "first_name": "Tracy",
-                "last_name": "Fowler",
-                "phone_number": "+13023663741",
-                "status": "active",
-                "created_at": "2026-02-02T17:40:59.294615Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "44 Elberton Street",
-                    "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
-                    "country": "US"
+            "depository_accounts": [
+                {
+                    "id": "9b4c4e9c-010c-11f1-a0d5-9ff4f8930c78",
+                    "name": "Checking",
+                    "nickname": null,
+                    "account_number": "872638530863520",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
+                },
+                {
+                    "id": "9b7326de-010c-11f1-a0d5-b7165d4cde29",
+                    "name": "Savings",
+                    "nickname": null,
+                    "account_number": "823772759388675",
+                    "routing_number": "121145433",
+                    "available_balance": 0.0,
+                    "current_balance": 0.0,
+                    "account_status": "active"
                 }
-            },
-            "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "55e72f1a-005e-11f1-b53e-5345781d36ee"
-            },
-            "credit_account": {
-                "account_id": null,
-                "available_balance": null,
-                "credit_limit": null,
-                "account_status": null,
-                "created_at": null
-            },
-            "depository_accounts": [],
+            ],
             "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
-            }
-        },
-        {
-            "user": {
-                "id": "c0760374-005e-11f1-89c9-cf515ef0342c",
-                "email": "KevinMorgan6942@outlook.com",
-                "first_name": "Kevin",
-                "last_name": "Morgan",
-                "phone_number": "+16394030396",
-                "status": "active",
-                "created_at": "2026-02-02T17:43:58.101968Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "44 Elberton Street",
-                    "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "c079c95a-005e-11f1-89c9-2b655c7a8b6f"
-            },
-            "credit_account": {
-                "account_id": null,
-                "available_balance": null,
-                "credit_limit": null,
-                "account_status": null,
-                "created_at": null
-            },
-            "depository_accounts": [],
-            "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
-            }
-        },
-        {
-            "user": {
-                "id": "3a4b2ad0-005f-11f1-b9e7-e756c4a599ea",
-                "email": "AprilWilson5675@outlook.com",
-                "first_name": "April",
-                "last_name": "Wilson",
-                "phone_number": "+15813351145",
-                "status": "active",
-                "created_at": "2026-02-02T17:47:22.500992Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "44 Elberton Street",
-                    "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "3a4e5138-005f-11f1-b9e7-13bad3fe634a"
-            },
-            "credit_account": {
-                "account_id": null,
-                "available_balance": null,
-                "credit_limit": null,
-                "account_status": null,
-                "created_at": null
-            },
-            "depository_accounts": [],
-            "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
-            }
-        },
-        {
-            "user": {
-                "id": "20c252ae-0060-11f1-9661-633d80df27fc",
-                "email": "DustinZamora5702@outlook.com",
-                "first_name": "Dustin",
-                "last_name": "Zamora",
-                "phone_number": "+16834446869",
-                "status": "active",
-                "created_at": "2026-02-02T17:53:49.157353Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "44 Elberton Street",
-                    "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "20c5d51e-0060-11f1-9661-1bc9d0f94cea"
-            },
-            "credit_account": {
-                "account_id": null,
-                "available_balance": null,
-                "credit_limit": null,
-                "account_status": null,
-                "created_at": null
-            },
-            "depository_accounts": [],
-            "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
-            }
-        },
-        {
-            "user": {
-                "id": "c4782d6a-0060-11f1-a01a-8b7ce0692634",
-                "email": "RachaelEsparza1011@outlook.com",
-                "first_name": "Rachael",
-                "last_name": "Esparza",
-                "phone_number": "+17539003872",
-                "status": "active",
-                "created_at": "2026-02-02T17:58:23.818331Z",
-                "has_verified_email": true,
-                "legal_address": {
-                    "address1": "44 Elberton Street",
-                    "address2": "",
-                    "city": "Toccoa",
-                    "region": "GA",
-                    "postal_code": "30577",
-                    "country": "US"
-                }
-            },
-            "organization": {
-                "id": "8537b710-ed1e-11f0-97a6-372b6db95dd8",
-                "name": "shop dress up LLC",
-                "legal_business_name": "shop dress up LLC",
-                "callsign": "shop-dress-up-llc",
-                "is_closed": false,
-                "company_structure": "LLC"
-            },
-            "user_role": {
-                "role": "administrator",
-                "role_name": "Admin",
-                "is_admin": true,
-                "org_user_id": "c47bdb18-0060-11f1-a01a-93992fcc5523"
-            },
-            "credit_account": {
-                "account_id": null,
-                "available_balance": null,
-                "credit_limit": null,
-                "account_status": null,
-                "created_at": null
-            },
-            "depository_accounts": [],
-            "restriction": {
-                "is_restricted": true,
-                "reason": "用户状态: orgLockedWithRemediation",
-                "org_context": "businessLocked",
-                "org_user_status": "orgLockedWithRemediation"
+                "is_restricted": false,
+                "reason": "",
+                "org_context": "business",
+                "org_user_status": "normal"
             }
         }
     ]

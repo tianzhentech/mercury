@@ -44,6 +44,15 @@
                     </svg>
                     生成卡密
                 </button>
+                <button class="nav-item" onclick="switchTab('channels')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 7h16"></path>
+                        <path d="M7 12h10"></path>
+                        <path d="M10 17h4"></path>
+                        <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+                    </svg>
+                    渠道管理
+                </button>
                 <button class="nav-item" onclick="switchTab('records')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -103,7 +112,10 @@
             <div class="sidebar-footer">
                 <div class="user-info">
                     <span id="currentUser"></span>
-                    <span class="version">{{ version }}</span>
+                    <span class="version-meta">
+                        <span class="version">{{ version }}</span>
+                        <a class="powered-by-link" href="https://api.zectai.com/" target="_blank" rel="noopener noreferrer">Powered by ZectAI</a>
+                    </span>
                 </div>
                 <button class="btn-logout" onclick="logout()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,10 +146,9 @@
                                 <input type="number" id="cardLimit" min="0" max="1000" value="0">
                             </div>
                             <div class="form-group">
-                                <label for="cardType">卡片类型</label>
-                                <select id="cardType">
-                                    <option value="credit">信用卡</option>
-                                    <option value="debit">借记卡</option>
+                                <label for="cardBackendChannel">实际后端渠道</label>
+                                <select id="cardBackendChannel" onchange="updateCreateCardChannelControls()">
+                                    <option value="">加载中...</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -151,6 +162,9 @@
                             <div class="form-group">
                                 <button id="createBtn" onclick="createCards()">创建卡片</button>
                             </div>
+                        </div>
+                        <div id="cardCreateChannelHint" class="control-panel-note">
+                            仅 Mercury 52368601 / 54810871 支持自定义余额与过期时间，其他渠道会直接使用渠道自身的库存信息。
                         </div>
 
                         <div id="createProgress" class="inline-progress" style="display: none;">
@@ -170,14 +184,7 @@
 
                     <div class="list-header">
                         <h2>卡片列表 <span id="cardCount2" class="badge">0</span>
-                            <span class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all"
-                                    onclick="filterCards('all')">ALL</button>
-                                <button class="filter-btn credit" data-filter="credit"
-                                    onclick="filterCards('credit')">信</button>
-                                <button class="filter-btn debit" data-filter="debit"
-                                    onclick="filterCards('debit')">借</button>
-                            </span>
+                            <span id="cardFilterButtons" class="filter-buttons"></span>
                         </h2>
                         <div class="header-actions">
                             <div class="search-box" id="searchBox">
@@ -224,13 +231,15 @@
                 </div>
             </div>
 
-            <!-- 生成卡密面板 -->
+            <!-- 新卡卡密面板 -->
             <div id="keysPanel" class="tab-content">
                 <div class="panel-fixed">
                     <section class="control-panel">
                         <div class="add-mode-toggle" style="margin-bottom: 15px;">
                             <button id="modeGenerateBtn" class="mode-btn active"
-                                onclick="switchKeyMode('generate')">生成卡密</button>
+                                onclick="switchKeyMode('generate')">新卡卡密</button>
+                            <button id="modeOldCardBtn" class="mode-btn"
+                                onclick="switchKeyMode('old-card')">旧卡卡密</button>
                             <button id="modeDestroyBtn" class="mode-btn"
                                 onclick="switchKeyMode('destroy')">销毁卡密</button>
                         </div>
@@ -246,10 +255,9 @@
                                     <input type="number" id="keyCardLimit" min="0" max="1000" value="0">
                                 </div>
                                 <div class="form-group">
-                                    <label for="keyCardType">卡片类型</label>
-                                    <select id="keyCardType">
-                                        <option value="credit">信用卡</option>
-                                        <option value="debit">借记卡</option>
+                                    <label for="keyDisplayChannel">绑定前台渠道</label>
+                                    <select id="keyDisplayChannel">
+                                        <option value="">通用 UUID（不绑定渠道）</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -257,7 +265,7 @@
                                     <input type="number" id="keyExpireTime" min="1" max="1440" value="60">
                                 </div>
                                 <div class="form-group btn-group">
-                                    <button id="generateKeyBtn" onclick="generateKeys()">生成卡密</button>
+                                    <button id="generateKeyBtn" onclick="generateKeys()">生成新卡卡密</button>
                                     <a href="https://actcard.xyz/" target="_blank" class="btn-link" title="打开兑换页面">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2">
@@ -270,21 +278,51 @@
                             </div>
                         </div>
 
+                        <div id="oldCardMode" style="display: none;">
+                            <div class="sub-control-panel standalone">
+                                <div class="sub-control-panel-header">
+                                    <div>
+                                        <h3>旧卡卡密</h3>
+                                        <p>从全站历史已兑换且仍在有效期内的卡里分配，每张旧卡只会被旧卡卡密兑走一次。</p>
+                                    </div>
+                                    <div class="sub-control-panel-summary">
+                                        <span id="oldCardPoolEnabledAvailable" class="badge">0</span>
+                                        <span id="oldCardPoolSummaryText">可用旧卡</span>
+                                    </div>
+                                </div>
+
+                                <div id="oldCardPoolChannels" class="old-card-channel-grid">
+                                    <div class="empty-state compact">旧卡池加载中...</div>
+                                </div>
+
+                                <div class="form-row old-card-form-row">
+                                    <div class="form-group">
+                                        <label for="oldKeyCount">生成数量</label>
+                                        <input type="number" id="oldKeyCount" min="1" value="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="oldKeyDisplayChannel">绑定前台渠道</label>
+                                        <select id="oldKeyDisplayChannel">
+                                            <option value="">通用旧卡 UUID（不绑定渠道）</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group btn-group">
+                                        <button id="generateOldKeyBtn" class="btn-secondary" onclick="generateOldCardKeys()">生成旧卡卡密</button>
+                                    </div>
+                                </div>
+
+                                <p id="oldCardPoolNote" class="control-panel-note">
+                                    通用旧卡卡密在兑换页不指定渠道时会随机分配；指定渠道时会按所选卡头出卡。
+                                </p>
+                            </div>
+                        </div>
+
                         <div id="destroyMode" style="display: none;">
                         </div>
                     </section>
 
                     <div id="keyListHeader" class="list-header">
-                        <h2>卡密列表 <span id="keyCount2" class="badge">0</span>
-                            <span class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all"
-                                    onclick="filterKeys('all')">ALL</button>
-                                <button class="filter-btn credit" data-filter="credit"
-                                    onclick="filterKeys('credit')">信</button>
-                                <button class="filter-btn debit" data-filter="debit"
-                                    onclick="filterKeys('debit')">借</button>
-                            </span>
-                        </h2>
+                        <h2><span id="keyListTitle">新卡卡密列表</span> <span id="keyCount2" class="badge">0</span></h2>
                         <div class="header-actions">
                             <button class="btn-secondary" onclick="openWithdrawModal()">提卡</button>
                             <button class="btn-secondary" onclick="copyAllKeys()">复制所有</button>
@@ -292,16 +330,7 @@
                         </div>
                     </div>
                     <div id="destroyModeHeader" class="list-header" style="display: none;">
-                        <h2>待销毁 <span id="destroyKeyCount" class="badge">0</span>
-                            <span class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all"
-                                    onclick="filterDestroyKeys('all')">ALL</button>
-                                <button class="filter-btn credit" data-filter="credit"
-                                    onclick="filterDestroyKeys('credit')">信</button>
-                                <button class="filter-btn debit" data-filter="debit"
-                                    onclick="filterDestroyKeys('debit')">借</button>
-                            </span>
-                        </h2>
+                        <h2>待销毁 <span id="destroyKeyCount" class="badge">0</span></h2>
                         <div class="header-actions">
                             <button id="destroyKeysBtn" class="btn-danger" onclick="destroyKeys()">销毁卡密</button>
                         </div>
@@ -317,6 +346,208 @@
                     <textarea id="destroyKeysInput" placeholder="输入要销毁的卡密，一行一个&#10;如已兑换会先删除对应卡片"
                         oninput="updateDestroyStats()"
                         style="width: 100%; height: 100%; resize: none; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-sizing: border-box; outline-offset: -1px;"></textarea>
+                </div>
+            </div>
+
+            <div id="channelsPanel" class="tab-content">
+                <div class="panel-fixed">
+                    <section class="control-panel">
+                        <h2>渠道管理</h2>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin: 8px 0 0;">
+                            管理外部上游渠道的卡密，当前支持 Timoes
+                        </p>
+                    </section>
+                </div>
+                <div id="timoesModeScroll" class="panel-scroll" style="padding: 0 3px 3px;">
+                    <div class="channels-page">
+                        <section class="control-panel">
+                            <div class="channels-panel-header">
+                                <div>
+                                    <h3 style="margin: 0;">实际后端渠道</h3>
+                                    <p class="channels-panel-subtitle">Mercury 与 Timoes 渠道支持配置化管理，手动卡池会按 BIN 自动扩展成新的后端渠道</p>
+                                </div>
+                                <button type="button" class="btn-secondary" onclick="refreshOtherChannels()">刷新渠道</button>
+                            </div>
+                            <div id="backendChannelsSummary" class="backend-channel-grid">
+                                <div class="empty-state compact">暂无可用渠道</div>
+                            </div>
+                        </section>
+
+                        <section class="control-panel" id="backendAddressTemplatesPanel">
+                            <div class="channels-panel-header">
+                                <div>
+                                    <h3 style="margin: 0;">地址模板</h3>
+                                    <p class="channels-panel-subtitle">可以预设多套地址模板，后端渠道中直接选择复用；也支持在渠道上单独手动填写地址</p>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="backendAddressTemplateNameInput">模板名称</label>
+                                    <input type="text" id="backendAddressTemplateNameInput" maxlength="40" placeholder="例如：美国仓库 A">
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="backendAddressTemplateAddress1Input">地址 1</label>
+                                    <input type="text" id="backendAddressTemplateAddress1Input" maxlength="120" placeholder="Street address">
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="backendAddressTemplateAddress2Input">地址 2</label>
+                                    <input type="text" id="backendAddressTemplateAddress2Input" maxlength="120" placeholder="Apartment, suite, unit">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="backendAddressTemplateCityInput">城市</label>
+                                    <input type="text" id="backendAddressTemplateCityInput" maxlength="80" placeholder="例如：New York">
+                                </div>
+                                <div class="form-group">
+                                    <label for="backendAddressTemplateRegionInput">州 / 省</label>
+                                    <input type="text" id="backendAddressTemplateRegionInput" maxlength="80" placeholder="例如：NY">
+                                </div>
+                                <div class="form-group">
+                                    <label for="backendAddressTemplatePostalCodeInput">邮编</label>
+                                    <input type="text" id="backendAddressTemplatePostalCodeInput" maxlength="40" placeholder="例如：10001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="backendAddressTemplateCountryInput">国家</label>
+                                    <input type="text" id="backendAddressTemplateCountryInput" maxlength="80" placeholder="例如：US">
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button type="button" id="saveBackendAddressTemplateBtn" onclick="saveBackendAddressTemplate()">保存模板</button>
+                                    <button type="button" class="btn-secondary" id="cancelBackendAddressTemplateBtn" onclick="cancelBackendAddressTemplateEdit()" style="display: none;">取消编辑</button>
+                                </div>
+                            </div>
+                            <div id="backendAddressTemplateHint" class="timoes-pool-hint" style="margin-bottom: 12px;">模板保存后可在实际后端渠道卡片中直接选择。</div>
+                            <div id="backendAddressTemplatesList" class="display-channel-list">
+                                <div class="empty-state compact">暂无地址模板</div>
+                            </div>
+                        </section>
+
+                        <section class="control-panel" id="timoesBackendChannelsPanel">
+                            <div class="channels-panel-header">
+                                <div>
+                                    <h3 style="margin: 0;">Timoes 后端渠道</h3>
+                                    <p class="channels-panel-subtitle">新增卡头和线路类型后，可直接参与库存导入、前台路由和创建卡片</p>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="timoesBackendHeadInput">卡头</label>
+                                    <input type="text" id="timoesBackendHeadInput" maxlength="8" placeholder="例如：486699">
+                                </div>
+                                <div class="form-group">
+                                    <label for="timoesBackendCodeTypeInput">线路类型</label>
+                                    <input type="text" id="timoesBackendCodeTypeInput" maxlength="32" placeholder="例如：4866">
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="timoesBackendLabelInput">渠道名称</label>
+                                    <input type="text" id="timoesBackendLabelInput" maxlength="40" placeholder="默认按卡头自动命名">
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button type="button" id="saveTimoesBackendChannelBtn" onclick="saveTimoesBackendChannel()">添加渠道</button>
+                                    <button type="button" id="cancelTimoesBackendChannelBtn" class="btn-secondary" onclick="cancelTimoesBackendChannelEdit()" style="display: none;">取消编辑</button>
+                                </div>
+                            </div>
+                            <div id="timoesBackendChannelsHint" class="timoes-pool-hint" style="margin-bottom: 12px;">线路类型用于选择 Timoes 码池中的哪一组卡密，卡头仅用于展示与路由。</div>
+                            <div id="timoesBackendChannelsList" class="display-channel-list">
+                                <div class="empty-state compact">暂无 Timoes 后端渠道</div>
+                            </div>
+                        </section>
+
+                        <div class="timoes-pool-panel standalone">
+                            <div class="timoes-pool-header">
+                                <div>
+                                    <div class="timoes-pool-title">Timoes 卡密</div>
+                                    <div class="timoes-pool-subtitle">导入任意已配置线路类型的卡密后，可作为实际后端渠道参与自定义路由</div>
+                                </div>
+                                <div class="timoes-pool-header-actions">
+                                    <div id="timoesPoolSummary" class="badge">可用 0</div>
+                                    <button type="button" class="btn-secondary" onclick="openPoolManager('timoes')">编辑卡密</button>
+                                </div>
+                            </div>
+                            <div class="timoes-pool-body">
+                                <div class="form-row" style="margin-bottom: 12px;">
+                                    <div class="form-group">
+                                        <label for="timoesImportType">线路类型</label>
+                                        <select id="timoesImportType"></select>
+                                    </div>
+                                    <div class="form-group" style="flex: 2;">
+                                        <label>当前库存</label>
+                                        <div id="timoesPoolStats" class="timoes-pool-stats">
+                                            暂无已配置线路类型
+                                        </div>
+                                    </div>
+                                    <div class="form-group btn-group">
+                                        <button type="button" class="btn-secondary" onclick="refreshTimoesPoolStats()">刷新库存</button>
+                                    </div>
+                                </div>
+                                <div class="timoes-pool-editor">
+                                    <label for="timoesCodesInput" class="timoes-pool-label">导入 Timoes 卡密</label>
+                                    <textarea id="timoesCodesInput" class="timoes-pool-textarea" placeholder="每行一个 Timoes 卡密，导入到共享池"></textarea>
+                                </div>
+                                <div class="timoes-pool-footer">
+                                    <div id="timoesImportHint" class="timoes-pool-hint">重复卡密会自动跳过，格式错误的行不会导入</div>
+                                    <button id="importTimoesCodesBtn" type="button" onclick="importTimoesCodes()">导入卡密</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section class="control-panel">
+                            <div class="channels-panel-header">
+                                <div>
+                                    <h3 style="margin: 0;">手动卡池</h3>
+                                    <p class="channels-panel-subtitle">直接录入卡信息，系统会按 BIN 自动生成新的实际后端渠道</p>
+                                </div>
+                                <div class="timoes-pool-header-actions">
+                                    <div id="manualPoolSummary" class="badge">可用 0</div>
+                                    <button type="button" class="btn-secondary" onclick="openPoolManager('manual')">编辑卡池</button>
+                                </div>
+                            </div>
+                            <div class="form-row" style="margin-bottom: 12px;">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>当前库存</label>
+                                    <div id="manualPoolStats" class="timoes-pool-stats">暂无手动卡库存</div>
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button type="button" class="btn-secondary" onclick="refreshManualCardPoolStats()">刷新库存</button>
+                                </div>
+                            </div>
+                            <div class="timoes-pool-editor">
+                                <label for="manualCardsInput" class="timoes-pool-label">导入手动卡信息</label>
+                                <textarea id="manualCardsInput" class="timoes-pool-textarea manual-card-textarea" placeholder="每行一个卡信息，格式：&#10;卡号 月份 年份 CVV 余额 有效期分钟&#10;4111111111111111 03 2029 123 5 60"></textarea>
+                            </div>
+                            <div class="timoes-pool-footer">
+                                <div id="manualCardsHint" class="timoes-pool-hint">仅支持：卡号 月份 年份 CVV 余额 有效期分钟，例如 4111111111111111 03 2029 123 5 60</div>
+                                <button id="importManualCardsBtn" type="button" onclick="importManualCards()">导入手动卡</button>
+                            </div>
+                        </section>
+
+                        <section class="control-panel" id="displayChannelsPanel">
+                            <div class="channels-panel-header">
+                                <div>
+                                    <h3 style="margin: 0;">前台显示渠道</h3>
+                                    <p class="channels-panel-subtitle">自定义 redeem 页展示的渠道名称，并指定它实际路由到哪个后端渠道</p>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="displayChannelNameInput">渠道名称</label>
+                                    <input type="text" id="displayChannelNameInput" maxlength="40" placeholder="例如：Visa 4833">
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label for="displayChannelBackendSelect">路由到</label>
+                                    <select id="displayChannelBackendSelect"></select>
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button type="button" id="saveDisplayChannelBtn" onclick="saveDisplayChannel()">添加渠道</button>
+                                    <button type="button" id="cancelDisplayChannelBtn" class="btn-secondary" onclick="cancelDisplayChannelEdit()" style="display: none;">取消编辑</button>
+                                </div>
+                            </div>
+                            <div id="displayRouteFormHint" class="timoes-pool-hint" style="margin-bottom: 12px;">前台渠道名可以自定义，实际后端渠道来自 Mercury、Timoes 配置或手动卡池 BIN</div>
+                            <div id="displayChannelsList" class="display-channel-list">
+                                <div class="empty-state compact">暂无前台显示渠道</div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </div>
 
@@ -815,9 +1046,9 @@
                     </section>
 
                     <section class="control-panel">
-                        <h3>批量兑换设置</h3>
+                        <h3>兑换设置</h3>
                         <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
-                            设置兑换页面批量操作的限制参数</p>
+                            设置兑换页面的批量限制参数；渠道和前台显示名称请在左侧「渠道管理」里配置</p>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -1126,10 +1357,9 @@
             </div>
             <div class="modal-body">
                 <div class="form-field">
-                    <label>卡片类型</label>
-                    <select id="withdrawCardType">
-                        <option value="credit">信用卡</option>
-                        <option value="debit">借记卡</option>
+                    <label>绑定前台渠道</label>
+                    <select id="withdrawDisplayChannelSelect">
+                        <option value="">通用 UUID（不绑定渠道）</option>
                     </select>
                 </div>
                 <div class="form-field">
@@ -1161,6 +1391,64 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeWithdrawHistoryModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="backendChannelAddressModal" class="modal" style="display: none;" onclick="handleBackendChannelAddressModalBackdrop(event)">
+        <div class="modal-content" style="max-width: 760px;">
+            <div class="modal-header">
+                <h3 id="backendChannelAddressModalTitle">渠道地址设置</h3>
+                <button class="btn-close" onclick="closeBackendChannelAddressModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="backendChannelAddressModalHint" class="timoes-pool-hint">选择地址模板，或手动填写一套仅当前渠道生效的地址。</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="backendChannelAddressModeSelect">地址来源</label>
+                        <select id="backendChannelAddressModeSelect" onchange="updateBackendChannelAddressModalMode()">
+                            <option value="inherit">不覆盖，沿用渠道返回地址</option>
+                            <option value="preset">使用地址模板</option>
+                            <option value="manual">手动填写地址</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="backendChannelAddressTemplateGroup" style="flex: 2;">
+                        <label for="backendChannelAddressTemplateSelect">地址模板</label>
+                        <select id="backendChannelAddressTemplateSelect" onchange="updateBackendChannelAddressModalPreview()"></select>
+                    </div>
+                </div>
+                <div id="backendChannelAddressTemplatePreview" class="pool-manager-note" style="display: none;"></div>
+                <div id="backendChannelManualAddressFields" class="address-modal-grid" style="display: none;">
+                    <div class="form-group">
+                        <label for="backendChannelManualAddress1Input">地址 1</label>
+                        <input type="text" id="backendChannelManualAddress1Input" maxlength="120" placeholder="Street address">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendChannelManualAddress2Input">地址 2</label>
+                        <input type="text" id="backendChannelManualAddress2Input" maxlength="120" placeholder="Apartment, suite, unit">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendChannelManualCityInput">城市</label>
+                        <input type="text" id="backendChannelManualCityInput" maxlength="80" placeholder="例如：New York">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendChannelManualRegionInput">州 / 省</label>
+                        <input type="text" id="backendChannelManualRegionInput" maxlength="80" placeholder="例如：NY">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendChannelManualPostalCodeInput">邮编</label>
+                        <input type="text" id="backendChannelManualPostalCodeInput" maxlength="40" placeholder="例如：10001">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendChannelManualCountryInput">国家</label>
+                        <input type="text" id="backendChannelManualCountryInput" maxlength="80" placeholder="例如：US">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeBackendChannelAddressModal()">取消</button>
+                <button class="btn-secondary" onclick="clearBackendChannelAddressConfig()">恢复默认</button>
+                <button id="saveBackendChannelAddressConfigBtn" onclick="saveBackendChannelAddressConfig()">保存设置</button>
             </div>
         </div>
     </div>
@@ -1235,6 +1523,23 @@
         </div>
     </div>
 
+    <div id="poolManagerDrawer" class="pool-manager-drawer" style="display: none;">
+        <div class="pool-manager-backdrop" onclick="closePoolManager()"></div>
+        <div class="pool-manager-panel">
+            <div class="pool-manager-header">
+                <div>
+                    <h3 id="poolManagerTitle">卡密管理</h3>
+                    <div id="poolManagerSummary" class="pool-manager-summary">正在加载...</div>
+                </div>
+                <button class="btn-close" onclick="closePoolManager()">&times;</button>
+            </div>
+            <div id="poolManagerToolbar" class="pool-manager-toolbar"></div>
+            <div id="poolManagerBody" class="pool-manager-body">
+                <div class="empty-state compact">请选择一个列表进行管理</div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -1242,8 +1547,13 @@
         let deleteEventSource = null;
         let allCards = [];
         let allKeys = [];
+        let keyDisplayChannelOptions = [];
+        let oldCardPoolChannels = [];
+        let oldCardDisplayChannelOptions = [];
+        let pendingOldCardChannelToggles = new Set();
         let cardFilter = 'all';
         let keyFilter = 'all';
+        let currentKeyMode = 'generate';
         let currentKeysPage = 1;
         let totalKeysPages = 1;
         let totalKeysCount = 0;
@@ -1330,7 +1640,7 @@
 
         // 标签页切换
         let currentTab = 'cards';
-        const tabOrder = ['cards', 'keys', 'records', 'analytics', 'users', 'proxies', 'accounts', 'settings'];
+        const tabOrder = ['cards', 'keys', 'channels', 'records', 'analytics', 'users', 'proxies', 'accounts', 'settings'];
 
         // 代理延迟 SSE
         let proxyLatencyEventSource = null;
@@ -1383,8 +1693,15 @@
                 statusEventSource = null;
             }
 
+            if (oldTab === 'channels' && tab !== 'channels') {
+                closePoolManager();
+            }
+
             // 刷新数据
-            if (tab === 'records') refreshRecords();
+            if (tab === 'keys') {
+                if (currentKeyMode === 'old-card') refreshOldCardPoolStatsIfVisible(true);
+            } else if (tab === 'channels') refreshOtherChannels();
+            else if (tab === 'records') refreshRecords();
             else if (tab === 'analytics') { initAnalyticsDate(); refreshAnalytics(); }
             else if (tab === 'users') refreshUsers();
             else if (tab === 'proxies') refreshProxies();
@@ -1456,6 +1773,7 @@
                 if (response.status === 401) { await checkAuth(); return refreshCards(); }
                 const data = await response.json();
                 allCards = data.cards || [];
+                renderCardFilterButtons(allCards);
                 const query = document.getElementById('searchInput').value.trim();
                 query ? searchCards() : renderCards(allCards);
             } catch (error) {
@@ -1472,15 +1790,126 @@
             query ? searchCards() : renderCards(allCards);
         }
 
+        function getCardFilterValue(card = {}) {
+            const backendChannelId = String(card.backend_channel_id || '').trim().toLowerCase();
+            if (backendChannelId) return backendChannelId;
+
+            const provider = String(card.provider || '').trim().toLowerCase();
+            const channelHead = normalizeCardChannelHead(card.channel_head || card.backend_head || card.bound_channel_head);
+
+            if (provider === 'mercury' || (!provider && card.card_type === 'debit')) {
+                return channelHead === '52368601' ? 'mercury_52368601' : 'mercury_54810871';
+            }
+            if (provider === 'mercury' || (!provider && card.card_type === 'credit')) {
+                return channelHead === '54810871' ? 'mercury_54810871' : 'mercury_52368601';
+            }
+            if (provider === 'timoes' && channelHead) return `timoes_${channelHead}`;
+            if (provider === 'manual' && channelHead) return `manual_bin_${channelHead}`;
+            if (channelHead) return `${provider || 'channel'}_${channelHead}`;
+            return provider || 'other';
+        }
+
+        function getFilteredCardsByActiveChannel(cards = allCards) {
+            if (cardFilter === 'all') return cards;
+            return cards.filter(card => getCardFilterValue(card) === cardFilter);
+        }
+
+        function getCardFilterOptions(cards = allCards) {
+            const optionMap = new Map();
+            for (const card of cards || []) {
+                const value = getCardFilterValue(card);
+                if (!value || optionMap.has(value)) continue;
+                optionMap.set(value, {
+                    value,
+                    label: getCardChannelLabel(card)
+                });
+            }
+
+            const ordered = [];
+            for (const channel of backendChannelOptions || []) {
+                const value = String(channel.backend_channel_id || '').trim().toLowerCase();
+                if (!value || !optionMap.has(value)) continue;
+                ordered.push(optionMap.get(value));
+                optionMap.delete(value);
+            }
+
+            return [{ value: 'all', label: 'ALL' }, ...ordered, ...optionMap.values()];
+        }
+
+        function renderCardFilterButtons(cards = allCards) {
+            const container = document.getElementById('cardFilterButtons');
+            if (!container) return;
+
+            const options = getCardFilterOptions(cards);
+            const availableFilters = new Set(options.map(item => item.value));
+            if (!availableFilters.has(cardFilter)) {
+                cardFilter = 'all';
+            }
+
+            container.innerHTML = options.map(option => `
+                <button type="button" class="filter-btn ${option.value === cardFilter ? 'active' : ''}" data-filter="${escapeAttr(option.value)}">
+                    ${escapeHtml(option.label)}
+                </button>
+            `).join('');
+
+            container.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => filterCards(btn.dataset.filter || 'all'));
+            });
+        }
+
+        function getCardFilterText(filterValue, cards = allCards) {
+            if (filterValue === 'all') return '所有';
+            const target = (cards || []).find(card => getCardFilterValue(card) === filterValue);
+            return target ? getCardChannelLabel(target) : '当前渠道';
+        }
+
+        function getSelectedCreateBackendChannel() {
+            const select = document.getElementById('cardBackendChannel');
+            if (!select) return null;
+            return backendChannelOptions.find(item => item.backend_channel_id === select.value) || null;
+        }
+
+        function normalizeCardChannelHead(value) {
+            return String(value || '').replace(/\D/g, '');
+        }
+
+        function getCardChannelLabel(card = {}) {
+            const provider = String(card.provider || '').toLowerCase();
+            const providerLabel = card.provider_label
+                || (provider === 'manual' ? '手动卡池' : provider === 'timoes' ? 'Timoes' : provider === 'mercury' ? 'Mercury' : '渠道');
+            const channelHead = normalizeCardChannelHead(card.channel_head || card.backend_head || card.bound_channel_head);
+            const isMercuryLike = provider === 'mercury' || (!provider && (card.card_type === 'credit' || card.card_type === 'debit'));
+
+            if (isMercuryLike) {
+                if (channelHead) return `${channelHead} 卡头`;
+                return card.card_type === 'debit' ? '54810871 卡头' : '52368601 卡头';
+            }
+            if (provider === 'timoes') {
+                return channelHead ? `${providerLabel} ${channelHead}` : providerLabel;
+            }
+            if (provider === 'manual') {
+                return channelHead ? `${channelHead} 手动卡` : providerLabel;
+            }
+            if (channelHead) return `${channelHead} 卡头`;
+            if (card.card_type === 'debit') return '借记卡';
+            if (card.card_type === 'credit') return '信用卡';
+            return providerLabel || '渠道';
+        }
+
+        function renderCardChannelBadge(card = {}) {
+            const label = getCardChannelLabel(card);
+            const provider = String(card.provider || '').toLowerCase();
+            const isMercuryLike = provider === 'mercury' || (!provider && (card.card_type === 'credit' || card.card_type === 'debit'));
+            const badgeTone = provider === 'manual' ? 'generic' : (isMercuryLike || provider === 'timoes' ? 'bound' : 'generic');
+            return `<span class="key-channel-badge ${badgeTone}" title="${escapeAttr(label)}">${escapeHtml(label)}</span>`;
+        }
+
         function renderCards(cards, isSearchResult = false) {
             const container = document.getElementById('cardsContainer');
             const badge = document.getElementById('cardCount2');
 
             // 应用过滤器
-            let filteredCards = cards;
-            if (cardFilter !== 'all') {
-                filteredCards = cards.filter(c => c.card_type === cardFilter);
-            }
+            let filteredCards = getFilteredCardsByActiveChannel(cards);
 
             // 按创建时间排序（最新的在前）
             filteredCards = [...filteredCards].sort((a, b) => {
@@ -1504,11 +1933,12 @@
             container.innerHTML = filteredCards.map(card => {
                 const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
                 const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
+                const channelBadge = renderCardChannelBadge(card);
                 return `
                 <div class="card-item-compact" data-id="${card.card_id}" data-full="${fullInfo}">
                     <span class="card-pan" data-copy="${card.pan}" title="点击复制卡号">${formatPan(card.pan)}</span>
                     <span class="card-limit-badge">$${card.card_limit ?? 0}</span>
-                    <span class="card-type-badge ${card.card_type === 'debit' ? 'debit' : 'credit'}">${card.card_type === 'debit' ? '借' : '信'}</span>
+                    ${channelBadge}
                     <span class="card-created-time">${formatCreatedTime(card.created_time)}</span>
                     <button class="btn-copy btn-sm" data-action="copy-full">复制</button>
                     <span class="card-exp" data-copy="${expShort}" title="点击复制有效期">${card.exp_month}/${card.exp_year}</span>
@@ -1593,9 +2023,14 @@
         function createCards() {
             const count = parseInt(document.getElementById('cardCount').value) || 1;
             const cardLimit = parseInt(document.getElementById('cardLimit').value) || 0;
-            const cardType = document.getElementById('cardType').value || 'credit';
+            const backendChannelId = document.getElementById('cardBackendChannel').value || '';
             const expireMinutes = parseInt(document.getElementById('expireTime').value) || 60;
             const interval = Math.max(3, parseInt(document.getElementById('interval').value) || 3);
+
+            if (!backendChannelId) {
+                showToast('请选择实际后端渠道', 'error');
+                return;
+            }
 
             document.getElementById('createBtn').disabled = true;
 
@@ -1607,7 +2042,7 @@
             document.getElementById('createProgressText').textContent = `0 / ${count}`;
             document.getElementById('createProgressMessage').textContent = '开始创建...';
 
-            createEventSource = new EventSource(`/api/create_stream?count=${count}&card_limit=${cardLimit}&card_type=${cardType}&expire_minutes=${expireMinutes}&interval=${interval}&token=${accessToken}`);
+            createEventSource = new EventSource(`/api/create_stream?count=${count}&card_limit=${cardLimit}&backend_channel_id=${encodeURIComponent(backendChannelId)}&expire_minutes=${expireMinutes}&interval=${interval}&token=${accessToken}`);
 
             createEventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
@@ -1670,11 +2105,8 @@
         }
 
         async function deleteAllCards() {
-            let cards = allCards;
-            if (cardFilter !== 'all') {
-                cards = cards.filter(c => c.card_type === cardFilter);
-            }
-            const filterText = cardFilter === 'all' ? '所有' : (cardFilter === 'credit' ? '信用卡' : '借记卡');
+            let cards = getFilteredCardsByActiveChannel(allCards);
+            const filterText = getCardFilterText(cardFilter, allCards);
             if (!cards.length) { showToast('没有卡片可删除', 'info'); return; }
             if (!await showConfirm(`确定要删除${filterText}卡片吗？（共 ${cards.length} 张）`, '删除卡片')) return;
 
@@ -1753,10 +2185,7 @@
         }
 
         async function copyAllCards() {
-            let cards = allCards;
-            if (cardFilter !== 'all') {
-                cards = cards.filter(c => c.card_type === cardFilter);
-            }
+            let cards = getFilteredCardsByActiveChannel(allCards);
             if (!cards.length) { showToast('没有卡片可复制', 'info'); return; }
             const text = cards.map(c => `${c.pan} ${c.exp_month} ${String(c.exp_year).slice(-2)} ${c.cvv}`).join('\n');
             copyToClipboard(text).then(() => showToast(`已复制 ${cards.length} 张卡片`, 'success'));
@@ -1766,6 +2195,8 @@
             const modal = document.getElementById('withdrawModal');
             document.getElementById('withdrawCount').value = 1;
             document.getElementById('withdrawNote').value = '';
+            const channelSelect = document.getElementById('withdrawDisplayChannelSelect');
+            if (channelSelect) channelSelect.value = '';
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
         }
@@ -1778,7 +2209,7 @@
 
         async function createWithdrawLink() {
             const count = parseInt(document.getElementById('withdrawCount').value) || 1;
-            const cardType = document.getElementById('withdrawCardType').value || 'credit';
+            const displayChannelId = document.getElementById('withdrawDisplayChannelSelect').value || '';
             const note = document.getElementById('withdrawNote').value.trim();
             const submitBtn = document.getElementById('withdrawSubmitBtn');
 
@@ -1792,14 +2223,16 @@
                 const response = await fetch('/api/keys/withdraw', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ count, card_type: cardType, note })
+                    body: JSON.stringify({ count, note, display_channel_id: displayChannelId || null })
                 });
                 if (response.status === 401) { await checkAuth(); return createWithdrawLink(); }
                 const data = await response.json();
                 if (data.success) {
                     const link = data.link || '';
+                    const selectedChannel = keyDisplayChannelOptions.find(channel => channel.id === displayChannelId);
+                    const bindingLabel = data.bound_display_channel_name || selectedChannel?.name || '通用 UUID';
                     if (link) {
-                        appendWithdrawHistory(link, cardType, count, note);
+                        appendWithdrawHistory(link, bindingLabel, count, note);
                         copyToClipboard(link)
                             .then(() => showToast('链接已生成并复制', 'success'))
                             .catch(() => showToast('链接已生成，复制失败', 'error'));
@@ -1837,14 +2270,14 @@
             } catch (e) { }
         }
 
-        function appendWithdrawHistory(link, cardType, count, note) {
+        function appendWithdrawHistory(link, bindingLabel, count, note) {
             if (!link) return;
             let history = [];
             try {
                 const raw = localStorage.getItem(WITHDRAW_HISTORY_KEY);
                 history = raw ? JSON.parse(raw) : [];
             } catch (e) { history = []; }
-            history.unshift({ link, time: new Date().toISOString(), card_type: cardType, count, note });
+            history.unshift({ link, time: new Date().toISOString(), binding_label: bindingLabel, count, note });
             history = history.slice(0, 50);
             saveWithdrawHistory(history);
         }
@@ -1874,17 +2307,18 @@
             }
             const items = history.map(item => {
                 const timeText = new Date(item.time).toLocaleString();
-                const typeIcon = item.card_type === 'debit' ? '借' : '信';
                 const countText = item.count ? `${item.count} 张` : '';
                 const safeLink = item.link.replace(/'/g, "\\'");
                 const safeNote = (item.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const bindingLabel = item.binding_label
+                    || (item.card_type === 'debit' ? '借记卡' : item.card_type === 'credit' ? '信用卡' : '通用 UUID');
                 return `
                     <div class="withdraw-history-item">
                         <div class="withdraw-history-main">
                             <span class="withdraw-history-link" title="${item.link}">${item.link}</span>
                             ${safeNote ? `<div class="withdraw-history-note" title="${safeNote}">备注：${safeNote}</div>` : ''}
                             <div class="withdraw-history-tags">
-                                <span class="card-type-badge ${item.card_type === 'debit' ? 'debit' : 'credit'}">${typeIcon}</span>
+                                <span class="key-channel-badge ${bindingLabel === '通用 UUID' ? 'generic' : 'bound'}">${escapeHtml(bindingLabel)}</span>
                                 <span class="withdraw-history-count">${countText}</span>
                             </div>
                         </div>
@@ -1961,12 +2395,1941 @@
         }
 
         // ==================== 卡密相关 ====================
+        let backendChannelOptions = [];
+        let backendAddressTemplates = [];
+        let timoesBackendConfigs = [];
+        let timoesKnownCodeTypes = [];
+        let editingTimoesBackendChannelId = null;
+        let editingBackendAddressTemplateId = null;
+        let backendAddressModalChannelId = '';
+        let displayChannelConfigs = [];
+        let editingDisplayChannelId = null;
+        let poolManagerState = {
+            type: null,
+            items: [],
+            filters: {
+                timoes: { code_type: '', status: '', limit: 100 },
+                manual: { bin_code: '', status: '', limit: 100 }
+            }
+        };
+        const ADDRESS_TEMPLATE_FIELDS = [
+            ['address1', 'backendAddressTemplateAddress1Input'],
+            ['address2', 'backendAddressTemplateAddress2Input'],
+            ['city', 'backendAddressTemplateCityInput'],
+            ['region', 'backendAddressTemplateRegionInput'],
+            ['postal_code', 'backendAddressTemplatePostalCodeInput'],
+            ['country', 'backendAddressTemplateCountryInput']
+        ];
+        const BACKEND_CHANNEL_MANUAL_ADDRESS_FIELDS = [
+            ['address1', 'backendChannelManualAddress1Input'],
+            ['address2', 'backendChannelManualAddress2Input'],
+            ['city', 'backendChannelManualCityInput'],
+            ['region', 'backendChannelManualRegionInput'],
+            ['postal_code', 'backendChannelManualPostalCodeInput'],
+            ['country', 'backendChannelManualCountryInput']
+        ];
+
+        function normalizeTimoesCodeType(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function collectTimoesCodeTypes(extraTypes = [], baseTypes = timoesKnownCodeTypes) {
+            const ordered = [];
+            const seen = new Set();
+            const append = (value) => {
+                const normalized = normalizeTimoesCodeType(value);
+                if (!normalized || seen.has(normalized)) return;
+                seen.add(normalized);
+                ordered.push(normalized);
+            };
+
+            (baseTypes || []).forEach(append);
+            (timoesBackendConfigs || []).forEach(item => append(item?.relay_code_type));
+            (extraTypes || []).forEach(append);
+            return ordered;
+        }
+
+        function updateTimoesCodeTypes(codeTypes = []) {
+            timoesKnownCodeTypes = collectTimoesCodeTypes(codeTypes, []);
+            populateTimoesImportTypeOptions();
+            if (poolManagerState.type === 'timoes') {
+                renderPoolManagerToolbar();
+            }
+            return timoesKnownCodeTypes;
+        }
+
+        function getTimoesCodeTypeLabel(codeType) {
+            const normalized = normalizeTimoesCodeType(codeType);
+            const matchedChannel = (timoesBackendConfigs || []).find(item =>
+                normalizeTimoesCodeType(item?.relay_code_type) === normalized
+            );
+            if (!matchedChannel) {
+                return normalized;
+            }
+            return `${matchedChannel.relay_code_type} · ${matchedChannel.head || matchedChannel.label || matchedChannel.id}`;
+        }
+
+        function formatTimoesPoolStats(stats) {
+            const codeTypes = collectTimoesCodeTypes([
+                ...(stats?.code_types || []),
+                ...Object.keys(stats?.types || {})
+            ]);
+            if (!codeTypes.length) {
+                return '暂无已配置线路类型';
+            }
+
+            return codeTypes.map(codeType => {
+                const item = stats?.types?.[codeType] || { available: 0, used: 0, invalid: 0 };
+                return `${getTimoesCodeTypeLabel(codeType)}: ${item.available || 0} 可用 / ${item.used || 0} 已用 / ${item.invalid || 0} 失效`;
+            }).join(' · ');
+        }
+
+        function formatManualPoolStats(stats) {
+            const bins = Object.entries(stats?.bins || {});
+            if (!bins.length) {
+                return '暂无手动卡库存';
+            }
+            return bins.map(([bin, item]) =>
+                `${bin}: ${item.available || 0} 可用 / ${item.used || 0} 已用 / ${item.invalid || 0} 失效`
+            ).join(' · ');
+        }
+
+        function applyTimoesPoolStats(stats) {
+            updateTimoesCodeTypes(stats?.code_types || Object.keys(stats?.types || {}));
+            const summaryEl = document.getElementById('timoesPoolSummary');
+            const statsEl = document.getElementById('timoesPoolStats');
+            if (summaryEl) {
+                summaryEl.textContent = `可用 ${stats?.total_available || 0}`;
+            }
+            if (statsEl) {
+                statsEl.textContent = formatTimoesPoolStats(stats);
+            }
+        }
+
+        function applyManualPoolStats(stats) {
+            const summaryEl = document.getElementById('manualPoolSummary');
+            const statsEl = document.getElementById('manualPoolStats');
+            if (summaryEl) {
+                summaryEl.textContent = `可用 ${stats?.total_available || 0}`;
+            }
+            if (statsEl) {
+                statsEl.textContent = formatManualPoolStats(stats);
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value);
+        }
+
+        function getBackendChannelById(channelId) {
+            const normalized = String(channelId || '').trim().toLowerCase();
+            if (!normalized) return null;
+            return backendChannelOptions.find(item => item.backend_channel_id === normalized) || null;
+        }
+
+        function getBackendAddressTemplateById(templateId) {
+            const normalized = String(templateId || '').trim().toLowerCase();
+            if (!normalized) return null;
+            return backendAddressTemplates.find(item => item.id === normalized) || null;
+        }
+
+        function setAddressFieldValues(fields, address = {}) {
+            (fields || []).forEach(([field, inputId]) => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = String(address?.[field] || '');
+                }
+            });
+        }
+
+        function getAddressFieldValues(fields) {
+            const address = {};
+            (fields || []).forEach(([field, inputId]) => {
+                const value = document.getElementById(inputId)?.value?.trim() || '';
+                if (value) {
+                    address[field] = value;
+                }
+            });
+            return address;
+        }
+
+        function getBackendChannelAddressSummary(channel = {}) {
+            const override = channel.legal_address_override || {};
+            const mode = String(channel.address_mode || 'inherit').trim().toLowerCase();
+
+            if (mode === 'preset') {
+                return {
+                    badge: channel.address_template_name || '模板',
+                    tone: 'success',
+                    text: Object.keys(override).length
+                        ? `模板地址：${formatAddress(override)}`
+                        : `使用模板 ${channel.address_template_name || channel.address_template_id || ''}`.trim()
+                };
+            }
+            if (mode === 'manual') {
+                return {
+                    badge: '手动',
+                    tone: 'success',
+                    text: Object.keys(override).length ? `手动地址：${formatAddress(override)}` : '当前渠道使用手动地址'
+                };
+            }
+            return {
+                badge: '默认',
+                tone: 'muted',
+                text: '沿用渠道自身返回的地址'
+            };
+        }
+
+        function syncBackendAddressTemplatesPanelVisibility() {
+            const panel = document.getElementById('backendAddressTemplatesPanel');
+            if (!panel) return;
+            panel.style.display = isAdmin ? '' : 'none';
+        }
+
+        function resetBackendAddressTemplateForm() {
+            editingBackendAddressTemplateId = null;
+            document.getElementById('backendAddressTemplateNameInput').value = '';
+            setAddressFieldValues(ADDRESS_TEMPLATE_FIELDS, {});
+            document.getElementById('saveBackendAddressTemplateBtn').textContent = '保存模板';
+            document.getElementById('cancelBackendAddressTemplateBtn').style.display = 'none';
+            document.getElementById('backendAddressTemplateHint').textContent = '模板保存后可在实际后端渠道卡片中直接选择。';
+        }
+
+        function cancelBackendAddressTemplateEdit() {
+            resetBackendAddressTemplateForm();
+        }
+
+        function editBackendAddressTemplate(templateId) {
+            const target = getBackendAddressTemplateById(templateId);
+            if (!target) return;
+            editingBackendAddressTemplateId = target.id;
+            document.getElementById('backendAddressTemplateNameInput').value = target.name || '';
+            setAddressFieldValues(ADDRESS_TEMPLATE_FIELDS, target.legal_address || {});
+            document.getElementById('saveBackendAddressTemplateBtn').textContent = '保存模板';
+            document.getElementById('cancelBackendAddressTemplateBtn').style.display = 'inline-flex';
+            document.getElementById('backendAddressTemplateHint').textContent = `${target.name || target.id} 编辑后会同步影响所有绑定该模板的后端渠道。`;
+            const panel = document.getElementById('backendAddressTemplatesPanel');
+            if (panel) {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function renderBackendAddressTemplatesList() {
+            const list = document.getElementById('backendAddressTemplatesList');
+            if (!list) return;
+
+            if (!backendAddressTemplates.length) {
+                list.innerHTML = '<div class="empty-state compact">暂无地址模板</div>';
+                return;
+            }
+
+            list.innerHTML = backendAddressTemplates.map(item => {
+                const usageCount = backendChannelOptions.filter(channel =>
+                    String(channel.address_mode || '').toLowerCase() === 'preset'
+                    && String(channel.address_template_id || '').toLowerCase() === item.id
+                ).length;
+                return `
+                    <div class="display-channel-item">
+                        <div class="display-channel-main">
+                            <div class="display-channel-name">${escapeHtml(item.name || item.id)}</div>
+                            <div class="display-channel-route">${escapeHtml(formatAddress(item.legal_address || {}))}</div>
+                        </div>
+                        <div class="display-channel-badges">
+                            <span class="display-channel-pill">模板</span>
+                            <span class="display-channel-pill ${usageCount > 0 ? 'success' : 'muted'}">${usageCount} 个渠道使用</span>
+                        </div>
+                        <div class="display-channel-actions">
+                            <button type="button" class="btn-secondary btn-sm" onclick="editBackendAddressTemplate('${escapeAttr(item.id)}')">编辑</button>
+                            <button type="button" class="btn-danger btn-sm" onclick="deleteBackendAddressTemplate('${escapeAttr(item.id)}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function saveBackendAddressTemplate() {
+            if (!isAdmin) {
+                showToast('只有管理员可以配置地址模板', 'error');
+                return;
+            }
+
+            const name = document.getElementById('backendAddressTemplateNameInput').value.trim();
+            const legalAddress = getAddressFieldValues(ADDRESS_TEMPLATE_FIELDS);
+            const btn = document.getElementById('saveBackendAddressTemplateBtn');
+
+            if (!name) {
+                showToast('请输入模板名称', 'info');
+                return;
+            }
+            if (!Object.keys(legalAddress).length) {
+                showToast('请至少填写一个地址字段', 'info');
+                return;
+            }
+
+            if (btn) btn.disabled = true;
+            try {
+                const response = await fetch('/api/backend-address-templates', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        id: editingBackendAddressTemplateId || '',
+                        name,
+                        legal_address: legalAddress
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return saveBackendAddressTemplate(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '保存模板失败', 'error');
+                    return;
+                }
+
+                applyBackendChannelOptionsData(data.channels || [], backendAddressModalChannelId, data.address_templates || []);
+                resetBackendAddressTemplateForm();
+                showToast(data.message || '地址模板已保存', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function deleteBackendAddressTemplate(templateId) {
+            if (!await showConfirm('确定要删除这个地址模板吗？仍在使用中的模板需要先解除绑定。', '删除地址模板')) return;
+            try {
+                const response = await fetch(`/api/backend-address-templates/${encodeURIComponent(templateId)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteBackendAddressTemplate(templateId); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '删除模板失败', 'error');
+                    return;
+                }
+
+                applyBackendChannelOptionsData(data.channels || [], backendAddressModalChannelId, data.address_templates || []);
+                if (editingBackendAddressTemplateId === String(templateId || '').trim().toLowerCase()) {
+                    resetBackendAddressTemplateForm();
+                }
+                showToast(data.message || '地址模板已删除', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+
+        function populateBackendChannelAddressTemplateSelect(preferredValue = '') {
+            const select = document.getElementById('backendChannelAddressTemplateSelect');
+            if (!select) return;
+
+            if (!backendAddressTemplates.length) {
+                select.innerHTML = '<option value="">暂无地址模板</option>';
+                select.disabled = true;
+                return;
+            }
+
+            const currentValue = String(preferredValue || select.value || '').trim().toLowerCase();
+            select.disabled = false;
+            select.innerHTML = backendAddressTemplates.map(item => `
+                <option value="${escapeAttr(item.id)}">${escapeHtml(item.name || item.id)} · ${escapeHtml(formatAddress(item.legal_address || {}))}</option>
+            `).join('');
+            select.value = backendAddressTemplates.some(item => item.id === currentValue)
+                ? currentValue
+                : backendAddressTemplates[0].id;
+        }
+
+        function updateBackendChannelAddressModalPreview() {
+            const previewEl = document.getElementById('backendChannelAddressTemplatePreview');
+            const mode = String(document.getElementById('backendChannelAddressModeSelect')?.value || 'inherit').toLowerCase();
+            if (!previewEl) return;
+
+            if (mode !== 'preset') {
+                previewEl.style.display = 'none';
+                previewEl.textContent = '';
+                return;
+            }
+
+            const templateId = String(document.getElementById('backendChannelAddressTemplateSelect')?.value || '').trim().toLowerCase();
+            const template = getBackendAddressTemplateById(templateId);
+            if (!template) {
+                previewEl.style.display = 'block';
+                previewEl.textContent = '当前没有可用的地址模板，请先在地址模板模块中新增。';
+                return;
+            }
+
+            previewEl.style.display = 'block';
+            previewEl.textContent = `${template.name || template.id}：${formatAddress(template.legal_address || {})}`;
+        }
+
+        function updateBackendChannelAddressModalMode() {
+            const mode = String(document.getElementById('backendChannelAddressModeSelect')?.value || 'inherit').toLowerCase();
+            const templateGroup = document.getElementById('backendChannelAddressTemplateGroup');
+            const manualFields = document.getElementById('backendChannelManualAddressFields');
+            const hintEl = document.getElementById('backendChannelAddressModalHint');
+            const saveBtn = document.getElementById('saveBackendChannelAddressConfigBtn');
+
+            if (templateGroup) templateGroup.style.display = mode === 'preset' ? '' : 'none';
+            if (manualFields) manualFields.style.display = mode === 'manual' ? 'grid' : 'none';
+            if (saveBtn) saveBtn.disabled = mode === 'preset' && !backendAddressTemplates.length;
+
+            if (hintEl) {
+                if (mode === 'preset') {
+                    hintEl.textContent = backendAddressTemplates.length
+                        ? '选中的模板会覆盖当前后端渠道返回的地址。'
+                        : '当前还没有地址模板，请先在地址模板模块中新增。';
+                } else if (mode === 'manual') {
+                    hintEl.textContent = '这里填写的是仅当前后端渠道使用的手动地址，不会影响其他渠道。';
+                } else {
+                    hintEl.textContent = '不覆盖时，会直接沿用渠道上游返回的地址。';
+                }
+            }
+
+            updateBackendChannelAddressModalPreview();
+        }
+
+        function handleBackendChannelAddressModalBackdrop(event) {
+            if (event.target === event.currentTarget) {
+                closeBackendChannelAddressModal();
+            }
+        }
+
+        function openBackendChannelAddressModal(channelId) {
+            if (!isAdmin) return;
+            const channel = getBackendChannelById(channelId);
+            const modal = document.getElementById('backendChannelAddressModal');
+            if (!channel || !modal) return;
+
+            backendAddressModalChannelId = channel.backend_channel_id;
+            document.getElementById('backendChannelAddressModalTitle').textContent = `${channel.backend_head || channel.label || channel.backend_channel_id} 地址设置`;
+            document.getElementById('backendChannelAddressModeSelect').value = channel.address_mode || 'inherit';
+            populateBackendChannelAddressTemplateSelect(channel.address_template_id || '');
+            setAddressFieldValues(
+                BACKEND_CHANNEL_MANUAL_ADDRESS_FIELDS,
+                String(channel.address_mode || '').toLowerCase() === 'manual' ? (channel.legal_address_override || {}) : {}
+            );
+            updateBackendChannelAddressModalMode();
+
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeBackendChannelAddressModal() {
+            const modal = document.getElementById('backendChannelAddressModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                backendAddressModalChannelId = '';
+            }, 200);
+        }
+
+        async function saveBackendChannelAddressConfig() {
+            if (!isAdmin) {
+                showToast('只有管理员可以配置渠道地址', 'error');
+                return;
+            }
+            if (!backendAddressModalChannelId) {
+                showToast('请选择后端渠道', 'info');
+                return;
+            }
+
+            const mode = String(document.getElementById('backendChannelAddressModeSelect')?.value || 'inherit').toLowerCase();
+            const templateId = String(document.getElementById('backendChannelAddressTemplateSelect')?.value || '').trim().toLowerCase();
+            const legalAddress = getAddressFieldValues(BACKEND_CHANNEL_MANUAL_ADDRESS_FIELDS);
+            const btn = document.getElementById('saveBackendChannelAddressConfigBtn');
+
+            if (mode === 'preset' && !templateId) {
+                showToast('请选择地址模板', 'info');
+                return;
+            }
+            if (mode === 'manual' && !Object.keys(legalAddress).length) {
+                showToast('请至少填写一个地址字段', 'info');
+                return;
+            }
+
+            if (btn) btn.disabled = true;
+            try {
+                const response = await fetch('/api/other-channels/backend-address-config', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        backend_channel_id: backendAddressModalChannelId,
+                        mode,
+                        template_id: templateId,
+                        legal_address: legalAddress
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return saveBackendChannelAddressConfig(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '保存地址失败', 'error');
+                    return;
+                }
+
+                applyBackendChannelOptionsData(data.channels || [], backendAddressModalChannelId, data.address_templates || []);
+                closeBackendChannelAddressModal();
+                showToast(data.message || '渠道地址已更新', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function clearBackendChannelAddressConfig() {
+            if (!backendAddressModalChannelId) return;
+            try {
+                const response = await fetch('/api/other-channels/backend-address-config', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        backend_channel_id: backendAddressModalChannelId,
+                        mode: 'inherit'
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return clearBackendChannelAddressConfig(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '恢复默认失败', 'error');
+                    return;
+                }
+
+                applyBackendChannelOptionsData(data.channels || [], backendAddressModalChannelId, data.address_templates || []);
+                closeBackendChannelAddressModal();
+                showToast(data.message || '已恢复为默认地址', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+
+        function applyBackendChannelOptionsData(channels = [], preferredModalChannelId = null, templates = null) {
+            backendChannelOptions = channels || [];
+            if (Array.isArray(templates)) {
+                backendAddressTemplates = templates;
+            } else if (!isAdmin) {
+                backendAddressTemplates = [];
+            }
+
+            updateTimoesCodeTypes(
+                backendChannelOptions
+                    .filter(item => item.backend_provider === 'timoes')
+                    .map(item => item.relay_code_type)
+            );
+            renderBackendChannelsSummary(backendChannelOptions);
+            populateBackendChannelSelect();
+            populateCreateCardBackendSelect();
+            syncBackendAddressTemplatesPanelVisibility();
+            renderBackendAddressTemplatesList();
+
+            if (editingBackendAddressTemplateId && !getBackendAddressTemplateById(editingBackendAddressTemplateId)) {
+                resetBackendAddressTemplateForm();
+            }
+
+            const modal = document.getElementById('backendChannelAddressModal');
+            if (modal && modal.style.display !== 'none') {
+                const targetChannelId = String(preferredModalChannelId || backendAddressModalChannelId || '').trim().toLowerCase();
+                const targetChannel = getBackendChannelById(targetChannelId);
+                if (!targetChannelId || !targetChannel) {
+                    closeBackendChannelAddressModal();
+                } else {
+                    backendAddressModalChannelId = targetChannel.backend_channel_id;
+                    document.getElementById('backendChannelAddressModalTitle').textContent = `${targetChannel.backend_head || targetChannel.label || targetChannel.backend_channel_id} 地址设置`;
+                    document.getElementById('backendChannelAddressModeSelect').value = targetChannel.address_mode || 'inherit';
+                    populateBackendChannelAddressTemplateSelect(targetChannel.address_template_id || '');
+                    setAddressFieldValues(
+                        BACKEND_CHANNEL_MANUAL_ADDRESS_FIELDS,
+                        String(targetChannel.address_mode || '').toLowerCase() === 'manual' ? (targetChannel.legal_address_override || {}) : {}
+                    );
+                    updateBackendChannelAddressModalMode();
+                }
+            }
+        }
+
+        function populateTimoesImportTypeOptions(preferredValue = null) {
+            const select = document.getElementById('timoesImportType');
+            if (!select) return;
+
+            const codeTypes = collectTimoesCodeTypes();
+            const currentValue = normalizeTimoesCodeType(preferredValue ?? select.value);
+            if (!codeTypes.length) {
+                select.innerHTML = '<option value="">暂无已配置线路类型</option>';
+                select.disabled = true;
+                return;
+            }
+
+            select.disabled = false;
+            select.innerHTML = codeTypes.map(codeType => `
+                <option value="${escapeAttr(codeType)}">${escapeHtml(getTimoesCodeTypeLabel(codeType))}</option>
+            `).join('');
+            select.value = codeTypes.includes(currentValue) ? currentValue : codeTypes[0];
+        }
+
+        function applyTimoesBackendChannelsData(data = {}) {
+            timoesBackendConfigs = data.channels || [];
+            updateTimoesCodeTypes(data.code_types || timoesBackendConfigs.map(item => item?.relay_code_type));
+            renderTimoesBackendChannelsList();
+            if (editingTimoesBackendChannelId && !timoesBackendConfigs.some(item => item.id === editingTimoesBackendChannelId)) {
+                resetTimoesBackendChannelForm();
+            }
+        }
+
+        function renderTimoesBackendChannelsList() {
+            const list = document.getElementById('timoesBackendChannelsList');
+            if (!list) return;
+
+            if (!timoesBackendConfigs.length) {
+                list.innerHTML = '<div class="empty-state compact">暂无 Timoes 后端渠道</div>';
+                return;
+            }
+
+            list.innerHTML = timoesBackendConfigs.map(item => `
+                <div class="display-channel-item">
+                    <div class="display-channel-main">
+                        <div class="display-channel-name">${escapeHtml(item.label || item.head || item.id)}</div>
+                        <div class="display-channel-route">卡头 ${escapeHtml(item.head || '-')} · 线路 ${escapeHtml(item.relay_code_type || '-')}</div>
+                    </div>
+                    <div class="display-channel-badges">
+                        <span class="display-channel-pill">${escapeHtml(item.provider_label || 'Timoes')}</span>
+                        <span class="display-channel-pill ${item.built_in ? 'muted' : 'success'}">${item.built_in ? '内置' : '自定义'}</span>
+                    </div>
+                    <div class="display-channel-actions">
+                        ${item.editable ? `<button type="button" class="btn-secondary btn-sm" onclick="editTimoesBackendChannel('${escapeAttr(item.id)}')">编辑</button>` : ''}
+                        ${item.deletable ? `<button type="button" class="btn-danger btn-sm" onclick="deleteTimoesBackendChannel('${escapeAttr(item.id)}')">删除</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function resetTimoesBackendChannelForm() {
+            editingTimoesBackendChannelId = null;
+            const headInput = document.getElementById('timoesBackendHeadInput');
+            const typeInput = document.getElementById('timoesBackendCodeTypeInput');
+            const labelInput = document.getElementById('timoesBackendLabelInput');
+            const saveBtn = document.getElementById('saveTimoesBackendChannelBtn');
+            const cancelBtn = document.getElementById('cancelTimoesBackendChannelBtn');
+
+            if (headInput) headInput.value = '';
+            if (typeInput) typeInput.value = '';
+            if (labelInput) labelInput.value = '';
+            if (saveBtn) saveBtn.textContent = '添加渠道';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        function cancelTimoesBackendChannelEdit() {
+            resetTimoesBackendChannelForm();
+        }
+
+        function editTimoesBackendChannel(channelId) {
+            const target = timoesBackendConfigs.find(item => item.id === channelId);
+            if (!target || !target.editable) return;
+
+            editingTimoesBackendChannelId = channelId;
+            document.getElementById('timoesBackendHeadInput').value = target.head || '';
+            document.getElementById('timoesBackendCodeTypeInput').value = target.relay_code_type || '';
+            document.getElementById('timoesBackendLabelInput').value = target.label || '';
+            document.getElementById('saveTimoesBackendChannelBtn').textContent = '保存渠道';
+            document.getElementById('cancelTimoesBackendChannelBtn').style.display = 'inline-flex';
+        }
+
+        async function loadTimoesBackendChannels() {
+            const panel = document.getElementById('timoesBackendChannelsPanel');
+            if (!panel) return;
+
+            if (!isAdmin) {
+                panel.innerHTML = '<div class="empty-state compact">只有管理员可以配置 Timoes 后端渠道</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/timoes-backend-channels', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return loadTimoesBackendChannels(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '加载 Timoes 后端渠道失败', 'error');
+                    return;
+                }
+                applyTimoesBackendChannelsData(data);
+            } catch (error) {
+                showToast('加载 Timoes 后端渠道失败', 'error');
+            }
+        }
+
+        async function saveTimoesBackendChannel() {
+            if (!isAdmin) {
+                showToast('只有管理员可以配置 Timoes 后端渠道', 'error');
+                return;
+            }
+
+            const head = document.getElementById('timoesBackendHeadInput')?.value.trim() || '';
+            const relayCodeType = normalizeTimoesCodeType(document.getElementById('timoesBackendCodeTypeInput')?.value);
+            const label = document.getElementById('timoesBackendLabelInput')?.value.trim() || '';
+            const saveBtn = document.getElementById('saveTimoesBackendChannelBtn');
+
+            if (!/^\d{4,8}$/.test(head)) {
+                showToast('请输入 4-8 位数字卡头', 'info');
+                return;
+            }
+            if (!relayCodeType) {
+                showToast('请输入线路类型', 'info');
+                return;
+            }
+
+            if (saveBtn) saveBtn.disabled = true;
+            try {
+                const isEditing = !!editingTimoesBackendChannelId;
+                const response = await fetch('/api/timoes-backend-channels', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        id: editingTimoesBackendChannelId || '',
+                        head,
+                        relay_code_type: relayCodeType,
+                        label
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return saveTimoesBackendChannel(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '保存失败', 'error');
+                    return;
+                }
+
+                applyTimoesBackendChannelsData(data);
+                resetTimoesBackendChannelForm();
+                await Promise.all([
+                    refreshBackendChannels(),
+                    refreshTimoesPoolStats(),
+                    loadDisplayChannels(),
+                    loadKeyDisplayChannelOptions()
+                ]);
+                refreshPoolManagerIfOpen('timoes');
+                showToast(isEditing ? 'Timoes 后端渠道已保存' : 'Timoes 后端渠道已添加', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                if (saveBtn) saveBtn.disabled = false;
+            }
+        }
+
+        async function deleteTimoesBackendChannel(channelId) {
+            if (!await showConfirm('确定要删除这个 Timoes 后端渠道吗？', '删除 Timoes 后端渠道')) return;
+            try {
+                const response = await fetch(`/api/timoes-backend-channels/${encodeURIComponent(channelId)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteTimoesBackendChannel(channelId); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '删除失败', 'error');
+                    return;
+                }
+
+                applyTimoesBackendChannelsData(data);
+                resetTimoesBackendChannelForm();
+                await Promise.all([
+                    refreshBackendChannels(),
+                    refreshTimoesPoolStats(),
+                    loadDisplayChannels(),
+                    loadKeyDisplayChannelOptions()
+                ]);
+                refreshPoolManagerIfOpen('timoes');
+                showToast(data.message || 'Timoes 后端渠道已删除', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+
+        function getKeyBindingLabel(item) {
+            return item?.bound_display_channel_name || '通用 UUID';
+        }
+
+        function renderKeyDisplayChannelSelects() {
+            const normalSelectIds = ['keyDisplayChannel', 'withdrawDisplayChannelSelect'];
+            const normalOptionsHtml = [
+                '<option value="">通用 UUID（不绑定渠道）</option>',
+                ...keyDisplayChannelOptions.map(channel => `
+                    <option value="${escapeAttr(channel.id)}">
+                        ${escapeHtml(channel.name || channel.label || channel.id)} · ${escapeHtml(channel.backend_head || channel.backend_label || channel.backend_channel_id || '')}
+                    </option>
+                `)
+            ].join('');
+
+            normalSelectIds.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                const currentValue = select.value || '';
+                select.innerHTML = normalOptionsHtml;
+                select.value = keyDisplayChannelOptions.some(channel => channel.id === currentValue)
+                    ? currentValue
+                    : '';
+            });
+
+            const oldSelect = document.getElementById('oldKeyDisplayChannel');
+            if (oldSelect) {
+                const currentValue = oldSelect.value || '';
+                oldSelect.innerHTML = [
+                    '<option value="">通用旧卡 UUID（不绑定渠道）</option>',
+                    ...oldCardDisplayChannelOptions.map(channel => `
+                        <option value="${escapeAttr(channel.id)}">
+                            ${escapeHtml(channel.name || channel.label || channel.id)} · ${escapeHtml(channel.backend_head || channel.backend_label || channel.backend_channel_id || '')} · ${Number(channel.old_card_available_count || 0)}张
+                        </option>
+                    `)
+                ].join('');
+                oldSelect.value = oldCardDisplayChannelOptions.some(channel => channel.id === currentValue)
+                    ? currentValue
+                    : '';
+            }
+        }
+
+        async function loadKeyDisplayChannelOptions() {
+            try {
+                const response = await fetch('/api/keys/display-channel-options', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return loadKeyDisplayChannelOptions(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '加载绑定渠道失败', 'error');
+                    return;
+                }
+                keyDisplayChannelOptions = data.channels || [];
+                renderKeyDisplayChannelSelects();
+            } catch (error) {
+                console.error('加载绑定渠道失败:', error);
+            }
+        }
+
+        function applyOldCardPoolData(data) {
+            oldCardPoolChannels = Array.isArray(data?.channels) ? data.channels : [];
+            oldCardDisplayChannelOptions = Array.isArray(data?.display_channels) ? data.display_channels : [];
+            renderKeyDisplayChannelSelects();
+            renderOldCardPoolChannels(data);
+        }
+
+        function renderOldCardPoolChannels(data = {}) {
+            const container = document.getElementById('oldCardPoolChannels');
+            const enabledAvailable = Number(data?.enabled_available ?? oldCardPoolChannels
+                .filter(item => item.enabled !== false)
+                .reduce((sum, item) => sum + Number(item.available_count || 0), 0));
+            const totalChannels = oldCardPoolChannels.length;
+
+            const badge = document.getElementById('oldCardPoolEnabledAvailable');
+            if (badge) badge.textContent = enabledAvailable;
+            const summaryText = document.getElementById('oldCardPoolSummaryText');
+            if (summaryText) summaryText.textContent = `已开启卡头可用 ${enabledAvailable} 张`;
+            const note = document.getElementById('oldCardPoolNote');
+            if (note) {
+                note.textContent = totalChannels
+                    ? `当前共识别 ${totalChannels} 个旧卡卡头，通用旧卡卡密在兑换页不指定渠道时会随机分配；指定渠道时会按所选卡头出卡。`
+                    : '当前还没有可复用的旧卡，等历史已兑换卡进入有效期池后会自动显示在这里。';
+            }
+
+            if (!container) return;
+            if (!oldCardPoolChannels.length) {
+                container.innerHTML = '<div class="empty-state compact">暂无可用旧卡卡头</div>';
+                return;
+            }
+
+            container.innerHTML = oldCardPoolChannels.map(channel => `
+                ${(() => {
+                    const normalizedBackendId = String(channel.backend_channel_id || '').trim().toLowerCase();
+                    const isPending = pendingOldCardChannelToggles.has(normalizedBackendId);
+                    return `
+                <div class="old-card-channel-card ${channel.enabled === false ? 'disabled' : ''}">
+                    <div class="old-card-channel-top">
+                        <div class="old-card-channel-title">
+                            <strong>${escapeHtml(channel.label || channel.head || channel.backend_channel_id || '未知卡头')}</strong>
+                            <span>${escapeHtml([channel.provider_label || channel.provider || '', channel.head || channel.backend_channel_id || ''].filter(Boolean).join(' · '))}</span>
+                        </div>
+                        <span class="old-card-stat-badge ${channel.enabled === false ? 'disabled' : 'available'}">
+                            ${channel.enabled === false ? '已关闭' : '已开启'}
+                        </span>
+                    </div>
+                    <div class="old-card-channel-stats">
+                        <span class="old-card-stat-badge available">可用 ${Number(channel.available_count || 0)}</span>
+                        <span class="old-card-stat-badge">已分配 ${Number(channel.used_count || 0)}</span>
+                        <span class="old-card-stat-badge">失效 ${Number(channel.invalid_count || 0)}</span>
+                    </div>
+                    ${isAdmin ? `
+                        <div class="old-card-channel-actions">
+                            <button class="${channel.enabled === false ? 'btn-secondary' : 'btn-danger'}" ${isPending ? 'disabled' : ''} onclick="toggleOldCardBackendChannel('${escapeAttr(channel.backend_channel_id || '')}', ${channel.enabled === false ? 'true' : 'false'})">
+                                ${isPending ? '处理中...' : (channel.enabled === false ? '开启卡头' : '关闭卡头')}
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+                    `;
+                })()}
+            `).join('');
+        }
+
+        async function refreshOldCardPoolStats() {
+            try {
+                const response = await fetch('/api/old-card-pool/stats', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshOldCardPoolStats(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '加载旧卡池失败', 'error');
+                    return;
+                }
+                applyOldCardPoolData(data);
+            } catch (error) {
+                console.error('加载旧卡池失败:', error);
+            }
+        }
+
+        function refreshOldCardPoolStatsIfVisible(force = false) {
+            if (!force && (currentTab !== 'keys' || currentKeyMode !== 'old-card')) return;
+            refreshOldCardPoolStats();
+        }
+
+        async function toggleOldCardBackendChannel(backendChannelId, enabled) {
+            if (!isAdmin || !backendChannelId) return;
+            const normalizedBackendId = String(backendChannelId || '').trim().toLowerCase();
+            if (!normalizedBackendId || pendingOldCardChannelToggles.has(normalizedBackendId)) return;
+            pendingOldCardChannelToggles.add(normalizedBackendId);
+            renderOldCardPoolChannels();
+            try {
+                const response = await fetch(`/api/old-card-pool/backend-channels/${encodeURIComponent(backendChannelId)}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ enabled })
+                });
+                if (response.status === 401) { await checkAuth(); return toggleOldCardBackendChannel(backendChannelId, enabled); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '更新旧卡卡头失败', 'error');
+                    return;
+                }
+                applyOldCardPoolData(data);
+                showToast(data.message || '旧卡卡头状态已更新', 'success');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                pendingOldCardChannelToggles.delete(normalizedBackendId);
+                renderOldCardPoolChannels();
+            }
+        }
+
+        async function generateOldCardKeys() {
+            const count = parseInt(document.getElementById('oldKeyCount').value) || 1;
+            const displayChannelId = document.getElementById('oldKeyDisplayChannel').value || '';
+            if (count < 1) {
+                showToast('生成数量必须大于 0', 'error');
+                return;
+            }
+
+            document.getElementById('generateOldKeyBtn').disabled = true;
+            try {
+                const response = await fetch('/api/keys/generate', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        count,
+                        key_kind: 'old_card',
+                        card_limit: 0,
+                        expire_minutes: 0,
+                        display_channel_id: displayChannelId || null
+                    })
+                });
+                if (response.status === 401) { await checkAuth(); return generateOldCardKeys(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '生成失败', 'error');
+                    return;
+                }
+                showToast(`成功生成 ${data.generated} 个旧卡卡密`, 'success');
+                refreshKeys();
+                refreshOldCardPoolStats();
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                document.getElementById('generateOldKeyBtn').disabled = false;
+            }
+        }
+
+        function formatPoolStatusLabel(status) {
+            const labels = {
+                available: '可用',
+                invalid: '失效',
+                used: '已用'
+            };
+            return labels[status] || (status || '-');
+        }
+
+        function formatPoolTime(value) {
+            if (!value) return '未记录';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return String(value);
+            }
+            return date.toLocaleString();
+        }
+
+        function refreshPoolManagerIfOpen(type) {
+            const drawer = document.getElementById('poolManagerDrawer');
+            if (poolManagerState.type === type && drawer && drawer.style.display !== 'none') {
+                loadPoolManagerItems();
+            }
+        }
+
+        function openPoolManager(type) {
+            poolManagerState.type = type === 'manual' ? 'manual' : 'timoes';
+            const drawer = document.getElementById('poolManagerDrawer');
+            if (!drawer) return;
+            drawer.style.display = 'block';
+            requestAnimationFrame(() => drawer.classList.add('show'));
+            renderPoolManagerToolbar();
+            loadPoolManagerItems();
+        }
+
+        function closePoolManager() {
+            const drawer = document.getElementById('poolManagerDrawer');
+            if (!drawer || drawer.style.display === 'none') return;
+            drawer.classList.remove('show');
+            setTimeout(() => {
+                if (!drawer.classList.contains('show')) {
+                    drawer.style.display = 'none';
+                }
+            }, 220);
+        }
+
+        function setPoolManagerFilter(key, value, shouldReload = false) {
+            if (!poolManagerState.type) return;
+            poolManagerState.filters[poolManagerState.type][key] = value;
+            if (shouldReload) {
+                loadPoolManagerItems();
+            }
+        }
+
+        function renderPoolManagerToolbar() {
+            const titleEl = document.getElementById('poolManagerTitle');
+            const summaryEl = document.getElementById('poolManagerSummary');
+            const toolbar = document.getElementById('poolManagerToolbar');
+            if (!toolbar || !poolManagerState.type) return;
+
+            if (summaryEl) {
+                summaryEl.textContent = '正在加载...';
+            }
+
+            if (poolManagerState.type === 'timoes') {
+                const filters = poolManagerState.filters.timoes;
+                const codeTypeOptions = collectTimoesCodeTypes();
+                if (titleEl) titleEl.textContent = 'Timoes 卡密编辑';
+                toolbar.innerHTML = `
+                    <div class="pool-manager-toolbar-row">
+                        <div class="form-field">
+                            <label>线路类型</label>
+                            <select class="pool-manager-field" onchange="setPoolManagerFilter('code_type', this.value, true)">
+                                <option value="" ${filters.code_type === '' ? 'selected' : ''}>全部类型</option>
+                                ${codeTypeOptions.map(codeType => `
+                                    <option value="${escapeAttr(codeType)}" ${filters.code_type === codeType ? 'selected' : ''}>${escapeHtml(getTimoesCodeTypeLabel(codeType))}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>状态</label>
+                            <select class="pool-manager-field" onchange="setPoolManagerFilter('status', this.value, true)">
+                                <option value="" ${filters.status === '' ? 'selected' : ''}>全部状态</option>
+                                <option value="available" ${filters.status === 'available' ? 'selected' : ''}>可用</option>
+                                <option value="invalid" ${filters.status === 'invalid' ? 'selected' : ''}>失效</option>
+                                <option value="used" ${filters.status === 'used' ? 'selected' : ''}>已用</option>
+                            </select>
+                        </div>
+                        <div class="pool-manager-toolbar-actions">
+                            <button type="button" class="btn-secondary" onclick="loadPoolManagerItems()">刷新列表</button>
+                        </div>
+                    </div>
+                    <div class="pool-manager-toolbar-note">这里展示共享池中的 Timoes 卡密，所有登录用户都可以查看、编辑、删除和使用；导入人仅用于记录。</div>
+                `;
+            } else {
+                const filters = poolManagerState.filters.manual;
+                if (titleEl) titleEl.textContent = '手动卡池编辑';
+                toolbar.innerHTML = `
+                    <div class="pool-manager-toolbar-row">
+                        <div class="form-field">
+                            <label>BIN 过滤</label>
+                            <input
+                                type="text"
+                                class="pool-manager-field"
+                                value="${escapeAttr(filters.bin_code || '')}"
+                                placeholder="输入 6-8 位 BIN"
+                                oninput="setPoolManagerFilter('bin_code', this.value.replace(/\\D/g, ''))"
+                                onkeydown="if (event.key === 'Enter') loadPoolManagerItems()"
+                            >
+                        </div>
+                        <div class="form-field">
+                            <label>状态</label>
+                            <select class="pool-manager-field" onchange="setPoolManagerFilter('status', this.value, true)">
+                                <option value="" ${filters.status === '' ? 'selected' : ''}>全部状态</option>
+                                <option value="available" ${filters.status === 'available' ? 'selected' : ''}>可用</option>
+                                <option value="invalid" ${filters.status === 'invalid' ? 'selected' : ''}>失效</option>
+                                <option value="used" ${filters.status === 'used' ? 'selected' : ''}>已用</option>
+                            </select>
+                        </div>
+                        <div class="pool-manager-toolbar-actions">
+                            <button type="button" class="btn-secondary" onclick="loadPoolManagerItems()">搜索</button>
+                        </div>
+                    </div>
+                    <div class="pool-manager-toolbar-note">这里展示共享手动卡池，所有登录用户都可以查看、编辑、删除和使用；导入人仅用于记录。</div>
+                `;
+            }
+        }
+
+        function buildPoolManagerQuery() {
+            const filters = poolManagerState.filters[poolManagerState.type] || {};
+            const params = new URLSearchParams();
+            params.set('limit', String(filters.limit || 100));
+            Object.entries(filters).forEach(([key, value]) => {
+                if (key === 'limit') return;
+                if (value !== undefined && value !== null && String(value).trim() !== '') {
+                    params.set(key, String(value).trim());
+                }
+            });
+            return params.toString();
+        }
+
+        async function loadPoolManagerItems() {
+            if (!poolManagerState.type) return;
+
+            const body = document.getElementById('poolManagerBody');
+            const summaryEl = document.getElementById('poolManagerSummary');
+            if (body) {
+                body.innerHTML = '<div class="empty-state compact">正在加载...</div>';
+            }
+            if (summaryEl) {
+                summaryEl.textContent = '正在加载...';
+            }
+
+            try {
+                const basePath = poolManagerState.type === 'timoes'
+                    ? '/api/timoes-pool/items'
+                    : '/api/manual-card-pool/items';
+                const response = await fetch(`${basePath}?${buildPoolManagerQuery()}`, { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return loadPoolManagerItems(); }
+                const data = await response.json();
+                if (!data.success) {
+                    if (body) {
+                        body.innerHTML = `<div class="empty-state compact">${escapeHtml(data.error || '加载失败')}</div>`;
+                    }
+                    if (summaryEl) {
+                        summaryEl.textContent = '加载失败';
+                    }
+                    return;
+                }
+
+                poolManagerState.items = data.items || [];
+                if (poolManagerState.type === 'timoes') {
+                    updateTimoesCodeTypes(data.code_types || poolManagerState.items.map(item => item?.code_type));
+                }
+                if (summaryEl) {
+                    const total = data.total || 0;
+                    const shown = poolManagerState.items.length;
+                    summaryEl.textContent = total > shown
+                        ? `共 ${total} 条，当前展示最近 ${shown} 条`
+                        : `共 ${total} 条记录`;
+                }
+                renderPoolManagerItems(poolManagerState.items);
+            } catch (error) {
+                if (body) {
+                    body.innerHTML = '<div class="empty-state compact">加载失败，请稍后重试</div>';
+                }
+                if (summaryEl) {
+                    summaryEl.textContent = '加载失败';
+                }
+            }
+        }
+
+        function renderPoolManagerItems(items = []) {
+            const body = document.getElementById('poolManagerBody');
+            if (!body) return;
+
+            if (!items.length) {
+                body.innerHTML = '<div class="empty-state compact">当前筛选条件下暂无记录</div>';
+                return;
+            }
+
+            if (poolManagerState.type === 'timoes') {
+                body.innerHTML = items.map(item => {
+                    const canEdit = item.status !== 'used';
+                    const codeTypeOptions = collectTimoesCodeTypes([item.code_type]);
+                    const lastError = item.last_error ? `<div class="pool-manager-note">最近错误：${escapeHtml(item.last_error)}</div>` : '';
+                    const lockInfo = item.locked ? `<span class="pool-manager-pill muted">锁定中</span>` : '';
+                    const ownerText = item.created_by ? ` · 导入者 ${escapeHtml(item.created_by)}` : '';
+                    return `
+                        <div class="pool-manager-card" data-item-key="${escapeAttr(item.code)}">
+                            <div class="pool-manager-card-header">
+                                <div>
+                                    <div class="pool-manager-card-title">${escapeHtml(item.code_type || '-')} · ${formatPoolStatusLabel(item.status)}</div>
+                                    <div class="pool-manager-card-meta">创建于 ${escapeHtml(formatPoolTime(item.created_time))}${ownerText}${item.used_time ? ` · 最近处理 ${escapeHtml(formatPoolTime(item.used_time))}` : ''}</div>
+                                </div>
+                                <div class="pool-manager-pills">
+                                    <span class="pool-manager-pill ${item.status === 'available' ? 'success' : item.status === 'invalid' ? 'warning' : 'muted'}">${formatPoolStatusLabel(item.status)}</span>
+                                    ${lockInfo}
+                                </div>
+                            </div>
+                            <div class="pool-manager-grid">
+                                <div class="form-field">
+                                    <label>卡密</label>
+                                    <input type="text" class="pool-manager-field" value="${escapeAttr(item.code)}" data-field="code" readonly>
+                                </div>
+                                <div class="form-field">
+                                    <label>线路类型</label>
+                                    <select class="pool-manager-field" data-field="code_type" ${canEdit ? '' : 'disabled'}>
+                                        ${codeTypeOptions.map(codeType => `
+                                            <option value="${escapeAttr(codeType)}" ${item.code_type === codeType ? 'selected' : ''}>${escapeHtml(getTimoesCodeTypeLabel(codeType))}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label>状态</label>
+                                    <select class="pool-manager-field" data-field="status" ${canEdit ? '' : 'disabled'}>
+                                        ${canEdit ? `
+                                            <option value="available" ${item.status === 'available' ? 'selected' : ''}>可用</option>
+                                            <option value="invalid" ${item.status === 'invalid' ? 'selected' : ''}>失效</option>
+                                        ` : `
+                                            <option value="used" selected>已用</option>
+                                        `}
+                                    </select>
+                                </div>
+                            </div>
+                            ${lastError}
+                            <div class="pool-manager-actions">
+                                <button type="button" class="btn-secondary btn-sm" onclick="copyToClipboard('${item.code}').then(() => showToast('卡密已复制', 'success')).catch(() => showToast('复制失败', 'error'))">复制</button>
+                                <button type="button" class="btn-secondary btn-sm pool-save-btn" onclick="saveTimoesPoolItem('${item.code}')" ${canEdit ? '' : 'disabled'}>保存</button>
+                                <button type="button" class="btn-danger btn-sm" onclick="deleteTimoesPoolItem('${item.code}')">删除</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                return;
+            }
+
+            body.innerHTML = items.map(item => {
+                const canEdit = item.status !== 'used';
+                const addressText = item.legal_address && Object.keys(item.legal_address).length
+                    ? `<div class="pool-manager-note">地址：${escapeHtml(formatAddress(item.legal_address))}</div>`
+                    : '';
+                const lastError = item.last_error ? `<div class="pool-manager-note">最近错误：${escapeHtml(item.last_error)}</div>` : '';
+                const lockInfo = item.locked ? `<span class="pool-manager-pill muted">锁定中</span>` : '';
+                const ownerText = item.created_by ? ` · 导入者 ${escapeHtml(item.created_by)}` : '';
+                return `
+                    <div class="pool-manager-card" data-item-key="${escapeAttr(item.pan)}">
+                        <div class="pool-manager-card-header">
+                            <div>
+                                <div class="pool-manager-card-title">${escapeHtml(item.bin_code || '-')} · ${formatPoolStatusLabel(item.status)}</div>
+                                <div class="pool-manager-card-meta">创建于 ${escapeHtml(formatPoolTime(item.created_time))}${ownerText}${item.used_time ? ` · 最近处理 ${escapeHtml(formatPoolTime(item.used_time))}` : ''}</div>
+                            </div>
+                            <div class="pool-manager-pills">
+                                <span class="pool-manager-pill ${item.status === 'available' ? 'success' : item.status === 'invalid' ? 'warning' : 'muted'}">${formatPoolStatusLabel(item.status)}</span>
+                                ${lockInfo}
+                            </div>
+                        </div>
+                        <div class="pool-manager-grid manual">
+                            <div class="form-field">
+                                <label>卡号</label>
+                                <input type="text" class="pool-manager-field" value="${escapeAttr(item.pan)}" data-field="pan" readonly>
+                            </div>
+                            <div class="form-field">
+                                <label>到期(月)</label>
+                                <input type="text" class="pool-manager-field" value="${escapeAttr(item.exp_month || '')}" data-field="exp_month" maxlength="2" ${canEdit ? '' : 'disabled'}>
+                            </div>
+                            <div class="form-field">
+                                <label>到期(年)</label>
+                                <input type="text" class="pool-manager-field" value="${escapeAttr(item.exp_year || '')}" data-field="exp_year" maxlength="4" ${canEdit ? '' : 'disabled'}>
+                            </div>
+                            <div class="form-field">
+                                <label>CVV</label>
+                                <input type="text" class="pool-manager-field" value="${escapeAttr(item.cvv || '')}" data-field="cvv" maxlength="4" ${canEdit ? '' : 'disabled'}>
+                            </div>
+                            <div class="form-field">
+                                <label>余额</label>
+                                <input type="number" class="pool-manager-field" value="${item.card_limit ?? ''}" data-field="card_limit" min="0" step="0.01" ${canEdit ? '' : 'disabled'}>
+                            </div>
+                            <div class="form-field">
+                                <label>有效期(分钟)</label>
+                                <input type="number" class="pool-manager-field" value="${item.expire_minutes ?? ''}" data-field="expire_minutes" min="1" step="1" ${canEdit ? '' : 'disabled'}>
+                            </div>
+                            <div class="form-field">
+                                <label>状态</label>
+                                <select class="pool-manager-field" data-field="status" ${canEdit ? '' : 'disabled'}>
+                                    ${canEdit ? `
+                                        <option value="available" ${item.status === 'available' ? 'selected' : ''}>可用</option>
+                                        <option value="invalid" ${item.status === 'invalid' ? 'selected' : ''}>失效</option>
+                                    ` : `
+                                        <option value="used" selected>已用</option>
+                                    `}
+                                </select>
+                            </div>
+                        </div>
+                        ${addressText}
+                        ${lastError}
+                        <div class="pool-manager-actions">
+                            <button type="button" class="btn-secondary btn-sm" onclick="copyToClipboard('${item.pan} ${item.exp_month}/${String(item.exp_year || '').slice(-2)} ${item.cvv}').then(() => showToast('卡信息已复制', 'success')).catch(() => showToast('复制失败', 'error'))">复制</button>
+                            <button type="button" class="btn-secondary btn-sm pool-save-btn" onclick="saveManualPoolItem('${item.pan}')" ${canEdit ? '' : 'disabled'}>保存</button>
+                            <button type="button" class="btn-danger btn-sm" onclick="deleteManualPoolItem('${item.pan}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function saveTimoesPoolItem(code) {
+            const card = document.querySelector(`#poolManagerBody .pool-manager-card[data-item-key="${code}"]`);
+            if (!card) return;
+
+            const btn = card.querySelector('.pool-save-btn');
+            const payload = {
+                code_type: card.querySelector('[data-field="code_type"]').value,
+                status: card.querySelector('[data-field="status"]').value
+            };
+
+            if (btn) btn.disabled = true;
+            try {
+                const response = await fetch(`/api/timoes-pool/items/${encodeURIComponent(code)}`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (response.status === 401) { await checkAuth(); return saveTimoesPoolItem(code); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '保存失败', 'error');
+                    return;
+                }
+
+                applyTimoesPoolStats(data);
+                refreshBackendChannels();
+                showToast('Timoes 卡密记录已保存', 'success');
+                loadPoolManagerItems();
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function deleteTimoesPoolItem(code) {
+            if (!await showConfirm('确定要删除这条 Timoes 卡密吗？', '删除 Timoes 卡密')) return;
+            try {
+                const response = await fetch(`/api/timoes-pool/items/${encodeURIComponent(code)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteTimoesPoolItem(code); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '删除失败', 'error');
+                    return;
+                }
+
+                applyTimoesPoolStats(data);
+                refreshBackendChannels();
+                showToast(data.message || '卡密已删除', 'success');
+                loadPoolManagerItems();
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+
+        async function saveManualPoolItem(pan) {
+            const card = document.querySelector(`#poolManagerBody .pool-manager-card[data-item-key="${pan}"]`);
+            if (!card) return;
+
+            const btn = card.querySelector('.pool-save-btn');
+            const payload = {
+                exp_month: card.querySelector('[data-field="exp_month"]').value.trim(),
+                exp_year: card.querySelector('[data-field="exp_year"]').value.trim(),
+                cvv: card.querySelector('[data-field="cvv"]').value.trim(),
+                card_limit: card.querySelector('[data-field="card_limit"]').value.trim(),
+                expire_minutes: card.querySelector('[data-field="expire_minutes"]').value.trim(),
+                status: card.querySelector('[data-field="status"]').value
+            };
+
+            if (btn) btn.disabled = true;
+            try {
+                const response = await fetch(`/api/manual-card-pool/items/${encodeURIComponent(pan)}`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (response.status === 401) { await checkAuth(); return saveManualPoolItem(pan); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '保存失败', 'error');
+                    return;
+                }
+
+                applyManualPoolStats(data);
+                refreshBackendChannels();
+                showToast('手动卡池记录已保存', 'success');
+                loadPoolManagerItems();
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function deleteManualPoolItem(pan) {
+            if (!await showConfirm('确定要删除这条手动卡记录吗？', '删除手动卡')) return;
+            try {
+                const response = await fetch(`/api/manual-card-pool/items/${encodeURIComponent(pan)}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                if (response.status === 401) { await checkAuth(); return deleteManualPoolItem(pan); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '删除失败', 'error');
+                    return;
+                }
+
+                applyManualPoolStats(data);
+                refreshBackendChannels();
+                showToast(data.message || '卡片已删除', 'success');
+                loadPoolManagerItems();
+            } catch (error) {
+                showToast('请求失败', 'error');
+            }
+        }
+
+        function renderBackendChannelsSummary(channels = []) {
+            const container = document.getElementById('backendChannelsSummary');
+            if (!container) return;
+
+            if (!channels.length) {
+                container.innerHTML = '<div class="empty-state compact">暂无可用渠道</div>';
+                return;
+            }
+
+            container.innerHTML = channels.map(channel => {
+                const addressSummary = getBackendChannelAddressSummary(channel);
+                return `
+                    <div class="backend-channel-card">
+                        <div class="backend-channel-head">${channel.backend_head || channel.label || channel.backend_label || channel.id || '-'}</div>
+                        <div class="backend-channel-meta">${channel.backend_provider_label || channel.backend_provider || '渠道'}${channel.relay_code_type ? ` · ${channel.relay_code_type}` : ''}</div>
+                        <div class="backend-channel-count">${Number.isFinite(channel.backend_available_count) ? channel.backend_available_count : '--'} / ${Number.isFinite(channel.backend_total_count) ? channel.backend_total_count : '--'}</div>
+                        ${isAdmin ? `<div class="backend-channel-address">${escapeHtml(addressSummary.text || '')}</div>` : ''}
+                        ${isAdmin ? `
+                            <div class="backend-channel-actions">
+                                <span class="display-channel-pill ${addressSummary.tone === 'success' ? 'success' : 'muted'}">${escapeHtml(addressSummary.badge || '默认')}</span>
+                                <button type="button" class="btn-secondary btn-sm" onclick="openBackendChannelAddressModal('${escapeAttr(channel.backend_channel_id || '')}')">地址</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateBackendChannelSelect() {
+            const select = document.getElementById('displayChannelBackendSelect');
+            if (!select) return;
+
+            if (!backendChannelOptions.length) {
+                select.innerHTML = '<option value="">暂无可用后端渠道</option>';
+                select.disabled = true;
+                return;
+            }
+
+            const currentValue = select.value;
+            select.disabled = false;
+            select.innerHTML = backendChannelOptions.map(channel => `
+                <option value="${channel.backend_channel_id}">
+                    ${(channel.label || channel.backend_label || channel.backend_channel_id)} · ${channel.backend_provider_label || channel.backend_provider || '渠道'}${channel.relay_code_type ? ` · ${channel.relay_code_type}` : ''}
+                </option>
+            `).join('');
+            select.value = backendChannelOptions.some(item => item.backend_channel_id === currentValue)
+                ? currentValue
+                : backendChannelOptions[0].backend_channel_id;
+        }
+
+        function populateCreateCardBackendSelect() {
+            const select = document.getElementById('cardBackendChannel');
+            if (!select) return;
+
+            if (!backendChannelOptions.length) {
+                select.innerHTML = '<option value="">暂无可用后端渠道</option>';
+                select.disabled = true;
+                updateCreateCardChannelControls();
+                return;
+            }
+
+            const currentValue = select.value;
+            select.disabled = false;
+            select.innerHTML = backendChannelOptions.map(channel => `
+                <option value="${channel.backend_channel_id}">
+                    ${(channel.backend_head || channel.label || channel.backend_label || channel.backend_channel_id)} · ${channel.backend_provider_label || channel.backend_provider || '渠道'}${channel.relay_code_type ? ` · ${channel.relay_code_type}` : ''}
+                </option>
+            `).join('');
+            select.value = backendChannelOptions.some(item => item.backend_channel_id === currentValue)
+                ? currentValue
+                : backendChannelOptions[0].backend_channel_id;
+            updateCreateCardChannelControls();
+        }
+
+        function updateCreateCardChannelControls() {
+            const selectedChannel = getSelectedCreateBackendChannel();
+            const limitInput = document.getElementById('cardLimit');
+            const expireInput = document.getElementById('expireTime');
+            const hintEl = document.getElementById('cardCreateChannelHint');
+            const supportsCustomControls = !!selectedChannel && selectedChannel.backend_provider === 'mercury';
+
+            if (limitInput) limitInput.disabled = !supportsCustomControls;
+            if (expireInput) expireInput.disabled = !supportsCustomControls;
+
+            if (!hintEl) return;
+            if (!selectedChannel) {
+                hintEl.textContent = '当前没有可用的实际后端渠道。';
+                hintEl.classList.remove('active');
+                return;
+            }
+
+            if (supportsCustomControls) {
+                hintEl.textContent = `当前使用 ${selectedChannel.backend_head || selectedChannel.label || selectedChannel.backend_channel_id}，支持自定义余额与过期时间。`;
+                hintEl.classList.add('active');
+            } else {
+                hintEl.textContent = `当前使用 ${selectedChannel.backend_head || selectedChannel.label || selectedChannel.backend_channel_id}，将直接使用渠道自身的余额与有效期。`;
+                hintEl.classList.remove('active');
+            }
+        }
+
+        function renderDisplayChannelsList() {
+            const list = document.getElementById('displayChannelsList');
+            if (!list) return;
+
+            if (!displayChannelConfigs.length) {
+                list.innerHTML = '<div class="empty-state compact">暂无前台显示渠道</div>';
+                return;
+            }
+
+            list.innerHTML = displayChannelConfigs.map(item => `
+                <div class="display-channel-item ${item.enabled ? '' : 'disabled'}">
+                    <div class="display-channel-main">
+                        <div class="display-channel-name">${item.name || item.label || item.id}</div>
+                        <div class="display-channel-route">路由到 ${item.backend_label || item.backend_channel_id || '-'}</div>
+                    </div>
+                    <div class="display-channel-badges">
+                        <span class="display-channel-pill">${item.backend_provider_label || item.backend_provider || '渠道'}</span>
+                        <span class="display-channel-pill ${item.enabled ? 'success' : 'muted'}">${item.enabled ? '已启用' : '已停用'}</span>
+                    </div>
+                    <div class="display-channel-actions">
+                        <button type="button" class="btn-secondary btn-sm" onclick="editDisplayChannel('${item.id}')">编辑</button>
+                        <button type="button" class="btn-secondary btn-sm" onclick="toggleDisplayChannel('${item.id}')">${item.enabled ? '停用' : '启用'}</button>
+                        <button type="button" class="btn-danger btn-sm" onclick="removeDisplayChannel('${item.id}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function resetDisplayChannelForm() {
+            editingDisplayChannelId = null;
+            const nameInput = document.getElementById('displayChannelNameInput');
+            const select = document.getElementById('displayChannelBackendSelect');
+            const saveBtn = document.getElementById('saveDisplayChannelBtn');
+            const cancelBtn = document.getElementById('cancelDisplayChannelBtn');
+
+            if (nameInput) nameInput.value = '';
+            if (select && backendChannelOptions.length > 0) {
+                select.value = backendChannelOptions[0].backend_channel_id;
+            }
+            if (saveBtn) saveBtn.textContent = '添加渠道';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        function getDisplayChannelFormDraft() {
+            const nameInput = document.getElementById('displayChannelNameInput');
+            const select = document.getElementById('displayChannelBackendSelect');
+            const saveBtn = document.getElementById('saveDisplayChannelBtn');
+            const cancelBtn = document.getElementById('cancelDisplayChannelBtn');
+            if (!nameInput || !select) return null;
+
+            const activeElement = document.activeElement;
+            const hasFocus = activeElement === nameInput || activeElement === select;
+            const nameValue = nameInput.value || '';
+            const backendChannelId = select.value || '';
+            const hasUnsavedContent = !!nameValue.trim() || !!editingDisplayChannelId;
+
+            return {
+                editingId: editingDisplayChannelId || '',
+                nameValue,
+                backendChannelId,
+                saveButtonText: saveBtn ? saveBtn.textContent : '添加渠道',
+                cancelVisible: !!(cancelBtn && cancelBtn.style.display !== 'none'),
+                shouldPreserve: hasFocus || hasUnsavedContent
+            };
+        }
+
+        function restoreDisplayChannelFormDraft(draft) {
+            if (!draft || !draft.shouldPreserve) {
+                resetDisplayChannelForm();
+                return;
+            }
+
+            const nameInput = document.getElementById('displayChannelNameInput');
+            const select = document.getElementById('displayChannelBackendSelect');
+            const saveBtn = document.getElementById('saveDisplayChannelBtn');
+            const cancelBtn = document.getElementById('cancelDisplayChannelBtn');
+            const editingId = draft.editingId || '';
+            const editTargetExists = editingId
+                ? displayChannelConfigs.some(item => item.id === editingId)
+                : false;
+
+            if (editingId && !editTargetExists) {
+                resetDisplayChannelForm();
+                return;
+            }
+
+            editingDisplayChannelId = editTargetExists ? editingId : null;
+            if (nameInput) {
+                nameInput.value = draft.nameValue || '';
+            }
+            if (select) {
+                const desiredValue = draft.backendChannelId || '';
+                const hasOption = Array.from(select.options || []).some(option => option.value === desiredValue);
+                if (hasOption) {
+                    select.value = desiredValue;
+                } else if (!desiredValue && backendChannelOptions.length > 0) {
+                    select.value = backendChannelOptions[0].backend_channel_id;
+                }
+            }
+            if (saveBtn) {
+                saveBtn.textContent = editingDisplayChannelId
+                    ? '保存渠道'
+                    : (draft.saveButtonText || '添加渠道');
+            }
+            if (cancelBtn) {
+                cancelBtn.style.display = editingDisplayChannelId
+                    ? 'inline-flex'
+                    : (draft.cancelVisible ? 'inline-flex' : 'none');
+            }
+        }
+
+        function cancelDisplayChannelEdit() {
+            resetDisplayChannelForm();
+        }
+
+        function editDisplayChannel(channelId) {
+            const target = displayChannelConfigs.find(item => item.id === channelId);
+            if (!target) return;
+            editingDisplayChannelId = channelId;
+            document.getElementById('displayChannelNameInput').value = target.name || target.label || '';
+            document.getElementById('displayChannelBackendSelect').value = target.backend_channel_id || '';
+            document.getElementById('saveDisplayChannelBtn').textContent = '保存渠道';
+            document.getElementById('cancelDisplayChannelBtn').style.display = 'inline-flex';
+        }
+
+        async function saveDisplayChannelsToServer() {
+            const response = await fetch('/api/other-channels/display-routes', {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    channels: displayChannelConfigs.map(item => ({
+                        id: item.id,
+                        name: item.name || item.label,
+                        backend_channel_id: item.backend_channel_id,
+                        enabled: item.enabled !== false
+                    }))
+                })
+            });
+            if (response.status === 401) { await checkAuth(); return saveDisplayChannelsToServer(); }
+            return response.json();
+        }
+
+        async function loadDisplayChannels() {
+            const panel = document.getElementById('displayChannelsPanel');
+            if (!panel) return;
+
+            if (!isAdmin) {
+                panel.innerHTML = '<div class="empty-state compact">只有管理员可以配置前台显示渠道</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/other-channels/display-routes', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return loadDisplayChannels(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '加载显示渠道失败', 'error');
+                    return;
+                }
+                const formDraft = getDisplayChannelFormDraft();
+                displayChannelConfigs = data.channels || [];
+                renderDisplayChannelsList();
+                restoreDisplayChannelFormDraft(formDraft);
+            } catch (error) {
+                showToast('加载显示渠道失败', 'error');
+            }
+        }
+
+        async function refreshBackendChannels() {
+            try {
+                const response = await fetch('/api/other-channels/backend-options', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshBackendChannels(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '加载后端渠道失败', 'error');
+                    return;
+                }
+                applyBackendChannelOptionsData(data.channels || [], backendAddressModalChannelId, data.address_templates || null);
+            } catch (error) {
+                showToast('加载后端渠道失败', 'error');
+            }
+        }
+
+        async function refreshTimoesPoolStats() {
+            const summaryEl = document.getElementById('timoesPoolSummary');
+            const statsEl = document.getElementById('timoesPoolStats');
+            if (!summaryEl || !statsEl) return;
+
+            try {
+                const response = await fetch('/api/timoes-pool/stats', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshTimoesPoolStats(); }
+                const data = await response.json();
+                if (!data.success) {
+                    statsEl.textContent = data.error || '库存加载失败';
+                    summaryEl.textContent = '库存异常';
+                    return;
+                }
+                applyTimoesPoolStats(data);
+            } catch (error) {
+                statsEl.textContent = '库存加载失败';
+                summaryEl.textContent = '库存异常';
+            }
+        }
+
+        async function importTimoesCodes() {
+            const codeType = normalizeTimoesCodeType(document.getElementById('timoesImportType').value);
+            const codes = document.getElementById('timoesCodesInput').value.trim();
+            const btn = document.getElementById('importTimoesCodesBtn');
+
+            if (!codeType) {
+                showToast('请先配置可用的 Timoes 线路类型', 'info');
+                return;
+            }
+            if (!codes) {
+                showToast('请输入要导入的 Timoes 卡密', 'info');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const response = await fetch('/api/timoes-pool/import', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ code_type: codeType, codes })
+                });
+                if (response.status === 401) { await checkAuth(); return importTimoesCodes(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '导入失败', 'error');
+                    return;
+                }
+
+                document.getElementById('timoesCodesInput').value = '';
+                const summary = `导入 ${data.imported || 0} 条，重复 ${data.duplicates || 0} 条，格式错误 ${data.invalid || 0} 条`;
+                showToast(summary, 'success');
+                applyTimoesPoolStats(data);
+                refreshBackendChannels();
+                refreshPoolManagerIfOpen('timoes');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function refreshManualCardPoolStats() {
+            const summaryEl = document.getElementById('manualPoolSummary');
+            const statsEl = document.getElementById('manualPoolStats');
+            if (!summaryEl || !statsEl) return;
+
+            try {
+                const response = await fetch('/api/manual-card-pool/stats', { headers: getAuthHeaders() });
+                if (response.status === 401) { await checkAuth(); return refreshManualCardPoolStats(); }
+                const data = await response.json();
+                if (!data.success) {
+                    statsEl.textContent = data.error || '库存加载失败';
+                    summaryEl.textContent = '库存异常';
+                    return;
+                }
+                applyManualPoolStats(data);
+            } catch (error) {
+                statsEl.textContent = '库存加载失败';
+                summaryEl.textContent = '库存异常';
+            }
+        }
+
+        async function importManualCards() {
+            const cards = document.getElementById('manualCardsInput').value.trim();
+            const btn = document.getElementById('importManualCardsBtn');
+
+            if (!cards) {
+                showToast('请输入要导入的手动卡信息', 'info');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const response = await fetch('/api/manual-card-pool/import', {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cards })
+                });
+                if (response.status === 401) { await checkAuth(); return importManualCards(); }
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.error || '导入失败', 'error');
+                    return;
+                }
+
+                document.getElementById('manualCardsInput').value = '';
+                const summary = `导入 ${data.imported || 0} 张，重复 ${data.duplicates || 0} 张，格式错误 ${data.invalid || 0} 张`;
+                showToast(summary, 'success');
+                applyManualPoolStats(data);
+                refreshBackendChannels();
+                refreshPoolManagerIfOpen('manual');
+            } catch (error) {
+                showToast('请求失败', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function saveDisplayChannel() {
+            if (!isAdmin) {
+                showToast('只有管理员可以配置渠道映射', 'error');
+                return;
+            }
+
+            const name = document.getElementById('displayChannelNameInput').value.trim();
+            const backendChannelId = document.getElementById('displayChannelBackendSelect').value;
+
+            if (!name) {
+                showToast('请输入渠道名称', 'info');
+                return;
+            }
+            if (!backendChannelId) {
+                showToast('请选择实际后端渠道', 'info');
+                return;
+            }
+
+            const payload = {
+                id: editingDisplayChannelId || '',
+                name,
+                backend_channel_id: backendChannelId,
+                enabled: true
+            };
+            const previousChannels = [...displayChannelConfigs];
+
+            if (editingDisplayChannelId) {
+                displayChannelConfigs = displayChannelConfigs.map(item =>
+                    item.id === editingDisplayChannelId ? { ...item, ...payload } : item
+                );
+            } else {
+                displayChannelConfigs = [...displayChannelConfigs, payload];
+            }
+
+            const result = await saveDisplayChannelsToServer();
+            if (!result.success) {
+                displayChannelConfigs = previousChannels;
+                showToast(result.error || '保存渠道失败', 'error');
+                return;
+            }
+
+            displayChannelConfigs = result.channels || [];
+            renderDisplayChannelsList();
+            resetDisplayChannelForm();
+            showToast('渠道已保存', 'success');
+        }
+
+        async function toggleDisplayChannel(channelId) {
+            if (!isAdmin) return;
+            const previousChannels = [...displayChannelConfigs];
+            displayChannelConfigs = displayChannelConfigs.map(item =>
+                item.id === channelId ? { ...item, enabled: !item.enabled } : item
+            );
+            const result = await saveDisplayChannelsToServer();
+            if (!result.success) {
+                displayChannelConfigs = previousChannels;
+                showToast(result.error || '更新渠道失败', 'error');
+                return;
+            }
+            displayChannelConfigs = result.channels || [];
+            renderDisplayChannelsList();
+            resetDisplayChannelForm();
+        }
+
+        async function removeDisplayChannel(channelId) {
+            if (!isAdmin) return;
+            const previousChannels = [...displayChannelConfigs];
+            displayChannelConfigs = displayChannelConfigs.filter(item => item.id !== channelId);
+            const result = await saveDisplayChannelsToServer();
+            if (!result.success) {
+                displayChannelConfigs = previousChannels;
+                showToast(result.error || '删除渠道失败', 'error');
+                return;
+            }
+            displayChannelConfigs = result.channels || [];
+            renderDisplayChannelsList();
+            resetDisplayChannelForm();
+        }
+
+        async function refreshOtherChannels() {
+            await Promise.all([
+                refreshTimoesPoolStats(),
+                refreshManualCardPoolStats(),
+                refreshBackendChannels(),
+                loadTimoesBackendChannels(),
+                loadDisplayChannels(),
+                loadKeyDisplayChannelOptions()
+            ]);
+        }
+
+        function getKeyKindFilterForMode(mode) {
+            return mode === 'old-card' ? 'old_card' : 'normal';
+        }
+
+        function getCurrentKeyKindFilter() {
+            return getKeyKindFilterForMode(currentKeyMode);
+        }
+
+        function getCurrentKeyModeLabel() {
+            return currentKeyMode === 'old-card' ? '旧卡卡密' : '新卡卡密';
+        }
+
+        function matchesCurrentKeyMode(key) {
+            const keyKind = String(key?.key_kind || 'normal').trim().toLowerCase();
+            return currentKeyMode === 'old-card' ? keyKind === 'old_card' : keyKind !== 'old_card';
+        }
+
+        function updateKeyListHeader() {
+            const titleEl = document.getElementById('keyListTitle');
+            if (titleEl) {
+                titleEl.textContent = `${getCurrentKeyModeLabel()}列表`;
+            }
+        }
 
         async function refreshKeys(page = 1) {
             try {
-                const response = await fetch(`/api/keys?page=${page}&page_size=${keysPageSize}`, { headers: getAuthHeaders() });
+                const requestedKeyMode = currentKeyMode;
+                const params = new URLSearchParams({
+                    page: String(page),
+                    page_size: String(keysPageSize),
+                    key_kind: getKeyKindFilterForMode(requestedKeyMode)
+                });
+                const response = await fetch(`/api/keys?${params.toString()}`, { headers: getAuthHeaders() });
                 if (response.status === 401) { await checkAuth(); return refreshKeys(page); }
                 const data = await response.json();
+                if (requestedKeyMode !== currentKeyMode) return;
                 allKeys = data.ids || [];
                 currentKeysPage = data.page || 1;
                 totalKeysPages = data.total_pages || 1;
@@ -1985,13 +4348,7 @@
 
         function renderKeys(keys) {
             const container = document.getElementById('keysContainer');
-            // 后端已过滤未使用且未销毁的卡密，无需再次过滤
-            let displayKeys = keys;
-
-            // 应用卡片类型过滤器（信用卡/借记卡）
-            if (keyFilter !== 'all') {
-                displayKeys = displayKeys.filter(k => k.card_type === keyFilter);
-            }
+            const displayKeys = keys.filter(matchesCurrentKeyMode);
 
             document.getElementById('keyCount2').textContent = totalKeysCount;
 
@@ -2004,10 +4361,12 @@
             container.innerHTML = displayKeys.map(key => `
                 <div class="key-item-compact" data-key-id="${key.id}">
                     <span class="key-code" data-copy="${key.id}" title="点击复制卡密">${key.id}</span>
-                    <span class="key-limit-badge">$${key.card_limit ?? 0}</span>
-                    <span class="card-type-badge ${key.card_type === 'debit' ? 'debit' : 'credit'}">${key.card_type === 'debit' ? '借' : '信'}</span>
+                    <span class="key-limit-badge ${key.key_kind === 'old_card' ? 'old-card' : ''}">
+                        ${key.key_kind === 'old_card' ? '旧卡池' : `$${key.card_limit ?? 0}`}
+                    </span>
+                    <span class="key-channel-badge ${key.channel_binding_enabled ? 'bound' : 'generic'}">${escapeHtml(getKeyBindingLabel(key))}</span>
                     <span class="card-created-time">${formatCreatedTime(key.created_time)}</span>
-                    <span class="key-expire">${key.expire_minutes}分钟</span>
+                    <span class="key-expire">${key.key_kind === 'old_card' ? '动态有效期' : `${key.expire_minutes}分钟`}</span>
                     <button class="btn-copy btn-sm" data-action="copy-key">复制</button>
                     <button class="btn-delete btn-sm" data-action="delete-key">删除</button>
                 </div>
@@ -2075,19 +4434,19 @@
         async function generateKeys() {
             const count = parseInt(document.getElementById('keyCount').value) || 1;
             const cardLimit = parseInt(document.getElementById('keyCardLimit').value) || 0;
-            const cardType = document.getElementById('keyCardType').value || 'credit';
             const expireMinutes = parseInt(document.getElementById('keyExpireTime').value) || 60;
+            const displayChannelId = document.getElementById('keyDisplayChannel').value || '';
 
             document.getElementById('generateKeyBtn').disabled = true;
             try {
                 const response = await fetch('/api/keys/generate', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ count, card_limit: cardLimit, card_type: cardType, expire_minutes: expireMinutes })
+                    body: JSON.stringify({ count, card_limit: cardLimit, expire_minutes: expireMinutes, display_channel_id: displayChannelId || null })
                 });
                 if (response.status === 401) { await checkAuth(); return generateKeys(); }
                 const data = await response.json();
-                data.success ? (showToast(`成功生成 ${data.generated} 个卡密`, 'success'), refreshKeys()) : showToast(data.error || '生成失败', 'error');
+                data.success ? (showToast(`成功生成 ${data.generated} 个新卡卡密`, 'success'), refreshKeys()) : showToast(data.error || '生成失败', 'error');
             } catch (error) { showToast('请求失败', 'error'); }
             finally { document.getElementById('generateKeyBtn').disabled = false; }
         }
@@ -2099,88 +4458,49 @@
             const keysPaginationContainer = document.getElementById('keysPaginationContainer');
             const destroyModeHeader = document.getElementById('destroyModeHeader');
             const destroyModeScroll = document.getElementById('destroyModeScroll');
+            const oldCardMode = document.getElementById('oldCardMode');
             const generateBtn = document.getElementById('modeGenerateBtn');
+            const oldCardBtn = document.getElementById('modeOldCardBtn');
             const destroyBtn = document.getElementById('modeDestroyBtn');
+            const showKeyList = mode !== 'destroy';
 
-            if (mode === 'generate') {
-                generateMode.style.display = 'block';
-                keyListHeader.style.display = 'flex';
-                keyListScroll.style.display = 'block';
-                keysPaginationContainer.style.display = 'block';
-                destroyModeHeader.style.display = 'none';
-                destroyModeScroll.style.display = 'none';
-                generateBtn.classList.add('active');
-                destroyBtn.classList.remove('active');
-            } else {
-                generateMode.style.display = 'none';
-                keyListHeader.style.display = 'none';
-                keyListScroll.style.display = 'none';
-                keysPaginationContainer.style.display = 'none';
-                destroyModeHeader.style.display = 'flex';
-                destroyModeScroll.style.display = 'block';
-                generateBtn.classList.remove('active');
-                destroyBtn.classList.add('active');
+            generateMode.style.display = mode === 'generate' ? 'block' : 'none';
+            oldCardMode.style.display = mode === 'old-card' ? 'block' : 'none';
+            keyListHeader.style.display = showKeyList ? 'flex' : 'none';
+            keyListScroll.style.display = showKeyList ? 'block' : 'none';
+            keysPaginationContainer.style.display = showKeyList ? 'block' : 'none';
+            destroyModeHeader.style.display = mode === 'destroy' ? 'flex' : 'none';
+            destroyModeScroll.style.display = mode === 'destroy' ? 'block' : 'none';
+
+            generateBtn.classList.toggle('active', mode === 'generate');
+            oldCardBtn.classList.toggle('active', mode === 'old-card');
+            destroyBtn.classList.toggle('active', mode === 'destroy');
+
+            if (mode !== 'destroy') {
+                currentKeyMode = mode;
+                updateKeyListHeader();
+                document.getElementById('keysContainer').innerHTML = '<div class="empty-state">加载中...</div>';
+                if (mode === 'old-card' && currentTab === 'keys') {
+                    refreshOldCardPoolStatsIfVisible(true);
+                }
+                refreshKeys(1);
             }
         }
 
         let destroyFilter = 'all';
         let allDestroyKeys = []; // 保存所有输入的卡密
 
-        function getKeyType(keyId) {
-            const trimmedKey = keyId.trim();
-            const key = allKeys.find(k => k.id === trimmedKey);
-            if (key) {
-                return key.card_type;
-            } else {
-                // 根据前缀判断: 0开头是信用卡, 1开头是借记卡
-                if (trimmedKey.startsWith('0')) return 'credit';
-                else if (trimmedKey.startsWith('1')) return 'debit';
-            }
-            return null;
-        }
-
         function updateDestroyStats() {
             const keysText = document.getElementById('destroyKeysInput').value.trim();
             const keyIds = keysText ? keysText.split('\n').filter(k => k.trim()) : [];
 
             // 更新全部卡密列表
-            if (destroyFilter === 'all') {
-                allDestroyKeys = keyIds;
-            }
-
-            let creditCount = 0;
-            let debitCount = 0;
-
-            allDestroyKeys.forEach(keyId => {
-                const type = getKeyType(keyId);
-                if (type === 'credit') creditCount++;
-                else if (type === 'debit') debitCount++;
-            });
-
-            // 根据过滤器显示数量
-            let displayCount = keyIds.length;
-            let totalCount = allDestroyKeys.length;
-
-            document.getElementById('destroyKeyCount').textContent = destroyFilter === 'all' ? totalCount : `${displayCount}/${totalCount}`;
+            allDestroyKeys = keyIds;
+            document.getElementById('destroyKeyCount').textContent = allDestroyKeys.length;
         }
 
         function filterDestroyKeys(filter) {
-            destroyFilter = filter;
-
-            // 更新按钮状态
-            document.querySelectorAll('#destroyModeHeader .filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === filter);
-            });
-
-            // 过滤 textarea 内容
-            const textarea = document.getElementById('destroyKeysInput');
-            if (filter === 'all') {
-                textarea.value = allDestroyKeys.join('\n');
-            } else {
-                const filtered = allDestroyKeys.filter(keyId => getKeyType(keyId) === filter);
-                textarea.value = filtered.join('\n');
-            }
-
+            destroyFilter = 'all';
             updateDestroyStats();
         }
 
@@ -2211,9 +4531,6 @@
                     document.getElementById('destroyKeysInput').value = '';
                     allDestroyKeys = [];
                     destroyFilter = 'all';
-                    document.querySelectorAll('#destroyModeHeader .filter-btn').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.filter === 'all');
-                    });
                     updateDestroyStats();
                     refreshKeys();
                     refreshRecords();
@@ -2232,12 +4549,9 @@
         }
 
         async function copyAllKeys() {
-            let keys = allKeys.filter(k => !k.used && !k.destroyed);
-            if (keyFilter !== 'all') {
-                keys = keys.filter(k => k.card_type === keyFilter);
-            }
-            if (!keys.length) { showToast('没有卡密可复制', 'info'); return; }
-            copyToClipboard(keys.map(k => k.id).join('\n')).then(() => showToast(`已复制 ${keys.length} 个卡密`, 'success'));
+            const keys = allKeys.filter(k => !k.used && !k.destroyed && matchesCurrentKeyMode(k));
+            if (!keys.length) { showToast(`没有${getCurrentKeyModeLabel()}可复制`, 'info'); return; }
+            copyToClipboard(keys.map(k => k.id).join('\n')).then(() => showToast(`已复制 ${keys.length} 个${getCurrentKeyModeLabel()}`, 'success'));
         }
 
         async function deleteKey(keyId) {
@@ -2251,31 +4565,19 @@
         }
 
         async function deleteAllKeys() {
-            const filterText = keyFilter === 'all' ? '所有' : (keyFilter === 'credit' ? '信用卡' : '借记卡');
-            // 获取实际要删除的数量
             let deleteCount = totalKeysCount;
-            if (keyFilter !== 'all') {
-                // 如果有过滤器，需要从后端获取该类型的数量
-                try {
-                    const countResp = await fetch(`/api/keys/count?card_type=${keyFilter}`, { headers: getAuthHeaders() });
-                    const countData = await countResp.json();
-                    deleteCount = countData.count || 0;
-                } catch (e) { deleteCount = 0; }
-            }
-            if (!deleteCount) { showToast('没有卡密可删除', 'info'); return; }
-            if (!await showConfirm(`确定要删除${filterText}卡密吗？（共 ${deleteCount} 个）`, '删除卡密')) return;
+            if (!deleteCount) { showToast(`没有${getCurrentKeyModeLabel()}可删除`, 'info'); return; }
+            if (!await showConfirm(`确定要删除所有${getCurrentKeyModeLabel()}吗？（共 ${deleteCount} 个）`, '删除卡密')) return;
             try {
-                // 使用高性能批量删除 API
-                const cardType = keyFilter === 'all' ? null : keyFilter;
                 const response = await fetch('/api/keys/delete_unused', {
                     method: 'POST',
                     headers: getAuthHeaders(),
-                    body: JSON.stringify({ card_type: cardType })
+                    body: JSON.stringify({ key_kind: getCurrentKeyKindFilter() })
                 });
                 if (response.status === 401) { await checkAuth(); return deleteAllKeys(); }
                 const data = await response.json();
                 if (data.success) {
-                    showToast(`已删除 ${data.deleted} 个卡密`, 'success');
+                    showToast(`已删除 ${data.deleted} 个${getCurrentKeyModeLabel()}`, 'success');
                     refreshKeys();
                 } else {
                     showToast(data.error || '删除失败', 'error');
@@ -2309,6 +4611,7 @@
 
             container.innerHTML = records.map(r => {
                 const card = r.card || {};
+                const cardMeta = { ...card, card_type: card.card_type || r.card_type };
                 const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
                 const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
                 const usedTime = r.used_time ? new Date(r.used_time).toLocaleString() : '未知';
@@ -2325,6 +4628,7 @@
                 const keyTitle = isDirectCreation ? '用户: ' + r.created_by : '卡密: ' + r.key_id;
                 const keyClass = isDirectCreation ? 'record-key direct-creation' : 'record-key';
                 const keyCopyValue = isDirectCreation ? '' : r.key_id;
+                const channelBadge = renderCardChannelBadge(cardMeta);
 
                 return `
                 <div class="record-item ${statusClass}" data-full="${fullInfo}" data-key-id="${r.key_id}">
@@ -2334,7 +4638,7 @@
                     <span class="record-exp" data-copy="${expShort}">${card.exp_month}/${card.exp_year}</span>
                     <span class="record-cvv" data-copy="${card.cvv}">${card.cvv}</span>
                     <span class="record-limit">$${r.card_limit ?? 0}</span>
-                    <span class="card-type-badge ${r.card_type === 'debit' ? 'debit' : 'credit'}">${r.card_type === 'debit' ? '借' : '信'}</span>
+                    ${channelBadge}
                     <span class="record-expire ${isDestroyed ? 'text-destroyed' : (isExpired ? 'text-expired' : '')}">${statusText}</span>
                     <button class="btn-copy btn-sm" data-action="copy-record">复制</button>
                     <button class="btn-delete btn-sm" data-action="delete-record">删除</button>
@@ -2595,7 +4899,7 @@
                 const isSelected = selectedAnalyticsUser === user.username;
 
                 return `
-                    <div class="user-stat-item user-stat-clickable${isSelected ? ' selected' : ''}" 
+                    <div class="user-stat-item user-stat-clickable${isSelected ? ' selected' : ''}"
                          onclick="selectAnalyticsUser('${user.username}')">
                         <span class="user-stat-rank" style="background: ${color}">${index + 1}</span>
                         <span class="user-stat-name">${user.username}</span>
@@ -3047,6 +5351,7 @@
             for (const acc of orgAccounts) {
                 const cards = allCardsCache[acc.user_id] || [];
                 for (const card of cards) {
+                    if (card.status !== 'active') continue;
                     // 时间过滤
                     if (thresholdTime && card.createdAtDateStr) {
                         const createdAt = new Date(card.createdAtDateStr);
@@ -3234,6 +5539,7 @@
             for (const acc of orgAccounts) {
                 const cards = allCardsCache[acc.user_id] || [];
                 for (const card of cards) {
+                    if (card.status !== 'active') continue;
                     if (card.card_type !== cardType) continue;
 
                     // 时间过滤
@@ -3616,6 +5922,7 @@
 
             let creditCount = 0, debitCount = 0;
             for (const card of cards) {
+                if (card.status !== 'active') continue;
                 // 时间过滤
                 if (thresholdTime && card.createdAtDateStr) {
                     const createdAt = new Date(card.createdAtDateStr);
@@ -3869,7 +6176,10 @@
                 const response = await fetch('/api/settings/batch', {
                     method: 'POST',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ max_batch_count: maxBatchCount, batch_interval: batchInterval })
+                    body: JSON.stringify({
+                        max_batch_count: maxBatchCount,
+                        batch_interval: batchInterval
+                    })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -4491,11 +6801,15 @@
 
             refreshCards();
             refreshKeys();
+            refreshOtherChannels();
+            refreshOldCardPoolStatsIfVisible();
 
             // 每10分钟自动刷新token
             setInterval(autoRefresh, 10 * 60 * 1000);
             setInterval(refreshCards, 30000);
             setInterval(() => refreshKeys(currentKeysPage), 30000);
+            setInterval(refreshOtherChannels, 30000);
+            setInterval(refreshOldCardPoolStatsIfVisible, 30000);
         }
 
         init();

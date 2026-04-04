@@ -29,6 +29,14 @@
             </div>
 
             <div class="input-section">
+                <div class="redeem-mode-row">
+                    <div class="redeem-mode-group">
+                        <label for="redeemModeList">开卡渠道</label>
+                        <div id="redeemModeList" class="redeem-mode-list" role="listbox" aria-label="开卡渠道">
+                            <div class="redeem-mode-empty">加载中...</div>
+                        </div>
+                    </div>
+                </div>
                 <textarea id="redeemKeyInput" placeholder="请输入卡密或卡号（每行一个）..."></textarea>
                 <p class="input-hint" id="inputHint">支持批量兑换，每行输入一个卡密</p>
                 <button class="submit-btn" id="redeemBtn" onclick="redeemOrQuery()">兑换 / 查询</button>
@@ -46,7 +54,10 @@
             </div>
 
             <div class="footer">
-                NikoCard · {{ version }}
+                <span class="footer-meta">
+                    <span>NikoCard · {{ version }}</span>
+                    <a class="powered-by-link" href="https://api.zectai.com/" target="_blank" rel="noopener noreferrer">Powered by ZectAI</a>
+                </span>
             </div>
         </div>
 
@@ -360,9 +371,143 @@
         // 批量兑换设置（从服务器加载）
         let maxBatchCount = 5;
         let batchInterval = 5;
+        let enabledRedeemChannels = [];
+        const fallbackRedeemChannelDefinitions = {
+            mercury_52368601: {
+                id: 'mercury_52368601',
+                label: '52368601 卡头',
+                head: '52368601',
+                provider: 'mercury'
+            },
+            mercury_54810871: {
+                id: 'mercury_54810871',
+                label: '54810871 卡头',
+                head: '54810871',
+                provider: 'mercury'
+            },
+            timoes_486699: {
+                id: 'timoes_486699',
+                label: '486699 卡头',
+                head: '486699',
+                provider: 'timoes'
+            },
+            timoes_451311: {
+                id: 'timoes_451311',
+                label: '451311 卡头',
+                head: '451311',
+                provider: 'timoes'
+            }
+        };
+        let redeemChannelDefinitions = { ...fallbackRedeemChannelDefinitions };
+        let latestRedeemChannels = [];
+        let redeemModeLocked = false;
+        let selectedRedeemMode = '';
 
         // 消费记录查询开关（从服务器加载）
         let transactionQueryEnabled = true;
+
+        function getRedeemModeAccent(channelId) {
+            const palette = ['#22c55e', '#f97316', '#ef4444', '#38bdf8', '#a78bfa', '#facc15'];
+            const source = String(channelId || '');
+            const hash = Array.from(source).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+            return palette[hash % palette.length];
+        }
+
+        function renderRedeemModeList(channels, currentValue = '', locked = false) {
+            const list = document.getElementById('redeemModeList');
+            if (!list) return;
+
+            if (!channels.length) {
+                selectedRedeemMode = '';
+                list.innerHTML = '<div class="redeem-mode-empty">暂无可用渠道</div>';
+                list.classList.toggle('locked', locked);
+                return;
+            }
+
+            const activeValue = channels.some(item => item.id === currentValue)
+                ? currentValue
+                : channels[0].id;
+            selectedRedeemMode = activeValue;
+
+            list.innerHTML = channels.map(item => `
+                <button
+                    type="button"
+                    class="redeem-mode-option ${item.id === activeValue ? 'active' : ''} ${locked ? 'locked' : ''}"
+                    data-channel-id="${escapeHtml(item.id)}"
+                    role="option"
+                    aria-selected="${item.id === activeValue ? 'true' : 'false'}"
+                    ${locked ? 'disabled' : ''}
+                    style="--channel-accent: ${getRedeemModeAccent(item.id)};"
+                >
+                    <span class="redeem-mode-dot"></span>
+                    <span class="redeem-mode-text">${escapeHtml(item.label || item.name || item.id)}</span>
+                </button>
+            `).join('');
+            list.classList.toggle('locked', locked);
+
+            if (!locked) {
+                list.querySelectorAll('.redeem-mode-option').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const channelId = button.dataset.channelId || '';
+                        if (!channelId || channelId === selectedRedeemMode) return;
+                        selectedRedeemMode = channelId;
+                        renderRedeemModeList(channels, selectedRedeemMode, false);
+                    });
+                });
+            }
+        }
+
+        function renderRedeemModeOptions(channels) {
+            const availableChannels = Array.isArray(channels)
+                ? channels
+                    .map(item => {
+                        const channelId = String(item?.id || '').trim();
+                        const base = redeemChannelDefinitions[channelId] || fallbackRedeemChannelDefinitions[channelId] || {};
+                        if (!base) return null;
+                        return {
+                            ...base,
+                            id: channelId,
+                            label: item?.label || base.label,
+                            enabled: item?.enabled !== false
+                        };
+                    })
+                    .filter(Boolean)
+                    .filter(item => item.enabled)
+                : Object.values(redeemChannelDefinitions);
+            const displayOptions = [{
+                id: '__auto__',
+                label: '自动分配',
+                enabled: true
+            }, ...availableChannels];
+
+            latestRedeemChannels = availableChannels;
+            redeemChannelDefinitions = { ...fallbackRedeemChannelDefinitions };
+            redeemChannelDefinitions.__auto__ = { id: '__auto__', label: '自动分配', enabled: true };
+            availableChannels.forEach(item => {
+                redeemChannelDefinitions[item.id] = item;
+            });
+
+            enabledRedeemChannels = availableChannels.map(item => item.id);
+            renderRedeemModeList(displayOptions, selectedRedeemMode, false);
+        }
+
+        function lockRedeemMode(binding) {
+            const channelId = String(binding?.bound_display_channel_id || '').trim();
+            if (!channelId) return;
+
+            selectedRedeemMode = channelId;
+            renderRedeemModeList([{
+                id: channelId,
+                label: binding?.bound_display_channel_name || getRedeemModeLabel(channelId)
+            }], channelId, true);
+            redeemModeLocked = true;
+        }
+
+        function unlockRedeemMode() {
+            if (!redeemModeLocked) return;
+            redeemModeLocked = false;
+            renderRedeemModeOptions(latestRedeemChannels);
+        }
 
         async function loadBatchSettings() {
             try {
@@ -371,6 +516,7 @@
                 if (data.success) {
                     maxBatchCount = data.max_batch_count || 5;
                     batchInterval = data.batch_interval || 5;
+                    renderRedeemModeOptions(data.channels);
                     // 更新占位符和提示
                     const input = document.getElementById('redeemKeyInput');
                     const hint = document.getElementById('inputHint');
@@ -378,7 +524,9 @@
                         input.placeholder = `请输入卡密或卡号（每行一个，最多${maxBatchCount}个）...`;
                     }
                     if (hint) {
-                        hint.textContent = `支持批量兑换，每行输入一个卡密，每个间隔${batchInterval}秒处理`;
+                        hint.textContent = enabledRedeemChannels.length > 0
+                            ? `支持批量兑换，每行输入一个卡密，每个间隔${batchInterval}秒处理`
+                            : '当前未开放开卡渠道，仍可查询已兑换卡片';
                     }
                 }
             } catch (e) {
@@ -396,6 +544,55 @@
             } catch (e) {
                 console.error('加载消费记录查询设置失败:', e);
             }
+        }
+
+        function getSelectedRedeemMode() {
+            return selectedRedeemMode === '__auto__' || enabledRedeemChannels.includes(selectedRedeemMode) || redeemModeLocked
+                ? selectedRedeemMode
+                : '';
+        }
+
+        function getRedeemModeLabel(mode) {
+            if (mode === '__auto__') return '自动分配';
+            return redeemChannelDefinitions[mode]?.label || '未知卡头';
+        }
+
+        function getResultProvider(data, result = null) {
+            if (result && result.isAirwallex) return 'airwallex';
+            return data?.provider || data?.card?.provider || 'mercury';
+        }
+
+        function getResultProviderLabel(data, result = null) {
+            const channelHead = data?.channel_head || data?.card?.channel_head || '';
+            if (channelHead) {
+                return channelHead;
+            }
+            const relayCodeType = data?.relay_code_type || data?.card?.relay_code_type || '';
+            const pan = String(data?.card?.pan || '').replace(/\D/g, '');
+            if (relayCodeType === '4866') {
+                return '486699';
+            }
+            if (relayCodeType === '4513') {
+                return '451311';
+            }
+            if (pan.length >= 8 && getResultProvider(data, result) === 'mercury') {
+                return pan.slice(0, 8);
+            }
+            if (pan.length >= 6) {
+                return pan.slice(0, 6);
+            }
+            const provider = getResultProvider(data, result);
+            if (provider === 'airwallex') {
+                return 'Airwallex';
+            }
+            return 'Mercury';
+        }
+
+        function isDestroyableResult(result) {
+            if (!result || !result.success || !result.data || !result.data.card || result.data.destroyed) {
+                return false;
+            }
+            return getResultProvider(result.data, result) === 'mercury' && !!result.data.card.card_id;
         }
 
         function formatPan(pan) {
@@ -515,6 +712,7 @@
         }
 
         async function processSingleKey(keyId) {
+            unlockRedeemMode();
             showProgress(true);
             document.getElementById('progressText').textContent = '正在处理...';
             document.getElementById('progressCount').textContent = '';
@@ -534,6 +732,7 @@
                     showToast(result.isQuery ? '查询成功' : '兑换成功！', 'success');
                     // 成功就清空输入框
                     document.getElementById('redeemKeyInput').value = '';
+                    unlockRedeemMode();
                 } else {
                     // 失败则保留在输入框
                     showToast(result.error || '处理失败', 'error');
@@ -548,6 +747,7 @@
             const total = keys.length;
             let remainingKeys = [...keys]; // 跟踪剩余的卡密
 
+            unlockRedeemMode();
             showProgress(true);
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressCount').textContent = `0 / ${total}`;
@@ -627,41 +827,99 @@
             // 显示/隐藏"复制全部"和"销毁全部"按钮 (超过1个结果时显示)
             const copyAllBtn = document.getElementById('copyAllBtn');
             const destroyAllBtn = document.getElementById('destroyAllBtn');
-            const showBatchBtns = allResults.length > 1;
+            const destroyableCount = allResults.filter(isDestroyableResult).length;
+            const showCopyAllBtn = allResults.length > 1;
+            const showDestroyAllBtn = destroyableCount > 1;
 
-            if (copyAllBtn) copyAllBtn.style.display = showBatchBtns ? 'block' : 'none';
-            if (destroyAllBtn) destroyAllBtn.style.display = showBatchBtns ? 'block' : 'none';
+            if (copyAllBtn) copyAllBtn.style.display = showCopyAllBtn ? 'block' : 'none';
+            if (destroyAllBtn) destroyAllBtn.style.display = showDestroyAllBtn ? 'block' : 'none';
         }
 
         function showProgress(show) {
             document.getElementById('progressSection').style.display = show ? 'block' : 'none';
         }
 
-        // 检测是否是 Mercury 卡密
-        // Mercury 卡密格式：5236（信用卡）、5481（借记卡）开头，或 0/1 开头（旧格式兼容）
-        function isMercuryCode(code) {
+        function isUuidCode(code) {
             const trimmed = code.trim();
             const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-            if (!uuidPattern.test(trimmed)) return false;
-            // Mercury: 5236、5481 开头，或 0/1 开头（旧格式）
-            if (trimmed.startsWith('5236') || trimmed.startsWith('5481')) return true;
-            if (trimmed[0] === '0' || trimmed[0] === '1') return true;
-            return false;
+            return uuidPattern.test(trimmed);
         }
 
-        // 检测是否是 Airwallex 卡密（不是 Mercury 的 UUID 都视为 Airwallex）
-        function isAirwallexCode(code) {
-            const trimmed = code.trim();
-            const uuidPattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-            if (!uuidPattern.test(trimmed)) return false;
-            return !isMercuryCode(trimmed);
+        async function processMercuryKey(keyId, index, total) {
+            document.getElementById('progressText').textContent = total > 1
+                ? `正在查询第 ${index} 个卡密...`
+                : '正在查询...';
+
+            const queryResponse = await fetch('/api/keys/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key_id: keyId })
+            });
+            const queryData = await queryResponse.json();
+
+            if (queryData.success) {
+                if (total === 1) {
+                    if (queryData.display_channel_locked) lockRedeemMode(queryData);
+                    else unlockRedeemMode();
+                }
+                const actualKeyId = queryData.key_id || keyId;
+                return { success: true, isQuery: true, index, keyId: actualKeyId, data: queryData };
+            }
+
+            if (queryData.error === '卡密未使用') {
+                const selectedMode = getSelectedRedeemMode();
+                const redeemMode = queryData.bound_display_channel_id || (selectedMode === '__auto__' ? '' : selectedMode);
+                if (total === 1) {
+                    if (queryData.display_channel_locked) lockRedeemMode(queryData);
+                    else unlockRedeemMode();
+                }
+                const redeemModeLabel = queryData.bound_display_channel_name || (redeemMode ? getRedeemModeLabel(redeemMode) : '自动分配');
+                document.getElementById('progressText').textContent = total > 1
+                    ? `正在兑换第 ${index} 个卡密 (${redeemModeLabel})...`
+                    : `正在兑换 (${redeemModeLabel})...`;
+
+                const redeemResponse = await fetch('/api/keys/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key_id: keyId, redeem_mode: redeemMode || null })
+                });
+                const redeemData = await redeemResponse.json();
+
+                if (redeemData.success) {
+                    if (total === 1) {
+                        if (redeemData.display_channel_locked) lockRedeemMode(redeemData);
+                        else unlockRedeemMode();
+                    }
+                    if (!redeemData.used_time) {
+                        redeemData.used_time = new Date().toISOString();
+                    }
+                    return { success: true, isQuery: false, index, keyId, data: redeemData };
+                }
+
+                if (redeemData.maintenance) {
+                    if (redeemData.error && (redeemData.error.includes('429') || redeemData.error.includes('服务器繁忙'))) {
+                        return { success: false, index, keyId, error: redeemData.error || "当前服务器繁忙，请五分钟后再试", maintenance: true };
+                    }
+                    showMaintenanceMode();
+                    return { success: false, index, keyId, error: redeemData.error || '兑换失败', maintenance: true };
+                }
+                return { success: false, index, keyId, error: redeemData.error || '兑换失败' };
+            }
+
+            if (total === 1) {
+                unlockRedeemMode();
+            }
+            return { success: false, index, keyId, error: queryData.error || '查询失败' };
         }
 
         async function processOneKey(keyId, index, total) {
             try {
-                // 检测卡密类型
-                if (isAirwallexCode(keyId)) {
-                    // Airwallex 卡兑换
+                if (isUuidCode(keyId)) {
+                    const mercuryResult = await processMercuryKey(keyId, index, total);
+                    if (mercuryResult.success || mercuryResult.error !== '卡密不存在') {
+                        return mercuryResult;
+                    }
+
                     document.getElementById('progressText').textContent = total > 1
                         ? `正在兑换第 ${index} 个卡密 (Airwallex)...`
                         : '正在兑换 (Airwallex)...';
@@ -674,76 +932,24 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        // 设置兑换时间为当前时间
+                        data.provider = data.provider || 'airwallex';
+                        data.provider_label = data.provider_label || 'Airwallex';
                         if (!data.used_time) {
                             data.used_time = new Date().toISOString();
                         }
                         return {
                             success: true,
-                            isQuery: !data.is_new,  // 如果不是新卡，视为查询
+                            isQuery: !data.is_new,
                             isAirwallex: true,
                             index,
                             keyId,
                             data: data
                         };
-                    } else {
-                        return { success: false, index, keyId, error: data.error || '兑换失败' };
                     }
+                    return { success: false, index, keyId, error: data.error || '兑换失败' };
                 }
 
-                // 原有的 Mercury 卡密处理逻辑
-                // 更新进度为查询中
-                document.getElementById('progressText').textContent = total > 1
-                    ? `正在查询第 ${index} 个卡密...`
-                    : '正在查询...';
-
-                const queryResponse = await fetch('/api/keys/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key_id: keyId })
-                });
-                const queryData = await queryResponse.json();
-
-                if (queryData.success) {
-                    // 使用服务器返回的 key_id（当通过卡号查询时，需要真正的卡密 ID 查询消费记录）
-                    const actualKeyId = queryData.key_id || keyId;
-                    return { success: true, isQuery: true, index, keyId: actualKeyId, data: queryData };
-                }
-
-                if (queryData.error === '卡密未使用') {
-                    // 更新进度为兑换中
-                    document.getElementById('progressText').textContent = total > 1
-                        ? `正在兑换第 ${index} 个卡密...`
-                        : '正在兑换...';
-
-                    const redeemResponse = await fetch('/api/keys/redeem', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key_id: keyId })
-                    });
-                    const redeemData = await redeemResponse.json();
-
-                    if (redeemData.success) {
-                        // 新兑换的卡片，设置兑换时间为当前时间
-                        if (!redeemData.used_time) {
-                            redeemData.used_time = new Date().toISOString();
-                        }
-                        return { success: true, isQuery: false, index, keyId, data: redeemData };
-                    } else {
-                        // 检查是否是维护状态
-                        if (redeemData.maintenance) {
-                            // 如果是429，也视为一种特殊的维护/错误状态，但不要让整个界面变成维护模式，而是显示具体错误
-                            if (redeemData.error && (redeemData.error.includes('429') || redeemData.error.includes('服务器繁忙'))) {
-                                return { success: false, index, keyId, error: redeemData.error || "当前服务器繁忙，请五分钟后再试", maintenance: true };
-                            }
-                            showMaintenanceMode();
-                            return { success: false, index, keyId, error: redeemData.error || '兑换失败', maintenance: true };
-                        }
-                        return { success: false, index, keyId, error: redeemData.error || '兑换失败' };
-                    }
-                } else {
-                    return { success: false, index, keyId, error: queryData.error || '查询失败' };
-                }
+                return await processMercuryKey(keyId, index, total);
             } catch (error) {
                 return { success: false, index, keyId, error: '请求失败' };
             }
@@ -775,7 +981,7 @@
             }
 
             if (result.success) {
-                showCardResult(result.data, result.isQuery, result.isAirwallex);
+                showCardResult(result.data, result.isQuery, getResultProvider(result.data, result));
             } else if (result.maintenance && result.error.includes("当前服务器繁忙")) { // 特殊处理429
                 document.getElementById('errorMessage').innerHTML = `<span style="font-size: 1.2em; font-weight: bold; color: #ff4d4f;">${result.error}</span>`;
                 document.getElementById('errorKey').textContent = `卡密: ${result.keyId}`;
@@ -837,21 +1043,22 @@
             return parts.join(', ') || '';
         }
 
-        function showCardResult(data, isQuery, isAirwallex = false) {
+        function showCardResult(data, isQuery, provider = 'mercury') {
             const card = data.card;
             const expShort = `${card.exp_month} ${String(card.exp_year).slice(-2)}`;
             const fullInfo = `${card.pan} ${expShort} ${card.cvv}`;
             const cardLimit = data.card_limit ?? card.card_limit ?? 0;
+            const providerLabel = getResultProviderLabel(data);
             // 如果没有 used_time，使用当前时间（新兑换的情况）
             const usedTimeValue = data.used_time || new Date().toISOString();
             const usedTimeDisplay = new Date(usedTimeValue).toLocaleString();
             const addr = data.legal_address || {};
             const fullAddress = formatAddress(addr);
 
-            // Airwallex 卡片隐藏销毁按钮
+            // 非 Mercury 卡片隐藏销毁按钮
             const destroyBtn = document.querySelector('.destroy-btn');
             if (destroyBtn) {
-                destroyBtn.style.display = isAirwallex ? 'none' : 'inline-flex';
+                destroyBtn.style.display = provider === 'mercury' ? 'inline-flex' : 'none';
             }
 
             // 卡片信息
@@ -876,6 +1083,10 @@
                 <div class="info-item">
                     <span class="info-label">余额</span>
                     <span class="info-value highlight">$${cardLimit}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">卡头</span>
+                    <span class="info-value">${providerLabel}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">兑换时间</span>
@@ -961,7 +1172,7 @@
                 document.getElementById('transactionsSection').style.display = 'flex';
 
                 // 获取并显示消费记录（仅 Mercury 卡）
-                if (!isAirwallex) {
+                if (provider === 'mercury') {
                     // 获取当前卡片的 isQuery 状态
                     const currentResult = allResults[currentCardIndex];
                     if (currentResult && currentResult.isQuery === false) {
@@ -972,8 +1183,7 @@
                         loadTransactions(allResults[currentCardIndex]?.keyId);
                     }
                 } else {
-                    // Airwallex 卡暂不支持消费记录
-                    showTransactionsPlaceholder('Airwallex 卡暂不支持消费记录查询');
+                    showTransactionsPlaceholder('该卡头暂不支持消费记录查询');
                 }
             } else {
                 // 消费记录查询功能已关闭，隐藏该区域
@@ -1195,7 +1405,10 @@
         async function destroyCurrentCard() {
             if (currentCardIndex < 0 || currentCardIndex >= allResults.length) return;
             const currentCardResult = allResults[currentCardIndex];
-            if (!currentCardResult) return;
+            if (!isDestroyableResult(currentCardResult)) {
+                showToast('当前卡片不支持远程销毁', 'info');
+                return;
+            }
 
             const keyId = currentCardResult.keyId;
             const cardId = currentCardResult.data?.card?.card_id;
@@ -1211,9 +1424,8 @@
         }
 
         async function destroyAllCards() {
-            // 过滤出成功的卡片 (需包含 card_id 用于验证)
             const validItems = allResults
-                .filter(r => r.success && r.keyId && r.data?.card?.card_id)
+                .filter(isDestroyableResult)
                 .map(r => ({
                     key: r.keyId,
                     card_id: r.data.card.card_id
@@ -1235,7 +1447,7 @@
 
         async function executeDestroy(items) {
             // 不显示全屏进度条，避免打断用户
-            // showProgress(true); 
+            // showProgress(true);
 
             // 临时禁用按钮防止重复点击
             const destroyBtn = document.querySelector('.destroy-btn');
@@ -1278,7 +1490,7 @@
                         const currentCardResult = allResults[currentCardIndex];
                         if (currentCardResult && currentCardResult.data && currentCardResult.data.destroyed) {
                             // 重新渲染当前卡片以显示"已销毁"状态
-                            showCardResult(currentCardResult.data, currentCardResult.isQuery);
+                            showCardResult(currentCardResult.data, currentCardResult.isQuery, getResultProvider(currentCardResult.data, currentCardResult));
                             // 更新导航状态徽章
                             updateNavigation(currentCardResult);
 
@@ -1293,9 +1505,7 @@
                         }
 
                         // 检查是否所有卡片都已销毁，如果是则禁用"销毁全部"按钮
-                        const hasUndestroyed = allResults.some(r =>
-                            r.success && r.data && r.data.card && !r.data.destroyed
-                        );
+                        const hasUndestroyed = allResults.some(isDestroyableResult);
                         if (!hasUndestroyed) {
                             const destroyAllBtn = document.getElementById('destroyAllBtn');
                             if (destroyAllBtn) {

@@ -1,0 +1,162 @@
+{
+    "ids": [
+        {
+            "id": "2b96b023-9747-43f8-ba37-4f04cef54a57",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T01:23:05.005629",
+            "used": true,
+            "used_time": "2025-12-24T01:23:21.156415",
+            "created_by": "admin",
+            "redeemed_card": {
+                "pan": "5236860174406548",
+                "cvv": "141",
+                "exp_month": "12",
+                "exp_year": "2031",
+                "card_limit": 0,
+                "card_type": "credit",
+                "expire_time": "2025-12-24T02:23:21.155903"
+            }
+        },
+        {
+            "id": "89ca28e9-008c-465b-867b-f2804b5f556b",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-23T17:35:37.674945+00:00",
+            "used": true,
+            "used_time": "2025-12-23T17:35:52.692651+00:00",
+            "created_by": "admin",
+            "redeemed_card": {
+                "pan": "5236860165781156",
+                "cvv": "136",
+                "exp_month": "12",
+                "exp_year": "2031",
+                "card_limit": 0,
+                "card_type": "credit",
+                "expire_time": "2025-12-23T18:35:52.692491+00:00"
+            }
+        },
+        {
+            "id": "7a8f7bee-d119-4063-976c-b7a1577b2d57",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:22.024189+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "814aa7d4-a8c9-4137-bb7b-292b004ba169",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:22.665795+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "1becd23e-6b0a-4de9-970b-1c58e68b2711",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:22.802036+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "9b943e0c-8d36-4ffc-8eb1-4776b8848869",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:22.969226+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "3ff95ff8-f120-45d2-96a0-8cd231221925",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:23.118776+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "78996296-9739-4139-bfd5-678dff167c85",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "credit",
+            "created_time": "2025-12-24T14:14:23.335626+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "eb277143-c5f9-483d-a1f6-b513855cb4db",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:40.926691+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "91ed97eb-d1f3-44fe-a225-370468fe6e87",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:41.069384+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "98ef6e50-83da-417b-857f-f4e3b1ddb4d1",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:41.254746+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "76d16129-7456-4e3d-8448-b63f27706f8f",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:41.422157+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "76d9db97-e2f8-41a6-a0a9-cdbe4c6af0b7",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:41.570400+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        },
+        {
+            "id": "19c6013f-dfce-4a45-86cb-e5aef1e29cea",
+            "expire_minutes": 60,
+            "card_limit": 0,
+            "card_type": "debit",
+            "created_time": "2025-12-24T14:14:41.737791+00:00",
+            "used": false,
+            "used_time": null,
+            "created_by": "admin"
+        }
+    ]
+}

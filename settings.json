@@ -1,9 +1,26 @@
 {
-  "announcement": "123",
-  "announcement_time": "2026-01-30 22:51:41",
+  "announcement": "",
+  "announcement_time": "2026-02-13 01:50:13",
   "max_batch_count": 16,
   "batch_interval": 8,
   "maintenance_mode": false,
   "announcement_size": 121,
   "transaction_query_enabled": true,
+  "fallback_card_head": "5481",
+  "retry_before_fallback": 0,
+  "enabled_redeem_channels": [
+    "mercury_52368601",
+    "mercury_54810871",
+    "timoes_486699",
+    "timoes_451311"
+  ],
+  "display_redeem_channels": [],
+  "timoes_backend_channels": [
+    {
+      "id": "timoes_4627",
+      "label": "4627 卡头",
+      "head": "4627",
+      "relay_code_type": "4627"
+    }
+  ]
 }
