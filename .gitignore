@@ -9,7 +9,7 @@ venv/
 env/
 .env/
 niko/
-
+.background_threads.lock
 # macOS
 .DS_Store
 
