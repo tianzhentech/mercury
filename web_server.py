@@ -13,7 +13,7 @@ import uuid
 import fcntl
 from functools import wraps
 from datetime import datetime, timedelta, timezone
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, redirect
 
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(__file__))
@@ -42,6 +42,7 @@ app = Flask(__name__)
 CARD_FILE = os.path.join(os.path.dirname(__file__), "card", "card.json")
 VERSION_FILE = os.path.join(os.path.dirname(__file__), "version.txt")
 BACKGROUND_THREAD_LOCK_FILE = os.path.join(os.path.dirname(__file__), ".background_threads.lock")
+UUID_PATTERN = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
 
 
 def _local_tzinfo():
@@ -295,12 +296,26 @@ def ensure_background_threads():
 # ==================== 页面路由 ====================
 
 @app.route('/')
-def index():
-    """首页 - 管理面板（需要前端验证登录）"""
+@app.route('/redeem')
+def redeem_page():
+    """兑换页面 - 用户端（无需登录）"""
+    return render_template('redeem.html', version=get_version())
+
+
+@app.route('/admin')
+@app.route('/admin/')
+def admin_index():
+    """管理面板（需要前端验证登录）"""
     return render_template('index.html', version=get_version())
 
 
 @app.route('/login')
+def legacy_login_page():
+    """旧登录地址，跳转到后台登录页"""
+    return redirect('/admin/login', code=302)
+
+
+@app.route('/admin/login')
 def login_page():
     """登录页面"""
     return render_template('login.html', version=get_version())
@@ -4734,6 +4749,46 @@ def query_key():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+def call_json_post_view(path, view_func, payload):
+    """在同一 Flask app 内复用已有 JSON POST 视图，避免单端口模式下走 HTTP 代理。"""
+    with app.test_request_context(path, method='POST', json=payload):
+        return app.make_response(view_func())
+
+
+@app.route('/api/airwallex/redeem', methods=['POST'])
+def airwallex_redeem():
+    """统一兑换入口：本地卡密优先走 Mercury，其他兑换码走 Airwallex。"""
+    try:
+        data = request.get_json(silent=True) or {}
+        code = str(data.get('code', '')).strip()
+
+        if not code:
+            return jsonify({"success": False, "error": "请输入兑换码"})
+
+        if UUID_PATTERN.match(code):
+            query_resp = call_json_post_view('/api/keys/query', query_key, {"key_id": code})
+            query_data = query_resp.get_json(silent=True) or {}
+
+            if query_data.get("success"):
+                return query_resp
+
+            if query_data.get("error") == "卡密未使用":
+                redeem_payload = {"key_id": code}
+                redeem_mode = str(data.get('redeem_mode', '')).strip()
+                if redeem_mode:
+                    redeem_payload["redeem_mode"] = redeem_mode
+                return call_json_post_view('/api/keys/redeem', redeem_key, redeem_payload)
+
+            if query_data.get("error") != "卡密不存在":
+                return query_resp
+
+        result = redeem_airwallex_card(code)
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"success": False, "error": f"处理失败: {str(e)}"})
+
+
 @app.route('/api/keys/transactions', methods=['POST'])
 def query_key_transactions():
     """查询卡片消费记录 - 无需登录"""
@@ -4774,12 +4829,18 @@ if __name__ == '__main__':
     # 显示账户信息
     init_account_info()
 
+    app_host = os.environ.get("APP_HOST") or os.environ.get("REDEEM_HOST") or "0.0.0.0"
+    app_port = int(os.environ.get("APP_PORT") or os.environ.get("REDEEM_PORT") or "8001")
+    display_host = "127.0.0.1" if app_host in ("0.0.0.0", "::") else app_host
+
     # 启动服务器
     print("=" * 60)
-    print("[启动] Web 服务器启动在 http://127.0.0.1:7999")
+    print(f"[启动] Mercury 服务启动在 http://{display_host}:{app_port}")
+    print(f"[页面] 兑换页: http://{display_host}:{app_port}/")
+    print(f"[页面] 管理后台: http://{display_host}:{app_port}/admin")
     print("[提示] 默认管理员: admin / admin")
     print("[提示] 创建卡片时将随机使用已配置的账户")
     if get_account_count() == 0:
-        print("[提示] 请登录后台，在「后台账户」中添加 Mercury 账户")
+        print("[提示] 请登录 /admin，在「后台账户」中添加 Mercury 账户")
     print("=" * 60)
-    app.run(host='0.0.0.0', port=7999, debug=False, threaded=True)
+    app.run(host=app_host, port=app_port, debug=False, threaded=True)

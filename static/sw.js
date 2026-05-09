@@ -1,9 +1,10 @@
-const CACHE_NAME = 'mercury-v1';
+const CACHE_NAME = 'mercury-v2';
 const STATIC_ASSETS = [
   '/',
-  '/login',
-  '/redeem',
+  '/admin',
+  '/admin/login',
   '/static/style.css',
+  '/static/redeem.css',
   '/static/manifest.json'
 ];
 

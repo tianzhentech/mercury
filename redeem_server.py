@@ -13,6 +13,9 @@ app = Flask(__name__)
 
 # 主服务器地址
 MAIN_SERVER = "http://127.0.0.1:7999"
+MAIN_SERVER_TIMEOUT = 30
+MAIN_SERVER_QUERY_TIMEOUT = 15
+MAIN_SERVER_REDEEM_TIMEOUT = 90
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), "version.txt")
 UUID_PATTERN = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
@@ -24,6 +27,58 @@ def get_version():
             return f.read().strip()
     except:
         return "0.0"
+
+
+def proxy_response(resp):
+    """透传主服务器响应"""
+    return Response(
+        resp.content,
+        status=resp.status_code,
+        headers=dict(resp.headers)
+    )
+
+
+def query_key_status(key_id, timeout=MAIN_SERVER_QUERY_TIMEOUT):
+    """回查卡密状态"""
+    return requests.post(
+        f"{MAIN_SERVER}/api/keys/query",
+        json={"key_id": key_id},
+        timeout=timeout
+    )
+
+
+def recover_timed_out_redeem(key_id):
+    """兑换请求超时后，尝试回查卡密状态，避免实际成功却前端报错。"""
+    key_id = str(key_id or '').strip()
+    if not key_id or not UUID_PATTERN.match(key_id):
+        return None
+
+    try:
+        query_resp = query_key_status(key_id)
+        query_data = query_resp.json()
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"[兑换代理] 超时后回查失败 {key_id}: {e}")
+        return None
+
+    if query_data.get("success"):
+        print(f"[兑换代理] 超时后回查确认成功 {key_id}")
+        return query_resp
+
+    print(f"[兑换代理] 超时后回查未确认成功 {key_id}: {query_data.get('error', '未知状态')}")
+    return None
+
+
+def timed_out_redeem_response(key_id, error):
+    """兑换超时后优先回查，回查仍失败再返回超时提示。"""
+    recovered_resp = recover_timed_out_redeem(key_id)
+    if recovered_resp is not None:
+        return proxy_response(recovered_resp)
+
+    return jsonify({
+        "success": False,
+        "error": "主服务器兑换处理超时，已自动回查但暂未确认成功，请稍后重新查询该卡密",
+        "detail": str(error)
+    }), 504
 
 
 # ==================== 页面路由 ====================
@@ -54,38 +109,25 @@ def airwallex_redeem():
 
         if UUID_PATTERN.match(code):
             try:
-                query_resp = requests.post(
-                    f"{MAIN_SERVER}/api/keys/query",
-                    json={"key_id": code},
-                    timeout=15
-                )
+                query_resp = query_key_status(code)
                 query_data = query_resp.json()
 
                 if query_data.get("success"):
-                    return Response(
-                        query_resp.content,
-                        status=query_resp.status_code,
-                        headers=dict(query_resp.headers)
-                    )
+                    return proxy_response(query_resp)
 
                 if query_data.get("error") == "卡密未使用":
-                    redeem_resp = requests.post(
-                        f"{MAIN_SERVER}/api/keys/redeem",
-                        json={"key_id": code},
-                        timeout=30
-                    )
-                    return Response(
-                        redeem_resp.content,
-                        status=redeem_resp.status_code,
-                        headers=dict(redeem_resp.headers)
-                    )
+                    try:
+                        redeem_resp = requests.post(
+                            f"{MAIN_SERVER}/api/keys/redeem",
+                            json={"key_id": code},
+                            timeout=MAIN_SERVER_REDEEM_TIMEOUT
+                        )
+                        return proxy_response(redeem_resp)
+                    except requests.exceptions.Timeout as e:
+                        return timed_out_redeem_response(code, e)
 
                 if query_data.get("error") != "卡密不存在":
-                    return Response(
-                        query_resp.content,
-                        status=query_resp.status_code,
-                        headers=dict(query_resp.headers)
-                    )
+                    return proxy_response(query_resp)
             except requests.exceptions.RequestException as e:
                 return jsonify({"success": False, "error": f"无法连接主服务器: {str(e)}"}), 503
 
@@ -99,28 +141,32 @@ def airwallex_redeem():
 def proxy_api(path):
     """代理所有 API 请求到主服务器"""
     url = f"{MAIN_SERVER}/api/{path}"
-    
+
     # 复制请求头
     headers = {key: value for key, value in request.headers if key.lower() != 'host'}
-    
+    json_body = request.get_json(silent=True) if request.method in ('POST', 'PUT') else None
+
     try:
         if request.method == 'GET':
-            resp = requests.get(url, headers=headers, params=request.args, timeout=30)
+            resp = requests.get(url, headers=headers, params=request.args, timeout=MAIN_SERVER_TIMEOUT)
         elif request.method == 'POST':
-            resp = requests.post(url, headers=headers, json=request.json, timeout=30)
+            timeout = MAIN_SERVER_REDEEM_TIMEOUT if path == 'keys/redeem' else MAIN_SERVER_TIMEOUT
+            try:
+                resp = requests.post(url, headers=headers, json=json_body, timeout=timeout)
+            except requests.exceptions.Timeout as e:
+                if path == 'keys/redeem':
+                    key_id = str((json_body or {}).get('key_id', '')).strip()
+                    return timed_out_redeem_response(key_id, e)
+                raise
         elif request.method == 'PUT':
-            resp = requests.put(url, headers=headers, json=request.json, timeout=30)
+            resp = requests.put(url, headers=headers, json=json_body, timeout=MAIN_SERVER_TIMEOUT)
         elif request.method == 'DELETE':
-            resp = requests.delete(url, headers=headers, timeout=30)
+            resp = requests.delete(url, headers=headers, timeout=MAIN_SERVER_TIMEOUT)
         else:
             return jsonify({"error": "Method not allowed"}), 405
-        
+
         # 返回响应
-        return Response(
-            resp.content,
-            status=resp.status_code,
-            headers=dict(resp.headers)
-        )
+        return proxy_response(resp)
     except requests.exceptions.RequestException as e:
         return jsonify({"success": False, "error": f"无法连接主服务器: {str(e)}"}), 503
 

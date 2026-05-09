@@ -59,7 +59,7 @@
                 
                 if (data.success) {
                     localStorage.setItem('access_token', data.access_token);
-                    window.location.href = '/';
+                    window.location.href = '/admin';
                 }
             } catch (e) {
                 console.log('Token refresh failed');
@@ -103,7 +103,7 @@
                     localStorage.setItem('is_admin', data.is_admin);
                     
                     // 跳转到管理面板
-                    window.location.href = '/';
+                    window.location.href = '/admin';
                 } else {
                     errorMsg.textContent = data.error || '登录失败';
                 }
@@ -124,4 +124,3 @@
     </script>
 </body>
 </html>
-

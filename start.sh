@@ -7,12 +7,18 @@ cd "$(dirname "$0")"
 activate_virtualenv() {
     local env_path=""
 
-    if [ -f "niko/bin/activate" ]; then
-        env_path="niko/bin/activate"
+    if [ -n "${VIRTUAL_ENV:-}" ]; then
+        return
+    fi
+
+    if [ -f ".venv/bin/activate" ]; then
+        env_path=".venv/bin/activate"
     elif [ -f "venv/bin/activate" ]; then
         env_path="venv/bin/activate"
+    elif [ -f "niko/bin/activate" ]; then
+        env_path="niko/bin/activate"
     else
-        echo "❌ 未找到虚拟环境，请确认 niko/bin/activate 或 venv/bin/activate 存在"
+        echo "❌ 未找到虚拟环境，请先运行 uv sync，或确认 .venv/bin/activate、venv/bin/activate、niko/bin/activate 存在"
         exit 1
     fi
 
@@ -118,23 +124,18 @@ display_host_for_browser() {
 
 shutdown_services() {
     echo "正在停止服务..."
-    [ -n "${WEB_PID:-}" ] && kill "$WEB_PID" 2>/dev/null || true
-    [ -n "${REDEEM_PID:-}" ] && kill "$REDEEM_PID" 2>/dev/null || true
+    [ -n "${APP_PID:-}" ] && kill "$APP_PID" 2>/dev/null || true
     exit
 }
 
 activate_virtualenv
 
-WEB_HOST="${WEB_HOST:-127.0.0.1}"
-WEB_PORT="${WEB_PORT:-7999}"
-REDEEM_HOST="${REDEEM_HOST:-0.0.0.0}"
-REDEEM_PORT="${REDEEM_PORT:-8001}"
-WEB_BROWSER_HOST="$(display_host_for_browser "$WEB_HOST")"
-REDEEM_BROWSER_HOST="$(display_host_for_browser "$REDEEM_HOST")"
+APP_HOST="${APP_HOST:-${REDEEM_HOST:-${WEB_HOST:-0.0.0.0}}}"
+APP_PORT="${APP_PORT:-${REDEEM_PORT:-${WEB_PORT:-8001}}}"
+APP_BROWSER_HOST="$(display_host_for_browser "$APP_HOST")"
 PYTHON_BIN="$(command -v python)"
 
-WEB_WORKERS="${WEB_WORKERS:-2}"
-REDEEM_WORKERS="${REDEEM_WORKERS:-2}"
+APP_WORKERS="${APP_WORKERS:-${WEB_WORKERS:-${REDEEM_WORKERS:-2}}}"
 WORKER_CLASS="${GUNICORN_WORKER_CLASS:-gthread}"
 
 echo "🚀 启动 Mercury 服务 (Gunicorn 模式)..."
@@ -145,64 +146,40 @@ if [ "$WORKER_CLASS" = "gthread" ]; then
 fi
 echo ""
 
-ensure_port_free "Web Server" "$WEB_HOST" "$WEB_PORT"
-ensure_port_free "Redeem Server" "$REDEEM_HOST" "$REDEEM_PORT"
+ensure_port_free "Mercury Server" "$APP_HOST" "$APP_PORT"
 
 build_worker_args "$WORKER_CLASS"
 
 gunicorn web_server:app \
-    -b "${WEB_HOST}:${WEB_PORT}" \
+    -b "${APP_HOST}:${APP_PORT}" \
     "${WORKER_ARGS[@]}" \
-    -w "$WEB_WORKERS" \
+    -w "$APP_WORKERS" \
     -t 120 \
     --max-requests 1000 \
     --max-requests-jitter 50 \
     --access-logfile - \
     --error-logfile - \
     --log-level info &
-WEB_PID=$!
+APP_PID=$!
 
-if wait_for_startup "$WEB_PID" "$WEB_HOST" "$WEB_PORT"; then
-    echo "✅ Web Server 已启动 (PID: $WEB_PID) - 监听 ${WEB_HOST}:${WEB_PORT}"
-    echo "   浏览器打开: http://${WEB_BROWSER_HOST}:${WEB_PORT}"
+if wait_for_startup "$APP_PID" "$APP_HOST" "$APP_PORT"; then
+    echo "✅ Mercury Server 已启动 (PID: $APP_PID) - 监听 ${APP_HOST}:${APP_PORT}"
 else
-    echo "❌ Web Server 启动失败 (PID: $WEB_PID)"
-    wait "$WEB_PID"
-    exit 1
-fi
-
-gunicorn redeem_server:app \
-    -b "${REDEEM_HOST}:${REDEEM_PORT}" \
-    "${WORKER_ARGS[@]}" \
-    -w "$REDEEM_WORKERS" \
-    -t 120 \
-    --max-requests 1000 \
-    --max-requests-jitter 50 \
-    --access-logfile - \
-    --error-logfile - \
-    --log-level info &
-REDEEM_PID=$!
-
-if wait_for_startup "$REDEEM_PID" "$REDEEM_HOST" "$REDEEM_PORT"; then
-    echo "✅ Redeem Server 已启动 (PID: $REDEEM_PID) - 监听 ${REDEEM_HOST}:${REDEEM_PORT}"
-    echo "   浏览器打开: http://${REDEEM_BROWSER_HOST}:${REDEEM_PORT}"
-else
-    echo "❌ Redeem Server 启动失败 (PID: $REDEEM_PID)"
-    kill "$WEB_PID" 2>/dev/null || true
-    wait "$REDEEM_PID"
+    echo "❌ Mercury Server 启动失败 (PID: $APP_PID)"
+    wait "$APP_PID"
     exit 1
 fi
 
 echo ""
-echo "📊 所有服务已启动:"
-echo "   - Web Server:    http://${WEB_BROWSER_HOST}:${WEB_PORT} (内部管理)"
-echo "   - Redeem Server: http://${REDEEM_BROWSER_HOST}:${REDEEM_PORT} (本机打开)"
-if [ "$REDEEM_HOST" = "0.0.0.0" ] || [ "$REDEEM_HOST" = "::" ]; then
-    echo "   - Redeem Server: 也可用本机局域网 IP:${REDEEM_PORT} 从其他设备访问"
+echo "📊 服务已启动:"
+echo "   - 兑换页:   http://${APP_BROWSER_HOST}:${APP_PORT}/"
+echo "   - 管理后台: http://${APP_BROWSER_HOST}:${APP_PORT}/admin"
+if [ "$APP_HOST" = "0.0.0.0" ] || [ "$APP_HOST" = "::" ]; then
+    echo "   - 也可用本机局域网 IP:${APP_PORT} 从其他设备访问"
 fi
 echo ""
-echo "💡 提示: 可通过 WEB_PORT / REDEEM_PORT / GUNICORN_WORKER_CLASS / GUNICORN_THREADS 覆盖默认启动参数"
-echo "📝 按 Ctrl+C 停止所有服务"
+echo "💡 提示: 可通过 APP_HOST / APP_PORT / APP_WORKERS / GUNICORN_WORKER_CLASS / GUNICORN_THREADS 覆盖默认启动参数"
+echo "📝 按 Ctrl+C 停止服务"
 echo ""
 
 trap shutdown_services SIGINT SIGTERM

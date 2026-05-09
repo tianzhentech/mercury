@@ -474,21 +474,15 @@
                     .filter(Boolean)
                     .filter(item => item.enabled)
                 : Object.values(redeemChannelDefinitions);
-            const displayOptions = [{
-                id: '__auto__',
-                label: '自动分配',
-                enabled: true
-            }, ...availableChannels];
 
             latestRedeemChannels = availableChannels;
             redeemChannelDefinitions = { ...fallbackRedeemChannelDefinitions };
-            redeemChannelDefinitions.__auto__ = { id: '__auto__', label: '自动分配', enabled: true };
             availableChannels.forEach(item => {
                 redeemChannelDefinitions[item.id] = item;
             });
 
             enabledRedeemChannels = availableChannels.map(item => item.id);
-            renderRedeemModeList(displayOptions, selectedRedeemMode, false);
+            renderRedeemModeList(availableChannels, selectedRedeemMode, false);
         }
 
         function lockRedeemMode(binding) {
@@ -547,13 +541,12 @@
         }
 
         function getSelectedRedeemMode() {
-            return selectedRedeemMode === '__auto__' || enabledRedeemChannels.includes(selectedRedeemMode) || redeemModeLocked
+            return enabledRedeemChannels.includes(selectedRedeemMode) || redeemModeLocked
                 ? selectedRedeemMode
                 : '';
         }
 
         function getRedeemModeLabel(mode) {
-            if (mode === '__auto__') return '自动分配';
             return redeemChannelDefinitions[mode]?.label || '未知卡头';
         }
 
@@ -868,12 +861,12 @@
 
             if (queryData.error === '卡密未使用') {
                 const selectedMode = getSelectedRedeemMode();
-                const redeemMode = queryData.bound_display_channel_id || (selectedMode === '__auto__' ? '' : selectedMode);
+                const redeemMode = queryData.bound_display_channel_id || selectedMode;
                 if (total === 1) {
                     if (queryData.display_channel_locked) lockRedeemMode(queryData);
                     else unlockRedeemMode();
                 }
-                const redeemModeLabel = queryData.bound_display_channel_name || (redeemMode ? getRedeemModeLabel(redeemMode) : '自动分配');
+                const redeemModeLabel = queryData.bound_display_channel_name || (redeemMode ? getRedeemModeLabel(redeemMode) : '当前渠道');
                 document.getElementById('progressText').textContent = total > 1
                     ? `正在兑换第 ${index} 个卡密 (${redeemModeLabel})...`
                     : `正在兑换 (${redeemModeLabel})...`;

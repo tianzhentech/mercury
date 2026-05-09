@@ -1571,7 +1571,7 @@
         // 检查认证
         async function checkAuth() {
             if (!refreshToken) {
-                window.location.href = '/login';
+                window.location.href = '/admin/login';
                 return false;
             }
 
@@ -1591,11 +1591,11 @@
                     localStorage.setItem('is_admin', isAdmin);
                     return true;
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = '/admin/login';
                     return false;
                 }
             } catch (e) {
-                window.location.href = '/login';
+                window.location.href = '/admin/login';
                 return false;
             }
         }
@@ -1635,7 +1635,7 @@
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('username');
             localStorage.removeItem('is_admin');
-            window.location.href = '/login';
+            window.location.href = '/admin/login';
         }
 
         // 标签页切换
