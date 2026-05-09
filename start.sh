@@ -155,6 +155,10 @@ run_as_root() {
     fi
 }
 
+has_virtualenv() {
+    [ -f ".venv/bin/activate" ] || [ -f "venv/bin/activate" ] || [ -f "niko/bin/activate" ]
+}
+
 ensure_dependencies() {
     echo "📦 安装/同步 Python 依赖..."
 
@@ -171,14 +175,29 @@ ensure_dependencies() {
         return
     fi
 
-    if [ ! -d ".venv" ] && [ ! -d "venv" ] && [ ! -d "niko" ]; then
+    if ! has_virtualenv; then
         local python_bin=""
         python_bin="$(command -v python3 || command -v python || true)"
         if [ -z "$python_bin" ]; then
             echo "❌ 未找到 python3/python，无法创建虚拟环境"
             exit 1
         fi
-        "$python_bin" -m venv .venv
+        echo "🔧 未找到可用虚拟环境，正在创建 .venv..."
+        if ! "$python_bin" -m venv .venv; then
+            if command -v apt-get >/dev/null 2>&1; then
+                echo "🔧 创建虚拟环境失败，尝试安装 python3-venv 后重试..."
+                run_as_root apt-get update
+                run_as_root apt-get install -y python3-venv
+                if ! "$python_bin" -m venv .venv; then
+                    echo "❌ 安装 python3-venv 后仍无法创建虚拟环境"
+                    exit 1
+                fi
+            else
+                echo "❌ 创建虚拟环境失败"
+                echo "   Debian/Ubuntu 可先运行: apt-get update && apt-get install -y python3-venv"
+                exit 1
+            fi
+        fi
     fi
 
     activate_virtualenv
